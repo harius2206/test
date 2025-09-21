@@ -1,0 +1,144 @@
+.profile-content {
+    flex: 1;
+    padding: 40px;
+    font-family: "Inter", sans-serif;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: flex-start;
+    margin-top: 2px;
+}
+
+.profile-title {
+    font-size: 45px;
+    margin-bottom: 10px;
+}
+
+.profile-tile-description {
+    color: #8A8A8A;
+    margin-bottom: 30px;
+    font-size: 25px;
+}
+
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 750px;
+}
+.attention{
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 10px
+}
+.attention-description{
+    font-size: 16px;
+    margin-bottom: 30px;
+    color: #333
+}
+.profile-form label {
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+    color: #666;
+}
+.button-wrapper{
+    display: flex;
+    align-items: center;
+    gap: 10px
+}
+
+.profile-form textarea {
+    resize: none;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    line-height: 1.4;
+    min-height: 80px;
+}
+
+textarea {
+    resize: none;
+}
+
+.profile-form .btn {
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.profile-form hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 25px 0;
+}
+.advice-message{
+    color: #8A8A8A;
+    font-size: 16px;
+}
+.api-input {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 16px;
+    font-weight: bold;
+    background-color: #f9f9f9;
+}
+
+.api-input.active {
+    color: green;
+}
+.api-input.rejected {
+    color: red;
+}
+.api-input.review {
+    color: orange;
+}
+.api-input.none {
+    color: gray;
+}
+
+@media (max-width: 1024px) {
+    .profile-content h1 {
+        font-size: 38px;
+    }
+    .profile-content p {
+        font-size: 22px;
+    }
+    .profile-form {
+        max-width: 600px;
+    }
+}
+
+@media (max-width: 768px) {
+    .profile-content {
+        padding: 20px;
+    }
+    .profile-content h1 {
+        font-size: 30px;
+    }
+    .profile-content p {
+        font-size: 18px;
+    }
+    .profile-form {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-content h1 {
+        font-size: 24px;
+    }
+    .profile-content p {
+        font-size: 16px;
+    }
+    .profile-form input {
+        font-size: 14px;
+    }
+    .profile-form .btn {
+        width: 100%;
+    }
+}

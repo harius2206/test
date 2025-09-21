@@ -1,0 +1,55 @@
+.profile-nav {
+    width: 21%;
+    min-height: 100vh;
+    border-right: 1px solid #ddd;
+    font-family: "Inter", sans-serif;
+    padding-top: 20px;
+}
+
+.profile-info {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.profile-avatar {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.profile-name {
+    margin: 10px 0 5px;
+    font-size: 30px;
+    font-weight: 600;
+}
+
+.profile-date {
+    font-size: 16px;
+    color: #666;
+}
+
+.profile-links {
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+    font-size: 20px;
+
+}
+
+.profile-links a {
+    padding: 20px 20px;
+    text-decoration: none;
+    color: black;
+    transition: background 0.2s;
+}
+
+.profile-links a:hover {
+    background: rgba(152, 155, 178, 0.1);
+}
+
+.profile-links a.active {
+    background: #989BB2;
+    color: white;
+
+}

@@ -1,0 +1,32 @@
+.btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+
+
+}
+.btn-hover {
+    color: #6366f1;
+    background-color: white;
+    transition: all 0.2s ease;
+}
+.btn-hover:hover {
+    background-color: #6366f1;
+    color: white;
+}
+.btn-hover-inverse {
+    color: white;
+    background-color: green;
+    transition: all 0.2s ease;
+}
+.btn-hover-inverse:hover {
+    background-color: white;
+    color: green;
+}

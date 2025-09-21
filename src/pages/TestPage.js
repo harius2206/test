@@ -1,41 +1,36 @@
-import Button from "../components/button/button";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+
 import Header from "../components/header/header";
 import Footer from "../components/footer/footer";
-
+import ProfileNav from "../components/profileNav/profileNav";
+import profileRoutes from "../routes/profileRoutes";
+import Button from "../components/button/button";
 
 export default function TestPage() {
     return (
-        <>
-            <Header/>
+        <Router>
+            <div className="app-wrapper" style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+                <Header />
+
+                <div style={{ flex: 1, display: "flex" }}>
+                    <ProfileNav />
+                    <Routes>
+                        {profileRoutes.map((route, index) => (
+                            <Route key={index} path={route.path} element={<route.component />} />
+                        ))}
+                        <Route path="*" element={<Navigate to="/profile/private" replace />} />
+                    </Routes>
+                </div>
+
+                <Footer />
+            </div>
+        </Router>
 
 
 
-         {/*<div style={{ display: "flex", flexDirection: "column", gap: "20px", padding: "40px" }}>*/}
-         {/*    <Button variant="hover" color="#6366f1" width="200px" height="50px">*/}
-         {/*        Hover White → Filled*/}
-         {/*    </Button>*/}
 
-         {/*    <Button variant="hover" color="green" hoverFilled={true} width="250px" height="60px">*/}
-         {/*        Hover Filled → White*/}
-         {/*    </Button>*/}
 
-         {/*    <Button variant="toggle" color="orange" width="180px" height="45px">*/}
-         {/*        Toggle Btn*/}
-         {/*    </Button>*/}
 
-         {/*    <Button variant="static" color="red" width="220px" height="55px">*/}
-         {/*        Static Btn*/}
-         {/*    </Button>*/}
 
-         {/*    <Button variant="link" color="#8B5CF6" width="160px" height="40px" onClick={() => alert("Go!")}>*/}
-         {/*        Link Btn*/}
-         {/*    </Button>*/}
-
-         {/*    <Button variant="toggle" color="#10B981" initialActive={true} width="180px" height="45px">*/}
-         {/*        Toggle Active*/}
-         {/*    </Button>*/}
-         {/*</div>*/}
-            <Footer/>
-        </>
     );
 }

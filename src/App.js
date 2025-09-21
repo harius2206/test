@@ -1,8 +1,16 @@
-import './App.css';
-import TestPage from "./pages/TestPage";
+import "./App.css";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import appRoutes from "./routes/appRoutes";
+
 function App() {
     return (
-        <TestPage/>
+        <Router>
+            <Routes>
+                {appRoutes.map(({ path, component: Component }) => (
+                    <Route key={path} path={path} element={<Component />} />
+                ))}
+            </Routes>
+        </Router>
     );
 }
 

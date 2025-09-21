@@ -23,6 +23,18 @@
 
 }
 
+
+.nav-text {
+    font-size: 26px;
+    font-weight: bold;
+    color: black;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.nav-text:hover {
+    color: #6366f1;
+}
 .nav-wrapper {
     display: flex;
     align-items: center;
@@ -34,10 +46,6 @@
     margin-right: 3%;
 }
 
-.nav-text {
-    font-size: 32px;
-    font-weight: bold;
-}
 
 .user-image {
     width: 40px;
