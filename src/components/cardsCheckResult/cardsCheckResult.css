@@ -1,0 +1,81 @@
+.ccr-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 24px;
+    font-family: "Inter", sans-serif;
+    color: #111827;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.ccr-stats-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.ccr-progress {
+    width: 120px;
+    height: 120px;
+}
+
+/* labels keep their colors, counts inherit same color via duplicated class */
+.ccr-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 18px;
+}
+
+.ccr-learned {
+    color: #388e3c;
+    font-weight: 600;
+}
+
+.ccr-notlearned {
+    color: #d32f2f;
+    font-weight: 600;
+}
+
+/* ensure numeric count next to label has same color */
+.ccr-count {
+    font-weight: 600;
+}
+
+.ccr-time {
+    font-size: 16px;
+    font-weight: 500;
+    text-align: left;
+}
+
+.ccr-time p {
+    margin: 4px 0;
+}
+
+/* style the shared Button inside the result to match previous look */
+.ccr-container .btn {
+    align-self: flex-end;
+    padding: 10px 22px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: background-color 0.2s ease;
+}
+
+/* small responsive tweak */
+@media (max-width: 420px) {
+    .ccr-progress {
+        width: 100px;
+        height: 100px;
+    }
+    .ccr-container .btn {
+        padding: 8px 18px;
+    }
+}

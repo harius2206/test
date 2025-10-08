@@ -1,21 +1,26 @@
-import "./header.css"
-import userImage from './userImage.jpg'
+import "./header.css";
 import SearchField from "../searchField/searchField";
 import { Link } from "react-router-dom";
+import UserMenu from "../userMenu/userMenu";
 
 const Header = () => {
-    return(
-        <div className={"header-wrapper"}>
-            <div className={"logo"}>Kussotare</div>
-            <SearchField placeholder="search for anything" />
-            <div className={"nav-wrapper"}>
-                <Link to="/" className="nav-text">Main</Link>
-                <Link to="/library" className="nav-text">Library</Link>
-                <Link to="/folders" className="nav-text">Folders</Link>
+    return (
+        <div className="hdr-wrapper">
+            <Link to="/" className="hdr-logo">Kussotare</Link>
+
+            <div className="hdr-search-container" style={{ margin: "0 16px" }}>
+                <SearchField placeholder="search for anything" width="360px" height="40px" />
             </div>
-            <img src={userImage} alt="user" className={"user-image"}/>
+
+            <div className="hdr-nav">
+                <Link to="/" className="hdr-nav-text">Main</Link>
+                <Link to="/library" className="hdr-nav-text">Library</Link>
+                <Link to="/folders" className="hdr-nav-text">Folders</Link>
+            </div>
+
+            <UserMenu />
         </div>
-    )
-}
+    );
+};
 
 export default Header;

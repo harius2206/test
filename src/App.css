@@ -1,0 +1,10 @@
+.page-wrapper {
+    display: grid;
+    grid-template-rows: auto 1fr auto; /* Header - контент - Footer */
+    min-height: 100vh; /* висота на весь екран */
+}
+
+.content {
+    /* головний контент автоматично займає весь простір між Header і Footer */
+    padding: 20px; /* можна змінити під дизайн */
+}

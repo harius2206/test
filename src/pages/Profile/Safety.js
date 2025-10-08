@@ -37,8 +37,8 @@ export default function Safety() {
                     <EditableField
                         type="text"
                         value={email}
-                        editable={true}
-                        onChange={(e) => setEmail(e.target.value)}
+                        autosave={true}
+                        onSave={(val) => setEmail(val)}
                     />
                 </label>
                 <p className={"advice-message"}>enter a new email, a confirmation message will be sent to it, after confirmation the email will be changed to the new one</p>
@@ -68,7 +68,7 @@ export default function Safety() {
                     <EditableField
                         type="password"
                         value={password}
-                        editable={false}
+                        onSave={(val) => setPassword(val)}
                     />
                 </label>
 
@@ -77,8 +77,7 @@ export default function Safety() {
                     <EditableField
                         type="password"
                         value={newPassword}
-                        editable={true}
-                        onChange={(e) => setNewPassword(e.target.value)}
+                        onSave={(val) => setNewPassword(val)}
                     />
                 </label>
 
@@ -87,8 +86,7 @@ export default function Safety() {
                     <EditableField
                         type="password"
                         value={confirmPassword}
-                        editable={true}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        onSave={(val) => setConfirmPassword(val)}
                     />
                 </label>
 
@@ -98,6 +96,9 @@ export default function Safety() {
                         color="#6366f1"
                         width="170px"
                         height="46px"
+                        onClick={() => {
+                            console.log("Change password:", { password, newPassword, confirmPassword });
+                        }}
                     >
                         Change password
                     </Button>
@@ -123,7 +124,7 @@ export default function Safety() {
                     <EditableField
                         type="text"
                         value={apiKey}
-                        editable={true}
+                        onSave={(val) => setApiKey(val)}
                     />
                 </label>
 
@@ -133,6 +134,7 @@ export default function Safety() {
                         color="#6366f1"
                         width="170px"
                         height="46px"
+                        onClick={() => console.log("Save key:", apiKey)}
                     >
                         Save key
                     </Button>
@@ -141,6 +143,7 @@ export default function Safety() {
                         color="#DF4C4C"
                         width="170px"
                         height="46px"
+                        onClick={() => setApiKey("")}
                     >
                         Delete DeepL key
                     </Button>

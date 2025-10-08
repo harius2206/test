@@ -1,0 +1,157 @@
+.folders-page {
+    margin: 0 auto;
+}
+
+.library-controls {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.sort-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.sort-btn {
+    background: #6366f1;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.sort-menu {
+    background: white;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: absolute;
+    margin-top: 4px;
+    border-radius: 6px;
+    z-index: 20;
+}
+
+.dropdown {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    margin-top: 5px;
+    z-index: 20;
+    width: 180px;
+    border-radius: 6px;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.dropdown-item svg {
+    margin-bottom: 4px;
+    margin-right: 5px;
+    fill: white;
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+}
+
+
+.dropdown-item:hover {
+    background-color: #E5EAF9;
+    color: #6366f1;
+}
+
+.folder-card {
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+.folder-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.folder-icon {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.folder-name-input {
+    font-size: 14px;
+    padding: 2px 4px;
+}
+
+.folder-name-text {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.folder-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    position: relative;
+}
+
+.folder-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+}
+
+.color-picker-menu {
+    position: absolute;
+    top: 32px;
+    left: 0;
+    display: flex;
+    gap: 6px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 6px 8px;
+    z-index: 20;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+
+.btn-primary {
+    background: #6366f1;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+}
+
+.color-square {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

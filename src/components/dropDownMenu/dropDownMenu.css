@@ -1,0 +1,66 @@
+:root {
+    --dm-purple: #6366f1;
+    --dm-bg: #fff;
+    --dm-border: #ddd;
+    --dm-hover-bg: #E5EAF9;
+    --dm-white: #ffffff;
+}
+
+.dm-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.dm-trigger {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+}
+
+.dm-menu {
+    position: absolute;
+    background: var(--dm-bg);
+    border: 1px solid var(--dm-border);
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    padding: 6px 0;
+    z-index: 1000;
+}
+
+.dm-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 150ms ease, color 150ms ease;
+}
+
+.dm-item svg,
+.dm-item svg * {
+    fill: var(--dm-white) !important;
+    stroke: #000 !important;
+    transition: fill 150ms ease, stroke 150ms ease;
+}
+
+.dm-item:hover {
+    background: var(--dm-hover-bg);
+    color: var(--dm-purple);
+}
+
+.dm-item:hover svg,
+.dm-item:hover svg * {
+    fill: var(--dm-hover-bg) !important;
+    stroke: var(--dm-purple) !important;
+}
+
+.dm-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dm-label {
+    flex: 1;
+}

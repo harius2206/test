@@ -1,48 +1,70 @@
 .search-wrapper {
     position: relative;
-    flex: 1;
-    max-width: 600px;
-    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 0;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    /* width & height come from inline style */
 }
+
 .search-icon {
     position: absolute;
     left: 12px;
     top: 50%;
     transform: translateY(-50%);
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     pointer-events: none;
-    color: #8A8A8A;
+    color: #8a8a8a;
+    opacity: 0.9;
 }
 
 .search-input {
     width: 100%;
     height: 100%;
-    padding: 0 14px 0 44px;
-    font-size: 20px;
+    padding: 0 14px 0 44px; /* space for icon */
+    font-size: 16px;
     font-family: "Inter", sans-serif;
-    border: 2px solid #8A8A8A;
-    border-radius: 13px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
     outline: none;
-    transition: border-color 0.2s ease;
+    background: transparent;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
+/* make the visible border on the wrapper area */
+.search-wrapper .search-input {
+    border: none;
+    height: 100%;
+}
+
+.search-wrapper {
+    border: 1px solid #d1d5db;
+    padding-left: 0;
+}
+
+/* focus state */
 .search-input:focus {
+    outline: none;
+}
+.search-wrapper:focus-within {
     border-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99,102,241,0.06);
 }
 
-/* мобілка*/
-@media (max-width: 402px) {
-    .search-wrapper {
-        max-width: 100%;
-    }
-    .search-input {
-        font-size: 14px;
-        padding: 8px 12px 8px 32px;
-    }
-    .search-icon {
-        width: 16px;
-        height: 16px;
-        left: 10px;
-    }
+/* adapt font-size for small heights */
+.search-wrapper[style*="height: 32px"] .search-input,
+.search-wrapper[style*="height:32px"] .search-input {
+    font-size: 14px;
+    padding: 0 10px 0 38px;
+}
+
+/* mobile tweaks */
+@media (max-width: 420px) {
+    .search-icon { width: 16px; height: 16px; left: 10px; }
+    .search-input { font-size: 14px; padding: 0 12px 0 40px; }
 }

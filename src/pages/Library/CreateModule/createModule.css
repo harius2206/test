@@ -1,0 +1,567 @@
+/* css */
+/* File: `src/pages/Library/CreateModule/createModule.css` */
+
+/* Layout */
+.page-with-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 900px;
+    width: 100%;
+    margin: 28px auto;
+    padding: 0 16px;
+    box-sizing: border-box;
+}
+
+.create-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    gap: 12px;
+}
+
+.create-title {
+    font-size: 36px;
+    margin: 0;
+    font-family: "Inter", sans-serif;
+}
+
+.create-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Global language row */
+.global-lang-row {
+    width: 100%;
+    margin: 0 0 16px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 12px;
+    padding-left: 0;
+    margin-left: 0;
+    max-width: none;
+}
+
+/* Hide the global swap button (keep per-card swaps) */
+.global-lang-row .swap-btn {
+    display: none;
+}
+
+/* Language dropdown/button */
+.lang-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.lang-dropdown .btn {
+    box-sizing: border-box;
+    border: 2px solid #6366f1;
+    background: white;
+    color: #6366f1;
+    padding: 6px 10px;
+    height: 32px;
+    min-width: 120px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.12s ease;
+    outline: none;
+}
+
+.lang-dropdown .btn:hover {
+    background: #6366f1;
+    color: white;
+}
+
+.lang-dropdown .dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 120px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    z-index: 100;
+}
+
+.lang-dropdown .dropdown-item {
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.lang-dropdown .dropdown-item:hover {
+    background: #f5f5f5;
+}
+
+/* Tags block */
+.tags-block {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.existing-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    flex: 1;
+    align-items: center;
+}
+
+.tag-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.tag-pill,
+.tag-input,
+.tag-add-btn {
+    height: 32px;
+    font-size: 12px;
+}
+
+/* Tag styles */
+.tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #6366f1;
+    color: #fff;
+    padding: 0 12px;
+    border-radius: 999px;
+    font-weight: 600;
+    line-height: 32px;
+}
+
+.tag-remove-btn {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: rgba(255,255,255,0.95);
+}
+
+.tag-pill:hover .tag-remove-btn {
+    display: flex;
+}
+
+.tag-input {
+    padding: 6px 10px;
+    border-radius: 14px;
+    border: 1px solid #d1d5db;
+    min-width: 90px;
+    box-sizing: border-box;
+}
+
+.tag-add-btn {
+    padding: 0 12px;
+    border: none;
+    border-radius: 14px;
+    background: #6366f1;
+    color: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Module inputs */
+.module-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.module-input {
+    height: 40px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+/* Cards list */
+.cards-list {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+}
+
+/* Card row */
+.card-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: #fff;
+    border: 1px solid #e6e9ef;
+    border-radius: 8px;
+    padding: 16px;
+    width: 100%;
+    max-width: 900px;
+    box-sizing: border-box;
+    position: relative;
+    margin: 0 auto;
+    /* reserve space on the right for absolute actions so text doesn't flow under the trash */
+    padding-right: 84px; /* slightly larger for comfortable spacing */
+}
+
+/* Index column: default flow (mobile) -> desktop will pin it */
+.card-index-col {
+    width: 36px;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+    margin-top: 16px; /* match .card-row padding to align with .card-lang-top in flow layout */
+    height: 36px; /* match .card-lang-top height for centering */
+}
+
+/* Center column */
+.card-center-col {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-width: 0;
+    overflow: visible;
+}
+
+/* Languages row inside card */
+.card-lang-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+    position: relative;
+    padding: 0 8px;
+    width: 100%;
+    height: 36px; /* stable row height to align actions */
+    z-index: 1;
+}
+
+.card-lang-top span {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+}
+
+/* Per-card centered swap */
+.card-lang-top .swap-btn {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border: none;
+    background: transparent;
+    padding: 6px;
+    height: 36px;
+    width: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.card-lang-top .swap-btn:hover {
+    opacity: 0.95;
+}
+
+/* Separator */
+.card-separator {
+    position: relative;
+    height: 1px;
+    background: #ddd;
+    width: 100%;
+    margin: 12px 0;
+    box-sizing: border-box;
+}
+
+/* Fields grid */
+.card-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 40px;
+    column-gap: 12px;
+    row-gap: 8px;
+    width: 100%;
+    align-items: start;
+    margin-top: 0;
+    min-width: 0;
+}
+
+.card-fields > .field-with-label:nth-child(1) {
+    grid-column: 1 / 2;
+    grid-row: 1 / 3;
+}
+.card-fields > .field-with-label:nth-child(2) {
+    grid-column: 2 / 3;
+    grid-row: 1 / 3;
+}
+
+.card-fields > .deepl-link {
+    grid-column: 2 / 3;
+    grid-row: 2 / 3;
+    justify-self: end;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+}
+
+.deepl-link a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #666B9A;
+    text-decoration: none;
+    font-weight: 600;
+}
+.deepl-link a:hover {
+    text-decoration: none;
+    opacity: 0.95;
+}
+
+/* Field + label */
+.field-with-label {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 6px;
+    min-width: 0;
+}
+
+.card-input {
+    width: 100%;
+    height: 36px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    box-sizing: border-box;
+}
+
+.field-label {
+    font-size: 12px;
+    color: #666B9A;
+    margin-left: 4px;
+    margin-top: 0;
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    height: 36px;
+}
+
+/* Card actions column: baseline for all sizes, will be positioned on desktop */
+.card-actions-col {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-top: 0;
+    z-index: 30;
+}
+
+/* Add top margin to the New card button */
+.card-actions {
+    display: flex;
+    justify-content: center;
+    margin: 12px 0;
+    margin-top: 24px; /* Added for top spacing */
+}
+
+/* Desktop: position actions and pin index to align with top of .card-row/.card-lang-top */
+@media (min-width: 721px) {
+    .card-row {
+        /* reserve horizontal space on the left for the pinned index */
+        padding-left: 64px;
+    }
+
+    .card-index-col {
+        position: absolute;
+        left: 16px;    /* matches the card padding */
+        top: 16px;     /* aligns with .card-row top and .card-lang-top top */
+        margin-top: 0; /* remove previous offset used for flow layout */
+        height: 36px;  /* keep same visual height as .card-lang-top */
+        width: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 20;
+    }
+
+    .card-actions-col {
+        position: absolute;
+        right: 16px;
+        top: 16px; /* align with .card-lang-top top */
+        justify-content: flex-end;
+        margin: 0;
+    }
+
+    .icon-top-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 6px;
+        margin: 0;
+        height: 36px;
+        width: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* Icon button (fallback for all sizes) */
+.icon-top-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    margin: 0;
+    height: 36px;
+    width: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Card index text visual */
+.card-index-text {
+    font-weight: 700;
+    color: #374151;
+    font-size: 14px;
+}
+
+/* Bottom actions */
+.bottom-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.bottom-actions button {
+    height: 33px !important;
+}
+
+/* Remove focus outlines for small controls */
+button:focus,
+.btn:focus,
+.icon-top-btn:focus,
+.swap-btn:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+/* New card row */
+.new-card-row {
+    display: flex;
+    justify-content: center;
+    margin: 12px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 720px) {
+    .global-lang-row {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .lang-dropdown .btn {
+        min-width: 100px;
+        height: 32px;
+    }
+
+    .card-row {
+        padding-left: 16px; /* restore normal flow spacing on small screens */
+        padding-right: 12px;
+        flex-direction: row;
+    }
+
+    .card-index-col {
+        position: static;
+        margin-top: 16px;
+        width: 36px;
+        height: 36px;
+        align-self: flex-start;
+    }
+
+    .card-lang-top {
+        padding: 0 6px;
+        height: 36px;
+    }
+
+    /* Restore actions to normal flow on small screens */
+    .card-actions-col {
+        position: static;
+        right: auto;
+        top: auto;
+        justify-content: flex-end;
+        margin-left: auto;
+        padding-left: 0;
+    }
+
+    .icon-top-btn {
+        height: 34px;
+        width: 34px;
+    }
+
+    .card-fields {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+    }
+
+    .card-fields > .field-with-label:nth-child(1),
+    .card-fields > .field-with-label:nth-child(2),
+    .card-fields > .deepl-link {
+        grid-column: 1 / 2;
+        grid-row: auto;
+        justify-self: stretch;
+        align-self: center;
+    }
+
+    .card-fields > .deepl-link {
+        justify-self: start;
+    }
+}
+.deepl-link,
+.deepl-link a {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 13px;
+}
+
+.deepl-icon {
+    width: 20px;
+    height: 20px;
+    fill: #666B9A; /* matches the text color */
+    vertical-align: middle;
+    display: inline-block;
+}

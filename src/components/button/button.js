@@ -3,27 +3,20 @@ import "./button.css";
 
 export default function Button({
                                    children,
-                                   variant = "",       // hover | toggle | static | link
+                                   variant = "",
                                    color = "#6366f1",
-                                   initialActive = false,   // для toggle — початковий стан
+                                   active, // тепер тільки controlled
                                    onClick,
-                                   hoverFilled = false,     // для hover
                                    width,
                                    height,
                                    disabled = false
                                }) {
-    const [isActive, setIsActive] = useState(initialActive);
-
     const handleClick = (e) => {
         if (disabled) return;
-
-        if (variant === "toggle") {
-            setIsActive(true); // активуємо тимчасово
-            setTimeout(() => setIsActive(false), 300); // повертаємося назад через 200ms
-        }
-
         if (onClick) onClick(e);
     };
+
+    const currentActive = !!active;
 
     let styles = {
         border: `2px solid ${color}`,
@@ -34,19 +27,12 @@ export default function Button({
 
     const variantStyles = {
         toggle: {
-            backgroundColor: isActive ? "white" : color, // спочатку залита кнопка
-            color: isActive ? color : "white",          // при кліку білий фон, текст кольору кнопки
+            backgroundColor: currentActive ? color : "white",
+            color: currentActive ? "white" : color,
         },
         static: disabled
-            ? {
-                backgroundColor: "white",
-                color: color,
-                border: `2px solid ${color}`,
-            }
-            : {
-                backgroundColor: color,
-                color: "white",
-            },
+            ? { backgroundColor: "white", color: color, border: `2px solid ${color}` }
+            : { backgroundColor: color, color: "white" },
         link: {
             background: "transparent",
             color: color,
@@ -59,12 +45,10 @@ export default function Button({
         Object.assign(styles, variantStyles[variant]);
     }
 
-    const hoverClass =
-        variant === "hover" ? (hoverFilled ? "btn-hover-inverse" : "btn-hover") : "";
-
     return (
         <button
-            className={`btn ${hoverClass} btn-${variant}`}
+            type="button"
+            className={`btn btn-${variant}`}
             style={styles}
             onClick={handleClick}
             disabled={disabled}

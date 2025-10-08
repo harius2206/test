@@ -10,25 +10,27 @@ export default function PrivateProfile() {
             <form className="profile-form">
                 <label>
                     username
-                    <EditableField value="admin" editable={true} />
+                    <EditableField value="admin" autosave={true} showEditIconWhenAutosave={true} onSave={() => {}} />
                 </label>
 
                 <label>
                     first name
-                    <EditableField value="SpongeBob" editable={true} />
+                    <EditableField value="SpongeBob" autosave={true} showEditIconWhenAutosave={true} onSave={() => {}} />
                 </label>
 
                 <label>
                     last name
-                    <EditableField value="SquarePants" editable={true} />
+                    <EditableField value="SquarePants" autosave={true} showEditIconWhenAutosave={true} onSave={() => {}} />
                 </label>
 
                 <label>
                     description
                     <EditableField
                         value="Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-                        editable={true}
                         type="textarea"
+                        autosave={true}
+                        showEditIconWhenAutosave={true}
+                        onSave={() => {}}
                     />
                 </label>
             </form>

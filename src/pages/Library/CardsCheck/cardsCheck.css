@@ -1,0 +1,85 @@
+.cc-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    max-width: 900px;
+    width: 100%;
+    margin: 28px auto;
+    padding: 0 16px;
+    box-sizing: border-box;
+    font-family: "Inter", sans-serif;
+    color: #111827;
+}
+
+/* ---------- HEADER ---------- */
+.cc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 900px;
+    margin-bottom: 32px;
+    position: relative;
+}
+
+/* Назва модуля — зліва */
+.cc-module-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+/* Лічильник — по центру */
+.cc-progress {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 18px;
+    font-weight: 500;
+    color: #4a4a4a;
+}
+
+/* Кнопка закриття — справа */
+.cc-close-btn {
+    width: 38px;
+    height: 38px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    flex-shrink: 0;
+}
+
+.cc-close-btn img {
+    width: 22px;
+    height: 22px;
+}
+
+/* ---------- ADAPTIVE ---------- */
+@media (max-width: 600px) {
+    .cc-header {
+        margin-bottom: 24px;
+    }
+
+    .cc-module-title {
+        font-size: 18px;
+    }
+
+    .cc-progress {
+        font-size: 16px;
+    }
+
+    .cc-close-btn {
+        width: 32px;
+        height: 32px;
+    }
+
+    .cc-close-btn img {
+        width: 20px;
+        height: 20px;
+    }
+}

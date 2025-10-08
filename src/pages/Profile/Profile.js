@@ -7,7 +7,7 @@ import profileRoutes from "../../routes/profileRoutes";
 export default function Profile() {
     return (
         <div className="app-wrapper" style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-            <Header />
+
 
             <div style={{ flex: 1, display: "flex" }}>
                 <ProfileNav />
@@ -19,7 +19,6 @@ export default function Profile() {
                 </Routes>
             </div>
 
-            <Footer />
         </div>
     );
 }

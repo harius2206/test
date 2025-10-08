@@ -1,0 +1,130 @@
+/* css */
+.folder-page {
+    /* allow full width of the parent/container */
+    padding: 40px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    position: relative;
+}
+
+.folder-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 16px;
+}
+
+.folder-controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    justify-content: space-between;
+}
+
+.sort-btn,
+.add-btn {
+    padding: 6px 12px;
+    border: 1px solid #888;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+}
+
+.folder-modules {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.folder-module-card {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.top-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.separator {
+    color: #aaa;
+}
+
+.rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.star-icon {
+    width: 16px;
+    height: 16px;
+    color: gold;
+}
+
+.tags-row {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+}
+
+.tag {
+    background: #6366f1;
+    color: white;
+    font-weight: 500;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.tags-dots {
+    display: flex;
+    align-items: center;
+}
+
+.module-name {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.module-actions {
+    margin-left: auto;
+    position: relative;
+}
+
+/* unified dropdown */
+.dropdown {
+    position: absolute;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    z-index: 100;
+    padding: 4px 0;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.dropdown-item:hover {
+    background: #f3f4f4;
+}
+
+.dropdown-icon {
+    display: flex;
+    align-items: center;
+}

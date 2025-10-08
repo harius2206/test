@@ -1,0 +1,129 @@
+:root {
+    --purple: #6366f1;
+    --purple-light: rgba(99,102,241,0.08);
+    --bg: #E5EAF9;
+}
+
+.permissions-menu {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 8px;
+    width: 260px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    font-family: "Inter", sans-serif;
+}
+
+.user-list {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.user-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: background 120ms ease, color 120ms ease;
+}
+
+.user-item:hover {
+    background: var(--bg);
+    color: var(--purple);
+}
+
+
+
+.user-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.user-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-name {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-role {
+    font-size: 13px;
+    color: #555;
+    margin-right: 8px;
+    transition: color 120ms ease;
+}
+
+.user-item:hover .user-role {
+    color: var(--purple);
+}
+
+.btn-primary {
+    background: var(--purple);
+    color: #fff;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.permissions-footer {
+    margin-top: 8px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.permissions-menu .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    color: inherit;
+    transition: background 120ms ease, color 120ms ease;
+}
+.permissions-menu .dropdown-item:hover {
+    background: var(--bg);
+    color: var(--purple);
+}
+
+.permissions-menu .dropdown-item:hover svg,
+.permissions-menu .dropdown-item:hover svg * {
+    fill: var(--purple) !important;
+    stroke: var(--purple) !important;
+}
+.btn-icon {
+    background: none;
+    border: none;
+    padding: 4px;
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: inherit;
+}
+
+.btn-icon svg {
+    width: 16px;
+    height: 16px;
+}

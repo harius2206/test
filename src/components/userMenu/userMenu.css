@@ -1,0 +1,154 @@
+.um-wrapper {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    z-index: 200; /* додано для надійності */
+}
+
+.um-wrapper img {
+    width: 40px;
+    height: 40px;
+}
+
+.um-avatar {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* 👇 ось головна зміна */
+.um-menu {
+    position: absolute;
+    right: 0;
+    top: 50px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    width: 260px;
+    padding: 12px;
+    z-index: 9999; /* <-- ставимо максимально, щоб точно було поверх усього */
+}
+
+.um-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.um-avatar-small {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+}
+
+.um-name {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.um-email {
+    font-size: 12px;
+    color: gray;
+}
+
+.um-links {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-weight: bold;
+    margin-top: 8px;
+}
+
+.um-link {
+    font-size: 14px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.um-link:hover {
+    background: #E5EAF9;
+    color: #6366f1;
+}
+
+.um-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.um-lang {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.um-lang-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.um-theme-selector {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-right: 8px;
+}
+
+.um-theme-label {
+    font-size: 14px;
+    color: #333;
+    display: flex;
+    margin-left: 8px;
+}
+
+.um-theme-buttons {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.um-theme-button {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.um-theme-button.black {
+    background-color: black;
+}
+
+.um-theme-button.white {
+    background-color: white;
+}
+
+.um-theme-button:focus {
+    outline: none;
+    border-color: #6366f1;
+}
+
+.um-logout {
+    font-weight: bold;
+}
+
+@media (max-width: 400px) {
+    .um-menu {
+        width: 220px;
+        right: -20px;
+    }
+}
