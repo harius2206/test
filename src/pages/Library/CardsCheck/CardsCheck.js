@@ -1,6 +1,5 @@
-// javascript
 // src/pages/Library/CardsCheck/CardsCheck.js
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import CardsCheckCard from "../../../components/cardsCheckCard/cardsCheckCard";
 import CardsCheckResult from "../../../components/cardsCheckResult/cardsCheckResult";
@@ -31,12 +30,28 @@ export default function CardsCheck() {
     const [notLearned, setNotLearned] = useState(0);
     const [finished, setFinished] = useState(false);
 
-    const handleAnswer = (isLearned) => {
-        if (isLearned) setLearned((prev) => prev + 1);
-        else setNotLearned((prev) => prev + 1);
+    // 🕒 Таймер
+    const [time, setTime] = useState(0);
+    const intervalRef = useRef(null);
 
-        if (current + 1 < words.length) setCurrent((prev) => prev + 1);
-        else setFinished(true);
+    // Старт таймера при завантаженні
+    useEffect(() => {
+        intervalRef.current = setInterval(() => {
+            setTime(prev => prev + 1);
+        }, 1000);
+        return () => clearInterval(intervalRef.current);
+    }, []);
+
+    const handleAnswer = (isLearned) => {
+        if (isLearned) setLearned(prev => prev + 1);
+        else setNotLearned(prev => prev + 1);
+
+        if (current + 1 < words.length) {
+            setCurrent(prev => prev + 1);
+        } else {
+            setFinished(true);
+            clearInterval(intervalRef.current); // 🛑 Зупиняємо таймер
+        }
     };
 
     const handleRetry = () => {
@@ -44,10 +59,16 @@ export default function CardsCheck() {
         setLearned(0);
         setNotLearned(0);
         setFinished(false);
+        setTime(0);
+
+        clearInterval(intervalRef.current);
+        intervalRef.current = setInterval(() => {
+            setTime(prev => prev + 1);
+        }, 1000);
     };
 
     const handleClose = () => {
-        // navigate back to originating ModuleView (if provided) or fallback
+        clearInterval(intervalRef.current);
         if (originatingModule) {
             navigate("/library/module-view", { state: { module: originatingModule } });
         } else {
@@ -55,8 +76,13 @@ export default function CardsCheck() {
         }
     };
 
+    const avg = (learned + notLearned) > 0
+        ? (time / (learned + notLearned)).toFixed(1)
+        : 0;
+
     return (
         <div className="cc-page">
+            {/* Верхня панель — назва модуля, лічильник, хрестик */}
             <div className="cc-header">
                 <h2 className="cc-module-title">{moduleName}</h2>
 
@@ -69,6 +95,7 @@ export default function CardsCheck() {
                 </button>
             </div>
 
+            {/* Основна частина */}
             {!finished ? (
                 <CardsCheckCard
                     term={words[current].term}
@@ -82,6 +109,8 @@ export default function CardsCheck() {
                     learned={learned}
                     notLearned={notLearned}
                     total={words.length}
+                    time={time}
+                    avg={avg}
                     onRetry={handleRetry}
                 />
             )}

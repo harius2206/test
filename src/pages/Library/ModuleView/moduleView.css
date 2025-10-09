@@ -508,3 +508,112 @@ main {
     transition: transform 0.07s;
 }
 
+.flashcard-area.fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    background: #f9fafb;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 20px;
+}
+
+/* Centering the card (unchanged) */
+.flashcard-area.fullscreen .flashcard-wrapper {
+    width: 90%;
+    max-width: 900px;
+    max-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Controls: place under the card, same basic spacing as non-fullscreen */
+.flashcard-area.fullscreen .controls-row {
+    display: flex;
+    align-items: center;
+    margin-top: 8px; /* same spacing as normal .controls-row */
+    width: 100%;
+    max-width: 900px; /* keep similar width to the card */
+    justify-content: space-between;
+    padding: 0 16px;
+    box-sizing: border-box;
+}
+
+/* Keep the same card-controls layout as page */
+.flashcard-area.fullscreen .card-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    margin-left: 33%; /* preserve left offset from page layout */
+    gap: 8px;
+}
+
+/* Icon controls similar to page variant */
+.flashcard-area.fullscreen .icon-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex: 1;
+    justify-content: flex-end;
+}
+
+/* Icon buttons: use same neutral look as page variant */
+.flashcard-area.fullscreen .icon-btn {
+    border: none;
+    background: transparent;
+    padding: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+}
+
+/* Keep SVG sizing and color consistent */
+.flashcard-area.fullscreen .icon-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: #6b7280;
+}
+
+/* Small screens: keep responsive adjustments as in page variant */
+@media (max-width: 768px) {
+    .flashcard-area.fullscreen .flashcard-wrapper {
+        width: 95%;
+        max-width: 500px;
+        max-height: 70vh;
+    }
+
+    .flashcard-area.fullscreen .controls-row {
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    .flashcard-area.fullscreen .card-controls {
+        margin-left: 0;
+        justify-content: center;
+    }
+
+    .flashcard-area.fullscreen .icon-controls {
+        justify-content: center;
+    }
+
+    .flashcard-area.fullscreen .icon-btn {
+        width: 38px;
+        height: 38px;
+    }
+}
+
+@media (max-width: 480px) {
+    .flashcard-area.fullscreen .flashcard-wrapper {
+        width: 100%;
+        max-width: 400px;
+        max-height: 60vh;
+    }
+}

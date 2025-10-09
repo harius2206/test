@@ -43,13 +43,11 @@ export default function ModuleView() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [flipped, setFlipped] = useState(false);
     const [learned, setLearned] = useState(new Set());
-    const [rating, setRating] = useState(
-        Math.round((module.rating || 0) * 10) / 10
-    );
-    const [repeatOpen, setRepeatOpen] = useState(false);
+    const [rating, setRating] = useState(Math.round((module.rating || 0) * 10) / 10);
     const [autoplay, setAutoplay] = useState(false);
     const autoplayRef = useRef(null);
     const autoplayInterval = 3000;
+    const [isFullscreen, setIsFullscreen] = useState(false);
 
     const cards = module.cards || [];
 
@@ -102,6 +100,18 @@ export default function ModuleView() {
         });
     };
 
+    const toggleFullscreen = () => setIsFullscreen((v) => !v);
+
+    // 🔒 блокування скролу при fullscreen
+    useEffect(() => {
+        if (isFullscreen) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "";
+        }
+        return () => (document.body.style.overflow = "");
+    }, [isFullscreen]);
+
     useEffect(() => {
         if (autoplay) {
             autoplayRef.current = setInterval(() => {
@@ -115,12 +125,10 @@ export default function ModuleView() {
         return () => clearInterval(autoplayRef.current);
     }, [autoplay, cards.length]);
 
-    const toggleRepeat = () => setRepeatOpen((v) => !v);
-
     return (
         <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
             <main className="module-view">
-                {/* Title + Rating */}
+                {/* Header */}
                 <div className="module-header-row">
                     <div className="module-left-row">
                         <h1 className="module-title">{module.name}</h1>
@@ -148,9 +156,7 @@ export default function ModuleView() {
                 {/* Tags */}
                 <div className="view_tags-row">
                     {(module.tags || []).map((t, i) => (
-                        <span key={i} className="tag">
-                            {t}
-                        </span>
+                        <span key={i} className="tag">{t}</span>
                     ))}
                 </div>
 
@@ -175,56 +181,47 @@ export default function ModuleView() {
                 </div>
 
                 {/* Flashcard */}
-                <div className="flashcard-area">
-                    <FlipCard
-                        frontContent={
-                            <>
-                                {cards[currentIndex]?.term || "—"}
-                                <button
-                                    className={`card-book ${learned.has(cards[currentIndex]?.id) ? "active" : ""}`}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        toggleCardLearned(cards[currentIndex]?.id);
-                                    }}
-                                    title={learned.has(cards[currentIndex]?.id) ? "Unmark learned" : "Mark learned"}
-                                >
-                                    <BookSvg className={`book-icon ${learned.has(cards[currentIndex]?.id) ? "active" : ""}`} />
-                                </button>
-                            </>
-                        }
-                        backContent={
-                            <>
-                                {cards[currentIndex]?.definition || "—"}
-                                <button
-                                    className={`card-book ${learned.has(cards[currentIndex]?.id) ? "active" : ""}`}
-                                    onClick={(e) => toggleCardLearned(cards[currentIndex]?.id, e)}
-                                >
-                                    <BookSvg className={`book-icon ${learned.has(cards[currentIndex]?.id) ? "active" : ""}`} />
-                                </button>
-                            </>
-                        }
-                        flipped={flipped}
-                        onFlip={flipCard}
-                    />
+                <div className={`flashcard-area ${isFullscreen ? "fullscreen" : ""}`}>
+                    <div className="flashcard-wrapper">
+                        <FlipCard
+                            frontContent={
+                                <>
+                                    {cards[currentIndex]?.term || "—"}
+                                    <button
+                                        className={`card-book ${learned.has(cards[currentIndex]?.id) ? "active" : ""}`}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleCardLearned(cards[currentIndex]?.id);
+                                        }}
+                                    >
+                                        <BookSvg className={`book-icon ${learned.has(cards[currentIndex]?.id) ? "active" : ""}`} />
+                                    </button>
+                                </>
+                            }
+                            backContent={
+                                <>
+                                    {cards[currentIndex]?.definition || "—"}
+                                    <button
+                                        className={`card-book ${learned.has(cards[currentIndex]?.id) ? "active" : ""}`}
+                                        onClick={(e) => toggleCardLearned(cards[currentIndex]?.id, e)}
+                                    >
+                                        <BookSvg className={`book-icon ${learned.has(cards[currentIndex]?.id) ? "active" : ""}`} />
+                                    </button>
+                                </>
+                            }
+                            flipped={flipped}
+                            onFlip={flipCard}
+                        />
+                    </div>
 
                     {/* Controls */}
                     <div className="controls-row">
                         <div className="card-controls">
-                            <button
-                                className={`nav-btn ${hasPrev ? "enabled" : ""}`}
-                                onClick={hasPrev ? prevCard : undefined}
-                            >
+                            <button className={`nav-btn ${hasPrev ? "enabled" : ""}`} onClick={hasPrev ? prevCard : undefined}>
                                 <PrevIcon />
                             </button>
-
-                            <div className="counter">
-                                {currentIndex + 1} / {cards.length}
-                            </div>
-
-                            <button
-                                className={`nav-btn ${hasNext ? "enabled" : ""}`}
-                                onClick={hasNext ? nextCard : undefined}
-                            >
+                            <div className="counter">{currentIndex + 1} / {cards.length}</div>
+                            <button className={`nav-btn ${hasNext ? "enabled" : ""}`} onClick={hasNext ? nextCard : undefined}>
                                 <NextIcon />
                             </button>
                         </div>
@@ -233,14 +230,14 @@ export default function ModuleView() {
                             <button className="icon-btn" onClick={restartDeck} title="Restart">
                                 <RestartcreenIcon />
                             </button>
-                            <button
-                                className="icon-btn"
-                                onClick={() => setAutoplay((v) => !v)}
-                                title="Play/Pause"
-                            >
+                            <button className="icon-btn" onClick={() => setAutoplay(v => !v)} title="Play/Pause">
                                 {autoplay ? <PauseIcon /> : <PlayIcon />}
                             </button>
-                            <button className="icon-btn" title="Fullscreen">
+                            <button
+                                className="icon-btn"
+                                title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+                                onClick={toggleFullscreen}
+                            >
                                 <FullscreenIcon />
                             </button>
                         </div>
@@ -250,12 +247,7 @@ export default function ModuleView() {
                 {/* Author */}
                 <div className="author-band">
                     <div className="module-view__author-info-row">
-                        <UserAvatar
-                            name={module.author}
-                            size={80}
-                            fontSize={34}
-                            avatar={module.authorAvatar}
-                        />
+                        <UserAvatar name={module.author} size={80} fontSize={34} avatar={module.authorAvatar} />
                         <div className="author-info-block">
                             <div className="author-label">Author</div>
                             <div className="author-name">{module.author}</div>
@@ -266,7 +258,7 @@ export default function ModuleView() {
                         </div>
                     </div>
                     <div className="author-description">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod, urna eu tincidunt consectetur, nisi nisl aliquam nunc, eget aliquam massa nisl quis neque.
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod urna eu tincidunt.
                     </div>
                 </div>
 

@@ -1,3 +1,5 @@
+/* File: src/components/cardsCheckResult/cardsCheckResult.css */
+
 .ccr-container {
     display: flex;
     flex-direction: column;
@@ -9,47 +11,50 @@
     width: 100%;
     max-width: 900px;
     margin: 0 auto;
-    padding: 20px;
-    position: relative;
+    padding: 24px 20px;
     box-sizing: border-box;
 }
 
 .ccr-stats-wrapper {
     display: flex;
     align-items: center;
-    gap: 30px;
+    justify-content: flex-start;
+    gap: 40px;
+    flex-wrap: wrap;
 }
 
 .ccr-progress {
-    width: 120px;
-    height: 120px;
+    width: 160px;
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
 }
 
-/* labels keep their colors, counts inherit same color via duplicated class */
 .ccr-stats {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    font-size: 18px;
+    font-size: 24px;
 }
 
 .ccr-learned {
-    color: #388e3c;
+    color: #008d1a;
     font-weight: 600;
 }
 
 .ccr-notlearned {
-    color: #d32f2f;
+    color: #de5a5a;
     font-weight: 600;
 }
 
-/* ensure numeric count next to label has same color */
 .ccr-count {
     font-weight: 600;
 }
 
 .ccr-time {
-    font-size: 16px;
+    font-size: 24px;
     font-weight: 500;
     text-align: left;
 }
@@ -58,24 +63,89 @@
     margin: 4px 0;
 }
 
-/* style the shared Button inside the result to match previous look */
 .ccr-container .btn {
     align-self: flex-end;
     padding: 10px 22px;
     border-radius: 6px;
     font-size: 15px;
     font-weight: 500;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
     transition: background-color 0.2s ease;
 }
 
-/* small responsive tweak */
+@media (max-width: 768px) {
+    .ccr-stats-wrapper {
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+    }
+
+    .ccr-progress {
+        width: 120px;
+        height: 120px;
+    }
+
+    .ccr-stats {
+        align-items: center;
+        text-align: center;
+    }
+
+    .ccr-container .btn {
+        align-self: center;
+    }
+}
+
 @media (max-width: 420px) {
     .ccr-progress {
         width: 100px;
         height: 100px;
     }
+
+    .ccr-stats {
+        font-size: 16px;
+    }
+
     .ccr-container .btn {
         padding: 8px 18px;
+        font-size: 14px;
+    }
+}
+/* File: src/components/cardsCheckResult/cardsCheckResult.css (append) */
+
+.ccr-footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 16px;
+    box-sizing: border-box;
+}
+
+/* keep time block left, button right */
+.ccr-footer-row .ccr-time {
+    text-align: left;
+}
+
+/* ensure button aligns vertically */
+.ccr-footer-row .btn {
+    align-self: center;
+    padding: 10px 22px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+/* responsive: stack on small screens */
+@media (max-width: 420px) {
+    .ccr-footer-row {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    .ccr-footer-row .ccr-time {
+        text-align: center;
+    }
+    .ccr-footer-row .btn {
+        align-self: center;
     }
 }

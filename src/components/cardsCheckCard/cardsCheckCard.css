@@ -54,7 +54,6 @@
 .ccc-btn-wrong {
     color: #d32f2f;
     border-color: #d32f2f;
-    background-color: #fbeaea;
 }
 
 .ccc-btn-wrong:hover {
@@ -69,7 +68,6 @@
 .ccc-btn-correct {
     color: #388e3c;
     border-color: #388e3c;
-    background-color: #e7f6ea;
 }
 
 .ccc-btn-correct:hover {
