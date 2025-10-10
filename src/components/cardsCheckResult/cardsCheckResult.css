@@ -149,3 +149,34 @@
         align-self: center;
     }
 }
+.ccr-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    box-sizing: border-box;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+.ccr-module-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.ccr-module-count {
+    font-size: 14px;
+    color: #000000;
+    font-weight: 600;
+}
+
+/* small screens: stack header */
+@media (max-width: 420px) {
+    .ccr-header {
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+    }
+    .ccr-module-count { text-align: center; }
+}

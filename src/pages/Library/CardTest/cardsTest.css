@@ -1,0 +1,284 @@
+/* File: src/pages/Library/CardTest/cardsTest.css */
+.ct-container {
+    max-width: 900px;
+    width: 100%;
+    margin: 20px auto;
+    padding: 0 16px 28px;
+    box-sizing: border-box;
+    font-family: "Inter", sans-serif;
+    color: #111827;
+}
+
+/* Sticky header used both during test and on result screen */
+/* File: src/pages/Library/CardTest/cardsTest.css */
+.ct-container {
+    max-width: 900px;
+    width: 100%;
+    margin: 20px auto;
+    padding: 0 16px 28px;
+    box-sizing: border-box;
+    font-family: "Inter", sans-serif;
+    color: #111827;
+}
+
+/* Sticky header used both during test and on result screen */
+.ct-header-fixed {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 40;
+    padding: 12px 16px;
+    box-sizing: border-box;
+}
+
+/* Non-fixed header used on results screen */
+.ct-header {
+    position: relative;
+    background: #fff;
+    padding: 12px 16px;
+    box-sizing: border-box;
+}
+/* Row inside header */
+.ct-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+/* Title / module name - force pure black */
+.ct-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #000;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Progress counter - make black */
+.ct-progress {
+    font-weight: 600;
+    color: #000;
+    min-width: 72px;
+    text-align: center;
+}
+
+/* Timer removed — keep class hidden if any remains */
+.ct-timer {
+    display: none;
+}
+
+/* Close button (cross) */
+.ct-close-btn {
+    border: none;
+    background: transparent;
+    padding: 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+}
+.ct-close-btn img {
+    width: 20px;
+    height: 20px;
+    display: block;
+}
+
+/* Warning shown when some questions unanswered — keep readable (black text) */
+.ct-warning-text {
+    margin-top: 8px;
+    background: #fffbeb;
+    color: #000;
+    border-left: 4px solid #f59e0b;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+/* Questions list area */
+.ct-questions-list {
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    /* center children and allow them to keep their min-width */
+    align-items: center;
+    box-sizing: border-box;
+}
+
+/* Ensure individual question cards / flip-cards don't shrink and have consistent sizing */
+.ct-questions-list .tq-card,
+.ct-questions-list .fc-card {
+    /* prevent flex shrinking inside any parent flex container */
+    flex: 0 0 auto;
+
+    /* keep card visually stable */
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 760px; /* keep a comfortable max to match page layout */
+    min-width: 320px; /* do not allow collapse below this */
+}
+
+/* Button area (send / others) alignment */
+.ct-container .btn {
+    margin-top: 18px;
+    align-self: center;
+}
+
+/* Responsive: stack header on narrow screens */
+@media (max-width: 420px) {
+    .ct-header-row {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+    .ct-title {
+        font-size: 18px;
+        text-align: center;
+    }
+    .ct-progress {
+        font-size: 14px;
+    }
+    .ct-close-btn {
+        margin-top: 4px;
+    }
+
+    /* On very narrow screens allow horizontal scrolling so cards keep their min-width */
+    .ct-questions-list {
+        align-items: flex-start; /* keep items aligned to top when scroll appears */
+        overflow-x: auto;
+        padding-bottom: 8px;
+        -webkit-overflow-scrolling: touch;
+    }
+    .ct-questions-list .tq-card,
+    .ct-questions-list .fc-card {
+        min-width: 260px;
+        width: auto; /* allow scroll instead of compressing to container */
+    }
+}
+
+/* Row inside header */
+.ct-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+/* Title / module name - force pure black */
+.ct-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #000;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Progress counter - make black */
+.ct-progress {
+    font-weight: 600;
+    color: #000;
+    min-width: 72px;
+    text-align: center;
+}
+
+/* Timer removed — keep class hidden if any remains */
+.ct-timer {
+    display: none;
+}
+
+/* Close button (cross) */
+.ct-close-btn {
+    border: none;
+    background: transparent;
+    padding: 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.ct-close-btn img {
+    width: 20px;
+    height: 20px;
+    display: block;
+}
+
+/* Warning shown when some questions unanswered — keep readable (black text) */
+.ct-warning-text {
+    margin-top: 8px;
+    background: #fffbeb;
+    color: #000;
+    border-left: 4px solid #f59e0b;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+/* Questions list area */
+.ct-questions-list {
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+/* Ensure individual question cards / flip-cards don't shrink and have consistent sizing */
+.ct-questions-list .tq-card,
+.ct-questions-list .fc-card {
+    flex: 0 0 auto;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 760px;
+    min-width: 320px;
+}
+
+/* Button area (send / others) alignment */
+.ct-container .btn {
+    margin-top: 18px;
+    align-self: center;
+}
+.ct-send-row {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: 18px;
+    box-sizing: border-box;
+}
+
+@media (max-width: 420px) {
+    .ct-header-row {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+    .ct-title {
+        font-size: 18px;
+        text-align: center;
+    }
+    .ct-progress {
+        font-size: 14px;
+    }
+    .ct-close-btn {
+        margin-top: 4px;
+    }
+    .ct-questions-list {
+        align-items: flex-start;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        -webkit-overflow-scrolling: touch;
+    }
+    .ct-questions-list .tq-card,
+    .ct-questions-list .fc-card {
+        min-width: 260px;
+        width: auto;
+    }
+}

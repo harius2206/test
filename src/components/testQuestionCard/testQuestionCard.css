@@ -1,0 +1,97 @@
+.tq-card {
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 16px;
+    width: 100%;
+    max-width: 600px;
+    box-sizing: border-box;
+}
+
+.tq-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 10px;
+}
+
+.tq-counter {
+    font-size: 14px;
+    font-weight: 600;
+    color: #000000;
+    align-self: flex-end;
+}
+
+.tq-definition-label {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.tq-definition {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.tq-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: center;
+}
+
+.tq-select-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #374151;
+    align-self: flex-start;
+}
+
+.tq-options-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    width: 100%;
+}
+
+.tq-option-btn {
+    padding: 10px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.15s ease;
+}
+
+.tq-option-btn:hover {
+    border-color: #6366f1;
+}
+
+.tq-option-btn.selected {
+    border-color: #6366f1;
+    background: #eef2ff;
+}
+
+.tq-skip-btn {
+    background: transparent;
+    color: #9ca3af;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    align-self: center;
+    transition: color 0.15s ease;
+}
+
+.tq-skip-btn.active {
+    color: #6366f1;
+}
+
+@media (max-width: 480px) {
+    .tq-definition {
+        font-size: 18px;
+    }
+    .tq-option-btn {
+        font-size: 14px;
+    }
+}

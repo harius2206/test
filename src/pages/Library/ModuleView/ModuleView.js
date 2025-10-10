@@ -172,13 +172,14 @@ export default function ModuleView() {
                     </Button>
                     <Button
                         variant="toggle"
-                        onClick={() => setActiveTab("test")}
+                        onClick={() => navigate("/cardstest", { state: { module } })}
                         width="100%"
                         height={42}
                     >
                         Test
                     </Button>
                 </div>
+
 
                 {/* Flashcard */}
                 <div className={`flashcard-area ${isFullscreen ? "fullscreen" : ""}`}>
