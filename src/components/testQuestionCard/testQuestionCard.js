@@ -14,12 +14,14 @@ export default function TestQuestionCard({
     return (
         <div className="tq-card" id={`question-${question.id}`}>
             <div className="tq-header">
+                <div className="tq-definition-label">Definition</div>
                 <div className="tq-counter">
                     {index + 1} / {total}
                 </div>
-                <div className="tq-definition-label">definition</div>
-                <div className="tq-definition">{question.term}</div>
             </div>
+
+            <div className="tq-definition">{question.term}</div>
+
 
             <div className="tq-body">
                 <div className="tq-select-label">Select answer:</div>

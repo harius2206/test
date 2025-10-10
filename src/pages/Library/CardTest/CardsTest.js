@@ -1,11 +1,12 @@
 // File: src/pages/Library/CardTest/CardsTest.js
-// update: wrap Send button in .ct-send-row so it's centered
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import TestQuestionCard from "../../../components/testQuestionCard/testQuestionCard";
 import CardsCheckResult from "../../../components/cardsCheckResult/cardsCheckResult";
+import TestResultCards from "../../../components/testResultCards/TestResultCards";
 import Button from "../../../components/button/button";
 import closeIcon from "../../../images/close.svg";
+
 import "./cardsTest.css";
 
 export default function CardsTest() {
@@ -27,12 +28,14 @@ export default function CardsTest() {
     const [showWarning, setShowWarning] = useState(false);
     const topRef = useRef(null);
 
+    // таймер
     useEffect(() => {
         if (finished) return;
         const timer = setInterval(() => setTime((t) => t + 1), 1000);
         return () => clearInterval(timer);
     }, [finished]);
 
+    // обробка вибору
     const handleSelect = (id, answer) => {
         setAnswers((prev) => ({ ...prev, [id]: answer }));
     };
@@ -51,6 +54,9 @@ export default function CardsTest() {
         }
         setShowWarning(false);
         setFinished(true);
+        setTimeout(() => {
+            window.scrollTo({ top: 0, behavior: "auto" });
+        }, 1);
     };
 
     const handleRetry = () => {
@@ -58,16 +64,23 @@ export default function CardsTest() {
         setFinished(false);
         setTime(0);
         setShowWarning(false);
-    };
 
+        setTimeout(() => {
+            window.scrollTo({ top: 0, behavior: "auto" });
+        }, 1);
+    };
     const handleClose = () => {
         if (originatingModule) {
             navigate("/library/module-view", { state: { module: originatingModule } });
         } else {
             navigate(-1);
         }
+        setTimeout(() => {
+            window.scrollTo({ top: 0, behavior: "auto" });
+        }, 1);
     };
 
+    // підрахунок результатів
     const learned = Object.entries(answers).filter(([id, ans]) => {
         const q = questions.find((x) => x.id === Number(id));
         return ans === q.correct;
@@ -75,6 +88,17 @@ export default function CardsTest() {
 
     const notLearned = questions.length - learned;
     const avg = questions.length > 0 ? (time / questions.length).toFixed(1) : 0;
+
+    const resultCards = questions.map((q) => {
+        const userAnswer = answers[q.id];
+        return {
+            question: q.term,
+            answers: q.options,
+            correct: q.options.indexOf(q.correct),
+            selected: userAnswer && userAnswer !== "skipped" ? q.options.indexOf(userAnswer) : null,
+            skipped: userAnswer === "skipped",
+        };
+    });
 
     return (
         <div className="ct-container">
@@ -126,12 +150,13 @@ export default function CardsTest() {
                 </>
             ) : (
                 <>
+                    {/* Заголовок при завершенні */}
                     <div className="ct-header">
                         <div className="ct-header-row">
                             <span className="ct-title">{module.name}</span>
                             <span className="ct-progress">
-                        {questions.length} / {questions.length}
-                    </span>
+                                {questions.length} / {questions.length}
+                            </span>
 
                             <button className="ct-close-btn" onClick={handleClose}>
                                 <img src={closeIcon} alt="Close" />
@@ -147,8 +172,9 @@ export default function CardsTest() {
                         avg={avg}
                         onRetry={handleRetry}
                         moduleName={module.name}
-                        cardsCount={questions.length}
                     />
+
+                    <TestResultCards questions={resultCards} onRetry={handleRetry}/>
                 </>
             )}
         </div>

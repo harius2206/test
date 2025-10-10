@@ -1,0 +1,86 @@
+/* Контейнер усіх результатів */
+.trc-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 900px;
+    margin: 30px auto;
+    box-sizing: border-box;
+}
+
+/* Картки результатів */
+.trc-result-card {
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 16px;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+}
+
+/* Стан рамок */
+.trc-result-card.correct {
+    border: 2px solid #22c55e;
+}
+.trc-result-card.wrong {
+    border: 2px solid #ef4444;
+}
+.trc-result-card.skipped {
+    border: 2px solid #9ca3af;
+}
+
+/* Статичний стиль варіантів (без ховера, без курсора) */
+.tq-option-static {
+    padding: 10px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+    font-weight: 600;
+    color: #111827;
+    text-align: center;
+    transition: none;
+    user-select: none;
+}
+
+/* Правильна відповідь */
+.tq-option-static.correct {
+    background: #dcfce7;
+    border-color: #22c55e;
+    color: #166534;
+}
+
+/* Неправильна, яку вибрав користувач */
+.tq-option-static.wrong {
+    background: #fee2e2;
+    border-color: #ef4444;
+    color: #991b1b;
+}
+
+/* Скіпнуті */
+.tq-skipped-label {
+    margin-top: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #6b7280; /* ✅ сірий */
+}
+
+/* Кнопка Try again */
+.trc-retry-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+/* Адаптив */
+@media (max-width: 480px) {
+    .trc-container {
+        padding: 0 10px;
+    }
+
+    .tq-option-static {
+        font-size: 14px;
+        padding: 8px;
+    }
+}
