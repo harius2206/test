@@ -45,7 +45,7 @@ export default function UserMenu() {
                             </div>
                             <div
                                 className="um-link"
-                                onClick={() => handleNavigate("/profile/public")}
+                                onClick={() => handleNavigate("/profile/public-library")}
                             >
                                 Public profile
                             </div>

@@ -1,0 +1,139 @@
+import React from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/autoplay";
+
+import { ReactComponent as ArrowLeft } from "../../images/arrowLeft.svg";
+import { ReactComponent as ArrowRight } from "../../images/arrowRight.svg";
+import { ReactComponent as StarIcon } from "../../images/star.svg";
+
+import UserAvatar from "../../components/avatar/avatar";
+
+import "./mainPage.css";
+
+export default function MainPage() {
+    // demo data
+    const latest = []; // пустий масив для тесту стану "нічого не переглядав"
+    const modules = Array.from({ length: 10 }).map((_, i) => ({
+        id: i + 1,
+        name: `Module ${i + 1}`,
+        rating: (Math.random() * 2 + 3).toFixed(1),
+        words: 100 + i * 20,
+        author: `User${i + 1}`,
+        description: "Short module description text to show consistency.",
+    }));
+
+    const authors = Array.from({ length: 10 }).map((_, i) => ({
+        id: i + 1,
+        name: `Author ${i + 1}`,
+        rating: (Math.random() * 2 + 3).toFixed(1),
+        modules: 10 + i,
+        avatar: "",
+    }));
+
+    return (
+        <div className="mp-wrapper">
+            {/* LATEST VIEWED */}
+            <section className="mp-section">
+                <h2 className="mp-title">Latest viewed</h2>
+                {latest.length === 0 ? (
+                    <div className="mp-empty">You haven’t watched anything yet</div>
+                ) : (
+                    <div className="mp-latest-grid">
+                        {latest.map((item) => (
+                            <div key={item.id} className="mp-folder-card">
+                                <span className="mp-folder-count">{item.terms} terms</span>
+                                <span className="mp-folder-name">{item.name}</span>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </section>
+
+            {/* POPULAR MODULES */}
+            <section className="mp-section">
+                <h2 className="mp-title">Popular modules</h2>
+                <div className="mp-slider-wrapper">
+                    <button className="mp-arrow-btn mp-arrow-left prev-mod">
+                        <ArrowLeft />
+                    </button>
+                    <Swiper
+                        modules={[Navigation, Autoplay]}
+                        slidesPerView={3}
+                        spaceBetween={18}
+                        loop={true}
+                        autoplay={{ delay: 2800, disableOnInteraction: false }}
+                        navigation={{ prevEl: ".prev-mod", nextEl: ".next-mod" }}
+                    >
+                        {modules.map((m) => (
+                            <SwiperSlide key={m.id}>
+                                <div className="mp-module-card">
+                                    <div className="mp-card-header">
+                                        <h4 className="mp-module-name">{m.name}</h4>
+                                        <div className="mp-rating">
+                                            {m.rating}
+                                            <StarIcon className="mp-star" />
+                                        </div>
+                                    </div>
+                                    <p className="mp-module-desc">{m.description}</p>
+                                    <div className="mp-card-bottom">
+                                        <span>{m.words} words</span>
+                                        <div className="mp-bottom-divider" />
+                                        <span>{m.author}</span>
+                                    </div>
+                                </div>
+                            </SwiperSlide>
+                        ))}
+                    </Swiper>
+                    <button className="mp-arrow-btn mp-arrow-right next-mod">
+                        <ArrowRight />
+                    </button>
+                </div>
+            </section>
+
+            {/* BEST AUTHORS */}
+            <section className="mp-section">
+                <h2 className="mp-title">Best authors</h2>
+                <div className="mp-slider-wrapper">
+                    <button className="mp-arrow-btn mp-arrow-left prev-auth">
+                        <ArrowLeft />
+                    </button>
+                    <Swiper
+                        modules={[Navigation, Autoplay]}
+                        slidesPerView={4}
+                        spaceBetween={20}
+                        loop={true}
+                        autoplay={{ delay: 3200, disableOnInteraction: false }}
+                        navigation={{ prevEl: ".prev-auth", nextEl: ".next-auth" }}
+                    >
+                        {authors.map((a) => (
+                            <SwiperSlide key={a.id}>
+                                <div className="mp-author-card">
+                                    <UserAvatar name={a.name} size={50} avatar={a.avatar} />
+                                    <div className="mp-author-info">
+                                        <span className="mp-author-name">{a.name}</span>
+
+                                        <div className="mp-author-rating">
+                                            <StarIcon className="mp-star" />
+                                            <span>{a.rating}</span>
+                                        </div>
+
+                                        <div className="mp-author-modules">
+                                            {a.modules} modules
+                                        </div>
+                                    </div>
+                                </div>
+                            </SwiperSlide>
+                        ))}
+                    </Swiper>
+
+                    <button className="mp-arrow-btn mp-arrow-right next-auth">
+                        <ArrowRight />
+                    </button>
+                </div>
+            </section>
+        </div>
+    );
+}

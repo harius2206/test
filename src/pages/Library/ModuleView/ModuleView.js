@@ -180,7 +180,6 @@ export default function ModuleView() {
                     </Button>
                 </div>
 
-
                 {/* Flashcard */}
                 <div className={`flashcard-area ${isFullscreen ? "fullscreen" : ""}`}>
                     <div className="flashcard-wrapper">

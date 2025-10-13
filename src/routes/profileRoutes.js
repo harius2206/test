@@ -5,11 +5,12 @@ import Safety from "../pages/Profile/Safety";
 import DeleteAccount from "../pages/Profile/DeleteAccount";
 
 const profileRoutes = [
+    { path: "", component: PublicProfile },
     { path: "private", component: PrivateProfile },
     { path: "public", component: PublicProfile },
     { path: "change-photo", component: ChangePhoto },
     { path: "safety", component: Safety },
-    { path: "delete", component: DeleteAccount },
+    { path: "delete", component: DeleteAccount }
 ];
 
 export default profileRoutes;

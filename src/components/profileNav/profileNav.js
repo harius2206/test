@@ -16,9 +16,10 @@ export default function ProfileNav() {
             </div>
 
             <nav className="profile-links">
-                <NavLink to="/profile/public" activeClassName="active">
+                <NavLink to="/profile/public-library" activeClassName="active">
                     Public profile
                 </NavLink>
+
                 <NavLink to="/profile/private" activeClassName="active">
                     Private profile
                 </NavLink>
