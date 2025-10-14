@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ModuleCard from "../../../components/ModuleCard/moduleCard";
-import SortMenu from "../../../components/sortMenu";
+import SortMenu from "../../../components/sortMenu/sortMenu";
 import DropdownMenu from "../../../components/dropDownMenu/dropDownMenu";
 import ColoredIcon from "../../../components/coloredIcon";
 import PermissionsMenu from "../../../components/permissionMenu/permissionsMenu";

@@ -1,39 +1,61 @@
+:root {
+    --footer-bg: #3a3a4a;
+    --footer-text: #ffffff;
+    --footer-muted: #c0c0c0;
+    --footer-divider: #ffffff;
+    --footer-link: #ffffff;
+    --footer-link-hover: #b0b0b0;
+}
+
+[data-theme="dark"] {
+    --footer-bg: #0a0a0a;
+    --footer-text: #f9fafb;
+    --footer-muted: #d1d5db;
+    --footer-divider: #2d2d2d;
+    --footer-link: #f9fafb;
+    --footer-link-hover: #a3a3a3;
+}
+
 .footer-wrapper {
-    /* залишаємо без змін */
+    width: 100%;
 }
 
 .footer {
     width: 100%;
     height: 75px;
-    background-color: #3a3a4a;
-    color: #fff;
+    background-color: var(--footer-bg);
+    color: var(--footer-text);
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 3%;
     font-family: "Inter", sans-serif;
+    box-sizing: border-box;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .footer-left {
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-wrap: wrap;
 }
 
 .footer-logo {
-    font-weight: bold;
+    font-weight: 700;
     font-size: 24px;
+    color: var(--footer-text);
 }
 
 .footer-copy {
     font-size: 12px;
-    color: #c0c0c0;
+    color: var(--footer-muted);
 }
 
 .footer-divider {
     width: 1px;
     height: 35px;
-    background-color: #fff;
+    background-color: var(--footer-divider);
     margin: 0 23px;
 }
 
@@ -41,16 +63,18 @@
     display: flex;
     align-items: center;
     gap: 24px;
+    flex-wrap: wrap;
 }
 
 .footer-nav a {
-    color: #fff;
+    color: var(--footer-link);
     text-decoration: none;
     font-size: 20px;
+    transition: color 0.2s ease;
 }
 
 .footer-nav a:hover {
-    color: #b0b0b0;
+    color: var(--footer-link-hover);
 }
 
 .footer-lang {
@@ -58,10 +82,56 @@
     align-items: center;
     gap: 6px;
     font-size: 16px;
+    color: var(--footer-text);
 }
 
 .footer-lang-icon {
     width: 19px;
     height: 19px;
     filter: brightness(0) invert(1);
+    transition: filter 0.2s ease;
+}
+
+[data-theme="dark"] .footer-lang-icon {
+    filter: brightness(1) invert(0);
+}
+
+/* ====== АДАПТИВ ====== */
+
+@media (max-width: 768px) {
+    .footer {
+        flex-direction: column;
+        justify-content: center;
+        height: auto;
+        gap: 10px;
+        padding: 16px 3%;
+        text-align: center;
+    }
+
+    .footer-divider {
+        display: none;
+    }
+
+    .footer-nav {
+        justify-content: center;
+        gap: 16px;
+    }
+
+    .footer-nav a {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-logo {
+        font-size: 20px;
+    }
+
+    .footer-copy {
+        font-size: 11px;
+    }
+
+    .footer-lang {
+        font-size: 14px;
+    }
 }

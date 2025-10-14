@@ -1,17 +1,31 @@
 :root {
-    --purple: #6366f1;
-    --purple-light: rgba(99,102,241,0.08);
-    --bg: #E5EAF9;
+    --perm-purple: #6366f1;
+    --perm-purple-light: rgba(99, 102, 241, 0.08);
+    --perm-bg: #ffffff;
+    --perm-hover-bg: #e5eaf9;
+    --perm-border: #ddd;
+    --perm-text: #111827;
+    --perm-muted: #555;
+}
+
+[data-theme="dark"] {
+    --perm-bg: #1f2937;
+    --perm-hover-bg: #2d3748;
+    --perm-border: #374151;
+    --perm-text: #f3f4f6;
+    --perm-muted: #9ca3af;
 }
 
 .permissions-menu {
-    background: #fff;
-    border: 1px solid #ddd;
+    background: var(--perm-bg);
+    border: 1px solid var(--perm-border);
     border-radius: 8px;
     padding: 8px;
     width: 260px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     font-family: "Inter", sans-serif;
+    color: var(--perm-text);
+    transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .user-list {
@@ -31,11 +45,9 @@
 }
 
 .user-item:hover {
-    background: var(--bg);
-    color: var(--purple);
+    background: var(--perm-hover-bg);
+    color: var(--perm-purple);
 }
-
-
 
 .user-left {
     display: flex;
@@ -53,6 +65,7 @@
 
 .user-name {
     font-size: 14px;
+    color: var(--perm-text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -66,17 +79,18 @@
 
 .user-role {
     font-size: 13px;
-    color: #555;
+    color: var(--perm-muted);
     margin-right: 8px;
     transition: color 120ms ease;
 }
 
 .user-item:hover .user-role {
-    color: var(--purple);
+    color: var(--perm-purple);
 }
 
+/* кнопки */
 .btn-primary {
-    background: var(--purple);
+    background: var(--perm-purple);
     color: #fff;
     border: none;
     padding: 6px 10px;
@@ -91,6 +105,7 @@
     justify-content: flex-end;
 }
 
+/* dropdown items */
 .permissions-menu .dropdown-item {
     display: flex;
     align-items: center;
@@ -98,19 +113,29 @@
     padding: 6px 12px;
     cursor: pointer;
     font-size: 14px;
-    color: inherit;
+    color: var(--perm-text);
     transition: background 120ms ease, color 120ms ease;
 }
+
 .permissions-menu .dropdown-item:hover {
-    background: var(--bg);
-    color: var(--purple);
+    background: var(--perm-hover-bg);
+    color: var(--perm-purple);
+}
+
+/* іконки */
+.permissions-menu svg,
+.permissions-menu svg * {
+    fill: var(--perm-text);
+    stroke: var(--perm-text);
+    transition: fill 120ms ease, stroke 120ms ease;
 }
 
 .permissions-menu .dropdown-item:hover svg,
 .permissions-menu .dropdown-item:hover svg * {
-    fill: var(--purple) !important;
-    stroke: var(--purple) !important;
+    fill: var(--perm-purple);
+    stroke: var(--perm-purple);
 }
+
 .btn-icon {
     background: none;
     border: none;
@@ -120,10 +145,34 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: inherit;
+    color: var(--perm-text);
 }
 
 .btn-icon svg {
     width: 16px;
     height: 16px;
+    fill: var(--perm-text);
+    stroke: var(--perm-text);
+}
+
+[data-theme="dark"] .btn-icon svg {
+    fill: #fff;
+    stroke: #fff;
+}
+
+/* адаптивність */
+@media (max-width: 480px) {
+    .permissions-menu {
+        width: 90vw;
+        padding: 10px;
+    }
+
+    .user-name {
+        font-size: 13px;
+    }
+
+    .btn-primary {
+        padding: 6px 12px;
+        font-size: 14px;
+    }
 }

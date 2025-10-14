@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import UserAvatar from "../../../components/avatar/avatar";
-import SortMenu from "../../../components/sortMenu";
+import SortMenu from "../../../components/sortMenu/sortMenu";
 import DropdownMenu from "../../../components/dropDownMenu/dropDownMenu";
 
 import { ReactComponent as StarIcon } from "../../../images/star.svg";

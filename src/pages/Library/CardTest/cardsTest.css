@@ -1,4 +1,24 @@
-/* File: src/pages/Library/CardTest/cardsTest.css */
+:root {
+    --ct-bg: #ffffff;
+    --ct-text: #111827;
+    --ct-header-bg: #ffffff;
+    --ct-border: #e5e7eb;
+    --ct-warning-bg: #fffbeb;
+    --ct-warning-border: #f59e0b;
+    --ct-warning-text: #000;
+}
+
+[data-theme="dark"] {
+    --ct-bg: #1f2937;
+    --ct-text: #f3f4f6;
+    --ct-header-bg: #111827;
+    --ct-border: #374151;
+    --ct-warning-bg: #3a2e1a;
+    --ct-warning-border: #fbbf24;
+    --ct-warning-text: #ffffff;
+}
+
+/* Контейнер сторінки */
 .ct-container {
     max-width: 900px;
     width: 100%;
@@ -6,39 +26,32 @@
     padding: 0 16px 28px;
     box-sizing: border-box;
     font-family: "Inter", sans-serif;
-    color: #111827;
+    color: var(--ct-text);
+    background: var(--ct-bg);
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Sticky header used both during test and on result screen */
-/* File: src/pages/Library/CardTest/cardsTest.css */
-.ct-container {
-    max-width: 900px;
-    width: 100%;
-    margin: 20px auto;
-    padding: 0 16px 28px;
-    box-sizing: border-box;
-    font-family: "Inter", sans-serif;
-    color: #111827;
-}
-
-/* Sticky header used both during test and on result screen */
+/* Sticky header (під час тесту) */
 .ct-header-fixed {
     position: sticky;
     top: 0;
-    background: #fff;
+    background: var(--ct-header-bg);
     z-index: 40;
     padding: 12px 16px;
     box-sizing: border-box;
+    border-bottom: 1px solid var(--ct-border);
 }
 
-/* Non-fixed header used on results screen */
+/* Header на екрані результатів */
 .ct-header {
     position: relative;
-    background: #fff;
+    background: var(--ct-header-bg);
     padding: 12px 16px;
     box-sizing: border-box;
+    border-bottom: 1px solid var(--ct-border);
 }
-/* Row inside header */
+
+/* Рядок у хедері */
 .ct-header-row {
     display: flex;
     align-items: center;
@@ -46,30 +59,27 @@
     gap: 12px;
 }
 
-/* Title / module name - force pure black */
+/* Назва модуля */
 .ct-title {
     font-size: 20px;
     font-weight: 700;
-    color: #000;
+    color: var(--ct-text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    transition: color 0.3s ease;
 }
 
-/* Progress counter - make black */
+/* Лічильник прогресу */
 .ct-progress {
     font-weight: 600;
-    color: #000;
+    color: var(--ct-text);
     min-width: 72px;
     text-align: center;
+    transition: color 0.3s ease;
 }
 
-/* Timer removed — keep class hidden if any remains */
-.ct-timer {
-    display: none;
-}
-
-/* Close button (cross) */
+/* Кнопка закриття */
 .ct-close-btn {
     border: none;
     background: transparent;
@@ -81,147 +91,39 @@
     justify-content: center;
     width: 36px;
     height: 36px;
-}
-.ct-close-btn img {
-    width: 20px;
-    height: 20px;
-    display: block;
+    transition: opacity 0.15s ease;
 }
 
-/* Warning shown when some questions unanswered — keep readable (black text) */
+.ct-close-btn:hover {
+    opacity: 0.8;
+}
+
+.ct-close-btn img,
+.ct-close-btn svg {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(0);
+    transition: filter 0.25s ease;
+}
+
+[data-theme="dark"] .ct-close-btn img,
+[data-theme="dark"] .ct-close-btn svg {
+    filter: brightness(0) invert(1);
+}
+
+/* Попередження (якщо не всі питання відповіли) */
 .ct-warning-text {
     margin-top: 8px;
-    background: #fffbeb;
-    color: #000;
-    border-left: 4px solid #f59e0b;
+    background: var(--ct-warning-bg);
+    color: var(--ct-warning-text);
+    border-left: 4px solid var(--ct-warning-border);
     padding: 10px 12px;
     border-radius: 6px;
     font-size: 14px;
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Questions list area */
-.ct-questions-list {
-    margin-top: 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-
-    /* center children and allow them to keep their min-width */
-    align-items: center;
-    box-sizing: border-box;
-}
-
-/* Ensure individual question cards / flip-cards don't shrink and have consistent sizing */
-.ct-questions-list .tq-card,
-.ct-questions-list .fc-card {
-    /* prevent flex shrinking inside any parent flex container */
-    flex: 0 0 auto;
-
-    /* keep card visually stable */
-    box-sizing: border-box;
-    width: 100%;
-    max-width: 760px; /* keep a comfortable max to match page layout */
-    min-width: 320px; /* do not allow collapse below this */
-}
-
-/* Button area (send / others) alignment */
-.ct-container .btn {
-    margin-top: 18px;
-    align-self: center;
-}
-
-/* Responsive: stack header on narrow screens */
-@media (max-width: 420px) {
-    .ct-header-row {
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-    }
-    .ct-title {
-        font-size: 18px;
-        text-align: center;
-    }
-    .ct-progress {
-        font-size: 14px;
-    }
-    .ct-close-btn {
-        margin-top: 4px;
-    }
-
-    /* On very narrow screens allow horizontal scrolling so cards keep their min-width */
-    .ct-questions-list {
-        align-items: flex-start; /* keep items aligned to top when scroll appears */
-        overflow-x: auto;
-        padding-bottom: 8px;
-        -webkit-overflow-scrolling: touch;
-    }
-    .ct-questions-list .tq-card,
-    .ct-questions-list .fc-card {
-        min-width: 260px;
-        width: auto; /* allow scroll instead of compressing to container */
-    }
-}
-
-/* Row inside header */
-.ct-header-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-/* Title / module name - force pure black */
-.ct-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: #000;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Progress counter - make black */
-.ct-progress {
-    font-weight: 600;
-    color: #000;
-    min-width: 72px;
-    text-align: center;
-}
-
-/* Timer removed — keep class hidden if any remains */
-.ct-timer {
-    display: none;
-}
-
-/* Close button (cross) */
-.ct-close-btn {
-    border: none;
-    background: transparent;
-    padding: 6px;
-    border-radius: 6px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-.ct-close-btn img {
-    width: 20px;
-    height: 20px;
-    display: block;
-}
-
-/* Warning shown when some questions unanswered — keep readable (black text) */
-.ct-warning-text {
-    margin-top: 8px;
-    background: #fffbeb;
-    color: #000;
-    border-left: 4px solid #f59e0b;
-    padding: 10px 12px;
-    border-radius: 6px;
-    font-size: 14px;
-}
-
-/* Questions list area */
+/* Список карток питань */
 .ct-questions-list {
     margin-top: 18px;
     display: flex;
@@ -231,21 +133,17 @@
     box-sizing: border-box;
 }
 
-/* Ensure individual question cards / flip-cards don't shrink and have consistent sizing */
+/* Вирівнювання та обмеження карток */
 .ct-questions-list .tq-card,
 .ct-questions-list .fc-card {
     flex: 0 0 auto;
-    box-sizing: border-box;
     width: 100%;
     max-width: 760px;
     min-width: 320px;
+    box-sizing: border-box;
 }
 
-/* Button area (send / others) alignment */
-.ct-container .btn {
-    margin-top: 18px;
-    align-self: center;
-}
+/* Кнопки внизу */
 .ct-send-row {
     display: flex;
     justify-content: center;
@@ -254,28 +152,35 @@
     box-sizing: border-box;
 }
 
+/* --- Адаптив --- */
 @media (max-width: 420px) {
     .ct-header-row {
         flex-direction: column;
         align-items: center;
         gap: 8px;
     }
+
     .ct-title {
         font-size: 18px;
         text-align: center;
     }
+
     .ct-progress {
         font-size: 14px;
     }
+
     .ct-close-btn {
         margin-top: 4px;
     }
+
+    /* горизонтальний скрол для питань */
     .ct-questions-list {
         align-items: flex-start;
         overflow-x: auto;
         padding-bottom: 8px;
         -webkit-overflow-scrolling: touch;
     }
+
     .ct-questions-list .tq-card,
     .ct-questions-list .fc-card {
         min-width: 260px;

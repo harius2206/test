@@ -1,11 +1,34 @@
+:root {
+    --tq-bg: #f9fafb;
+    --tq-border: #e5e7eb;
+    --tq-text-main: #111827;
+    --tq-text-secondary: #6b7280;
+    --tq-accent: #6366f1;
+    --tq-option-bg: #fff;
+    --tq-selected-bg: #eef2ff;
+    --tq-skip: #9ca3af;
+}
+
+[data-theme="dark"] {
+    --tq-bg: #1f1f28;
+    --tq-border: #3b3b4d;
+    --tq-text-main: #ffffff;
+    --tq-text-secondary: #a1a1b2;
+    --tq-accent: #6366f1;
+    --tq-option-bg: #2a2a36;
+    --tq-selected-bg: #3a3a4a;
+    --tq-skip: #9ca3af;
+}
+
 .tq-card {
-    border: 1px solid #e5e7eb;
-    background: #f9fafb;
+    border: 1px solid var(--tq-border);
+    background: var(--tq-bg);
     border-radius: 12px;
     padding: 16px;
     width: 100%;
     max-width: 848px;
     box-sizing: border-box;
+    transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .tq-header {
@@ -18,19 +41,19 @@
 .tq-counter {
     font-size: 14px;
     font-weight: 600;
-    color: #000000;
+    color: var(--tq-text-main);
     align-self: flex-end;
 }
 
 .tq-definition-label {
     font-size: 13px;
-    color: #6b7280;
+    color: var(--tq-text-secondary);
 }
 
 .tq-definition {
     font-size: 22px;
     font-weight: 700;
-    color: #111827;
+    color: var(--tq-text-main);
 }
 
 .tq-body {
@@ -43,7 +66,7 @@
 .tq-select-label {
     font-size: 15px;
     font-weight: 600;
-    color: #374151;
+    color: var(--tq-text-secondary);
     align-self: flex-start;
 }
 
@@ -56,26 +79,27 @@
 
 .tq-option-btn {
     padding: 10px;
-    border: 2px solid #e5e7eb;
+    border: 2px solid var(--tq-border);
     border-radius: 8px;
-    background: #fff;
+    background: var(--tq-option-bg);
     cursor: pointer;
     font-weight: 600;
+    color: var(--tq-text-main);
     transition: all 0.15s ease;
 }
 
 .tq-option-btn:hover {
-    border-color: #6366f1;
+    border-color: var(--tq-accent);
 }
 
 .tq-option-btn.selected {
-    border-color: #6366f1;
-    background: #eef2ff;
+    border-color: var(--tq-accent);
+    background: var(--tq-selected-bg);
 }
 
 .tq-skip-btn {
     background: transparent;
-    color: #9ca3af;
+    color: var(--tq-skip);
     border: none;
     cursor: pointer;
     font-weight: 600;
@@ -84,7 +108,7 @@
 }
 
 .tq-skip-btn.active {
-    color: #6366f1;
+    color: var(--tq-accent);
 }
 
 @media (max-width: 480px) {
@@ -93,5 +117,6 @@
     }
     .tq-option-btn {
         font-size: 14px;
+        padding: 8px;
     }
 }

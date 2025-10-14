@@ -1,3 +1,21 @@
+:root {
+    --cc-bg: #ffffff;
+    --cc-text: #111827;
+    --cc-subtext: #4a4a4a;
+    --cc-title: #1e1e1e;
+    --cc-border: #e5e7eb;
+    --cc-icon: #111827;
+}
+
+[data-theme="dark"] {
+    --cc-bg: #1e1e2a;
+    --cc-text: #f3f4f6;
+    --cc-subtext: #d1d5db;
+    --cc-title: #ffffff;
+    --cc-border: #3b3b4d;
+    --cc-icon: #ffffff;
+}
+
 .cc-page {
     display: flex;
     flex-direction: column;
@@ -9,10 +27,11 @@
     padding: 0 16px;
     box-sizing: border-box;
     font-family: "Inter", sans-serif;
-    color: #111827;
+    color: var(--cc-text);
+    background: var(--cc-bg);
+    transition: background 0.25s ease, color 0.25s ease;
 }
 
-/* ---------- HEADER ---------- */
 .cc-header {
     display: flex;
     align-items: center;
@@ -23,24 +42,23 @@
     position: relative;
 }
 
-/* Назва модуля — зліва */
 .cc-module-title {
     font-size: 22px;
     font-weight: 600;
-    color: #1e1e1e;
+    color: var(--cc-title);
+    transition: color 0.25s ease;
 }
 
-/* Лічильник — по центру */
 .cc-progress {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
     font-size: 18px;
     font-weight: 500;
-    color: #4a4a4a;
+    color: var(--cc-subtext);
+    transition: color 0.25s ease;
 }
 
-/* Кнопка закриття — справа */
 .cc-close-btn {
     width: 38px;
     height: 38px;
@@ -52,14 +70,26 @@
     justify-content: center;
     padding: 4px;
     flex-shrink: 0;
+    transition: opacity 0.15s ease;
 }
 
-.cc-close-btn img {
+.cc-close-btn:hover {
+    opacity: 0.8;
+}
+
+.cc-close-btn img,
+.cc-close-btn svg {
     width: 22px;
     height: 22px;
+    filter: brightness(0) invert(0);
+    transition: filter 0.25s ease;
 }
 
-/* ---------- ADAPTIVE ---------- */
+[data-theme="dark"] .cc-close-btn img,
+[data-theme="dark"] .cc-close-btn svg {
+    filter: brightness(0) invert(1);
+}
+
 @media (max-width: 600px) {
     .cc-header {
         margin-bottom: 24px;
@@ -78,7 +108,8 @@
         height: 32px;
     }
 
-    .cc-close-btn img {
+    .cc-close-btn img,
+    .cc-close-btn svg {
         width: 20px;
         height: 20px;
     }

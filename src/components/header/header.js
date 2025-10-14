@@ -1,25 +1,31 @@
-import "./header.css";
-import SearchField from "../searchField/searchField";
 import { Link } from "react-router-dom";
+import SearchField from "../searchField/searchField";
 import UserMenu from "../userMenu/userMenu";
+import "./header.css";
 
 const Header = () => {
     return (
-        <div className="hdr-wrapper">
-            <Link to="/" className="hdr-logo">Kussotare</Link>
+        <header className="hdr-wrapper">
+            <div className="hdr-left">
+                <Link to="/" className="hdr-logo">Kussotare</Link>
 
-            <div className="hdr-search-container" style={{ margin: "0 16px" }}>
-                <SearchField placeholder="search for anything" width="360px" height="40px" />
+                <div className="hdr-search-container">
+                    <SearchField placeholder="search for anything" width="320px" height="40px" />
+                </div>
             </div>
 
-            <div className="hdr-nav">
-                <Link to="/" className="hdr-nav-text">Main</Link>
-                <Link to="/library" className="hdr-nav-text">Library</Link>
-                <Link to="/folders" className="hdr-nav-text">Folders</Link>
-            </div>
+            <div className="hdr-right">
+                <nav className="hdr-nav">
+                    <Link to="/" className="hdr-nav-text">Main</Link>
+                    <Link to="/library" className="hdr-nav-text">Library</Link>
+                    <Link to="/folders" className="hdr-nav-text">Folders</Link>
+                </nav>
 
-            <UserMenu />
-        </div>
+                <div className="hdr-user">
+                    <UserMenu />
+                </div>
+            </div>
+        </header>
     );
 };
 

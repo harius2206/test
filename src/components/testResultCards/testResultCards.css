@@ -1,4 +1,39 @@
-/* Контейнер усіх результатів */
+:root {
+    --trc-bg: #f9fafb;
+    --trc-border: #e5e7eb;
+    --trc-text: #111827;
+    --trc-gray: #6b7280;
+    --trc-option-bg: #fff;
+
+    --trc-green: #22c55e;
+    --trc-green-bg: #dcfce7;
+    --trc-green-text: #166534;
+
+    --trc-red: #ef4444;
+    --trc-red-bg: #fee2e2;
+    --trc-red-text: #991b1b;
+
+    --trc-skipped: #9ca3af;
+}
+
+[data-theme="dark"] {
+    --trc-bg: #1f1f28;
+    --trc-border: #3b3b4d;
+    --trc-text: #ffffff;
+    --trc-gray: #a1a1b2;
+    --trc-option-bg: #2a2a36;
+
+    --trc-green: #22c55e;
+    --trc-green-bg: #164a31;
+    --trc-green-text: #86efac;
+
+    --trc-red: #ef4444;
+    --trc-red-bg: #3f1a1a;
+    --trc-red-text: #fca5a5;
+
+    --trc-skipped: #9ca3af;
+}
+
 .trc-container {
     display: flex;
     flex-direction: column;
@@ -9,71 +44,65 @@
     box-sizing: border-box;
 }
 
-/* Картки результатів */
 .trc-result-card {
-    border: 1px solid #e5e7eb;
-    background: #f9fafb;
+    border: 1px solid var(--trc-border);
+    background: var(--trc-bg);
     border-radius: 12px;
     padding: 16px;
     width: 100%;
     box-sizing: border-box;
-    transition: border-color 0.2s ease;
+    transition: border-color 0.2s ease, background 0.2s ease;
 }
 
-/* Стан рамок */
 .trc-result-card.correct {
-    border: 2px solid #22c55e;
-}
-.trc-result-card.wrong {
-    border: 2px solid #ef4444;
-}
-.trc-result-card.skipped {
-    border: 2px solid #9ca3af;
+    border: 2px solid var(--trc-green);
 }
 
-/* Статичний стиль варіантів (без ховера, без курсора) */
+.trc-result-card.wrong {
+    border: 2px solid var(--trc-red);
+}
+
+.trc-result-card.skipped {
+    border: 2px solid var(--trc-skipped);
+}
+
 .tq-option-static {
     padding: 10px;
-    border: 2px solid #e5e7eb;
+    border: 2px solid var(--trc-border);
     border-radius: 8px;
-    background: #fff;
+    background: var(--trc-option-bg);
     font-weight: 600;
-    color: #111827;
+    color: var(--trc-text);
     text-align: center;
-    transition: none;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     user-select: none;
 }
 
-/* Правильна відповідь */
 .tq-option-static.correct {
-    background: #dcfce7;
-    border-color: #22c55e;
-    color: #166534;
+    background: var(--trc-green-bg);
+    border-color: var(--trc-green);
+    color: var(--trc-green-text);
 }
 
-/* Неправильна, яку вибрав користувач */
 .tq-option-static.wrong {
-    background: #fee2e2;
-    border-color: #ef4444;
-    color: #991b1b;
+    background: var(--trc-red-bg);
+    border-color: var(--trc-red);
+    color: var(--trc-red-text);
 }
 
-/* Скіпнуті */
 .tq-skipped-label {
     margin-top: 10px;
     font-size: 15px;
     font-weight: 600;
-    color: #6b7280; /* ✅ сірий */
+    color: var(--trc-gray);
 }
 
-/* Кнопка Try again */
 .trc-retry-row {
     display: flex;
     justify-content: center;
     margin-top: 30px;
 }
 
-/* Адаптив */
 @media (max-width: 480px) {
     .trc-container {
         padding: 0 10px;

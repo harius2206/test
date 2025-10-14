@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import EditableField from "../../../components/editableField/editableField";
 import ColoredIcon from "../../../components/coloredIcon";
-import SortMenu from "../../../components/sortMenu";
+import SortMenu from "../../../components/sortMenu/sortMenu";
 import AddUniversalItem from "../../../components/addUniversalItem";
 import DropdownMenu from "../../../components/dropDownMenu/dropDownMenu";
 import "./folders.css";
@@ -163,18 +163,10 @@ export default function Folders({ addFolder, setAddFolder }) {
                                             autosave={true}
                                             placeholder="Folder name"
                                         />
-                                        <button
-                                            className="btn-primary"
-                                            onClick={() => saveRename(folder.id)}
-                                            style={{ height: 36, padding: "6px 14px" }}
-                                        >
+                                        <button className="btn-primary" onClick={() => saveRename(folder.id)}>
                                             Save
                                         </button>
-                                        <button
-                                            className="btn-primary"
-                                            onClick={cancelRename}
-                                            style={{ height: 36, padding: "6px 14px", background: "#fff", color: "#6366f1", border: "1px solid #ccc" }}
-                                        >
+                                        <button className="btn-secondary" onClick={cancelRename}>
                                             Cancel
                                         </button>
                                     </div>

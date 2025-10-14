@@ -8,3 +8,20 @@
     /* головний контент автоматично займає весь простір між Header і Footer */
     padding: 20px; /* можна змінити під дизайн */
 }
+:root {
+    --accent: #6366f1;
+    --border: #d1d5db;
+    --text: #111827;
+    --text-light: #6b7280;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f9fafb;
+}
+
+[data-theme="dark"] {
+    --accent: #818cf8;
+    --border: #374151;
+    --text: #f9fafb;
+    --text-light: #9ca3af;
+    --bg-primary: #1f2937;
+    --bg-secondary: #111827;
+}

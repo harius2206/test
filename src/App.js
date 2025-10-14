@@ -1,3 +1,4 @@
+import ThemeProvider from "./context/ThemeContext";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import appRoutes from "./routes/appRoutes";
@@ -6,19 +7,21 @@ import Footer from "./components/footer/footer";
 
 function App() {
     return (
-        <Router>
-            <div className="page-wrapper">
-                <Header />
-                <main className="content">
-                    <Routes>
-                        {appRoutes.map(({ path, component: Component }) => (
-                            <Route key={path} path={path} element={<Component />} />
-                        ))}
-                    </Routes>
-                </main>
-                <Footer />
-            </div>
-        </Router>
+        <ThemeProvider>
+            <Router>
+                <div className="page-wrapper">
+                    <Header />
+                    <main className="content">
+                        <Routes>
+                            {appRoutes.map(({ path, component: Component }) => (
+                                <Route key={path} path={path} element={<Component />} />
+                            ))}
+                        </Routes>
+                    </main>
+                    <Footer />
+                </div>
+            </Router>
+        </ThemeProvider>
     );
 }
 

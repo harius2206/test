@@ -1,8 +1,9 @@
+// File: src/pages/Library/Modules/Modules.js
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 import ModuleCard from "../../../components/ModuleCard/moduleCard";
-import SortMenu from "../../../components/sortMenu";
+import SortMenu from "../../../components/sortMenu/sortMenu";
 import PermissionsMenu from "../../../components/permissionMenu/permissionsMenu";
 import "./modules.css";
 
@@ -39,10 +40,15 @@ export default function Modules({ modulesData }) {
     const [expandedTags, setExpandedTags] = useState({});
     const [visibleCount, setVisibleCount] = useState(9);
     const [modules, setModules] = useState(modulesData || defaultModules);
-
     const [permissionsTarget, setPermissionsTarget] = useState(null);
     const containerRef = useRef(null);
     const navigate = useNavigate();
+
+    // ✅ читаємо тему з localStorage і застосовуємо
+    useEffect(() => {
+        const savedTheme = localStorage.getItem("theme") || "light";
+        document.documentElement.setAttribute("data-theme", savedTheme);
+    }, []);
 
     useEffect(() => {
         const observer = new ResizeObserver(() => {
@@ -92,7 +98,14 @@ export default function Modules({ modulesData }) {
 
     return (
         <div className="modules-page" ref={containerRef} style={{ position: "relative" }}>
-            <div className="library-controls" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div
+                className="library-controls"
+                style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center"
+                }}
+            >
                 <SortMenu onSort={handleSort} />
             </div>
 
@@ -106,7 +119,9 @@ export default function Modules({ modulesData }) {
                         toggleTags={toggleTags}
                         onDelete={handleDelete}
                         onPermissions={openModulePermissions}
-                        onClick={() => navigate("/library/module-view", { state: { module } })}
+                        onClick={() =>
+                            navigate("/library/module-view", { state: { module } })
+                        }
                     />
                 ))}
             </div>
@@ -114,14 +129,21 @@ export default function Modules({ modulesData }) {
             {permissionsTarget && (
                 <div
                     style={{
-                        position: permissionsTarget.anchor ? "fixed" : "fixed",
-                        left: permissionsTarget.anchor ? permissionsTarget.anchor.left : undefined,
-                        top: permissionsTarget.anchor ? permissionsTarget.anchor.top : 64,
+                        position: "fixed",
+                        left: permissionsTarget.anchor
+                            ? permissionsTarget.anchor.left
+                            : undefined,
+                        top: permissionsTarget.anchor
+                            ? permissionsTarget.anchor.top
+                            : 64,
                         right: permissionsTarget.anchor ? undefined : 12,
                         zIndex: 300
                     }}
                 >
-                    <PermissionsMenu users={permissionsTarget.users} onClose={closePermissions} />
+                    <PermissionsMenu
+                        users={permissionsTarget.users}
+                        onClose={closePermissions}
+                    />
                 </div>
             )}
         </div>

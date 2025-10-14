@@ -1,6 +1,41 @@
-/* File: `src/components/ModuleCard/moduleCard.css` */
+:root {
+    --mc-bg: #ffffff;
+    --mc-bg-hover: #fafafa;
+    --mc-border: #e5e7eb;
+    --mc-text: #111827;
+    --mc-muted: #555;
+    --mc-separator: #999;
+    --mc-tag-bg: #6366f1;
+    --mc-tag-text: #ffffff;
+    --mc-star: #facc15;
+    --mc-btn-hover: #f3f4f6;
+    --mc-dropdown-bg: #ffffff;
+    --mc-dropdown-border: #e5e7eb;
+    --mc-dropdown-text: #333;
+    --mc-dots-color: #555;
+}
+
+[data-theme="dark"] {
+    --mc-bg: #1f2937;
+    --mc-bg-hover: #2d3748;
+    --mc-border: #374151;
+    --mc-text: #f3f4f6;
+    --mc-muted: #9ca3af;
+    --mc-separator: #6b7280;
+    --mc-tag-bg: #6366f1;
+    --mc-tag-text: #ffffff;
+    --mc-star: #facc15;
+    --mc-btn-hover: transparent;
+    --mc-dropdown-bg: #111827;
+    --mc-dropdown-border: #374151;
+    --mc-dropdown-text: #f3f4f6;
+    --mc-dots-color: #ffffff;
+}
+
+/* === базові стилі === */
 .modules-page {
     font-family: "Inter", sans-serif;
+    color: var(--mc-text);
 }
 
 .module-list {
@@ -14,28 +49,31 @@
     justify-content: space-between;
     align-items: flex-start;
     padding: 12px 16px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--mc-border);
     border-radius: 12px;
-    background: #fff;
-    transition: background 0.2s;
+    background: var(--mc-bg);
+    transition: background 0.2s, border-color 0.2s;
 }
 
 .module-card:hover {
-    background: #fafafa;
+    background: var(--mc-bg-hover);
 }
 
+/* === верхній ряд === */
 .top-row {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 8px;
     font-size: 14px;
+    color: var(--mc-muted);
 }
 
 .separator {
-    color: #999;
+    color: var(--mc-separator);
 }
 
+/* === автор, рейтинг === */
 .author-block {
     display: flex;
     align-items: center;
@@ -54,15 +92,16 @@
     align-items: center;
     gap: 4px;
     font-weight: bold;
-    color: #facc15;
+    color: var(--mc-star);
 }
 
 .star-icon {
     width: 16px;
     height: 16px;
-    fill: #facc15;
+    fill: var(--mc-star);
 }
 
+/* === теги === */
 .tags-row {
     display: flex;
     flex-wrap: wrap;
@@ -74,8 +113,8 @@
 }
 
 .tag {
-    background: #6366f1;
-    color: #fff;
+    background: var(--mc-tag-bg);
+    color: var(--mc-tag-text);
     font-weight: 600;
     padding: 2px 8px;
     border-radius: 8px;
@@ -86,7 +125,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #555;
+    color: var(--mc-dots-color);
 }
 
 .collapse-tags {
@@ -95,8 +134,10 @@
     justify-content: center;
     padding: 2px;
     margin-left: 4px;
+    color: var(--mc-dots-color);
 }
 
+/* === назва === */
 .module-name-row {
     margin-top: 6px;
 }
@@ -104,8 +145,10 @@
 .module-name-text {
     font-size: 16px;
     font-weight: 600;
+    color: var(--mc-text);
 }
 
+/* === кнопки === */
 .folder-actions {
     display: flex;
     align-items: center;
@@ -117,17 +160,23 @@
     cursor: pointer;
     padding: 4px;
     border-radius: 6px;
+    transition: none;
+    color: var(--mc-dots-color);
 }
 
 .btn-icon:hover {
-    background: #f3f4f6;
+    background: transparent;
 }
 
-/* unified dropdown styles (kept local for module card) */
+.btn-icon:active {
+    background: transparent;
+}
+
+/* === дропдаун === */
 .dropdown {
     position: absolute;
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: var(--mc-dropdown-bg);
+    border: 1px solid var(--mc-dropdown-border);
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     z-index: 10;
@@ -140,10 +189,29 @@
     gap: 6px;
     padding: 6px 12px;
     text-decoration: none;
-    color: #333;
+    color: var(--mc-dropdown-text);
     font-size: 14px;
+    transition: background 0.15s ease, color 0.15s ease;
 }
 
 .dropdown-item:hover {
-    background: #f3f4f6;
+    background: var(--mc-btn-hover);
+    color: var(--mc-tag-bg);
+}
+
+/* === адаптивність === */
+@media (max-width: 600px) {
+    .module-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .folder-actions {
+        align-self: flex-end;
+    }
+
+    .module-name-text {
+        font-size: 15px;
+    }
 }

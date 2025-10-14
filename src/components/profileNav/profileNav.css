@@ -1,11 +1,35 @@
+:root {
+    --profile-border: #ddd;
+    --profile-bg-hover: rgba(152, 155, 178, 0.1);
+    --profile-bg-active: #b0b2bd;
+    --profile-text: #111827;
+    --profile-subtext: #666;
+    --profile-bg: #ffffff;
+}
+
+[data-theme="dark"] {
+    --profile-border: #374151;
+    --profile-bg-hover: #2f323a;
+    --profile-bg-active: #4b4e57;
+    --profile-text: #f3f4f6;
+    --profile-subtext: #9ca3af;
+    --profile-bg: #1f2937;
+}
+
+/* === бокова навігація === */
 .profile-nav {
     width: 21%;
     min-height: 100vh;
-    border-right: 1px solid #ddd;
+    border-right: 1px solid var(--profile-border);
     font-family: "Inter", sans-serif;
     padding-top: 20px;
+    background: var(--profile-bg);
+    color: var(--profile-text);
+    transition: background 0.25s ease, color 0.25s ease;
+    margin: 0; /* прибрано зовнішні відступи */
 }
 
+/* === інформаційний блок === */
 .profile-info {
     text-align: center;
     margin-bottom: 30px;
@@ -22,34 +46,88 @@
     margin: 10px 0 5px;
     font-size: 30px;
     font-weight: 600;
+    color: var(--profile-text);
 }
 
 .profile-date {
     font-size: 16px;
-    color: #666;
+    color: var(--profile-subtext);
 }
 
+/* === посилання === */
 .profile-links {
     display: flex;
     flex-direction: column;
     font-weight: bold;
     font-size: 20px;
-
 }
 
 .profile-links a {
-    padding: 20px 20px;
+    padding: 20px;
     text-decoration: none;
-    color: black;
-    transition: background 0.2s;
+    color: var(--profile-text);
+    transition: background 0.2s ease, color 0.2s ease;
 }
 
 .profile-links a:hover {
-    background: rgba(152, 155, 178, 0.1);
+    background: var(--profile-bg-hover);
+    color: var(--profile-text);
 }
 
 .profile-links a.active {
-    background: #989BB2;
-    color: white;
+    background: var(--profile-bg-active);
+    color: #ffffff;
+}
 
+/* === адаптивність === */
+@media (max-width: 900px) {
+    .profile-nav {
+        width: 100%;
+        min-height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--profile-border);
+        padding-top: 10px;
+        margin: 0; /* лишається без зовнішніх відступів */
+    }
+
+    .profile-info {
+        margin-bottom: 20px;
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+    }
+
+    .profile-name {
+        font-size: 22px;
+    }
+
+    .profile-links {
+        flex-direction: row;
+        justify-content: space-around;
+        font-size: 18px;
+    }
+
+    .profile-links a {
+        padding: 12px 10px;
+    }
+}
+
+@media (max-width: 520px) {
+    .profile-links {
+        flex-wrap: wrap;
+        gap: 4px;
+        justify-content: center;
+    }
+
+    .profile-links a {
+        font-size: 16px;
+        padding: 10px 8px;
+    }
+
+    .profile-avatar {
+        width: 90px;
+        height: 90px;
+    }
 }

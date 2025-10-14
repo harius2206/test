@@ -1,8 +1,30 @@
+:root {
+    --ef-text: #333;
+    --ef-subtext: #666;
+    --ef-bg: #fff;
+    --ef-border: #ccc;
+    --ef-disabled-bg: #f7f7f7;
+    --ef-disabled-text: #999;
+    --ef-focus: #6366f1;
+    --ef-icon: #555;
+}
+
+[data-theme="dark"] {
+    --ef-text: #f3f4f6;
+    --ef-subtext: #d1d5db;
+    --ef-bg: #1f2937;
+    --ef-border: #374151;
+    --ef-disabled-bg: #2d3748;
+    --ef-disabled-text: #6b7280;
+    --ef-focus: #818cf8;
+    --ef-icon: #ffffff;
+}
+
 .editable-field {
     display: flex;
     flex-direction: column;
     font-size: 14px;
-    color: #666;
+    color: var(--ef-subtext);
     gap: 6px;
 }
 
@@ -16,17 +38,17 @@
 .editable-field input,
 .editable-field textarea {
     flex: 1;
-    padding: 10px 40px 10px 14px; /* щоб текст не ліз під іконку */
-    border: 1px solid #ccc;
+    padding: 10px 40px 10px 14px;
+    border: 1px solid var(--ef-border);
     border-radius: 6px;
     font-size: 16px;
-    font-weight: bold;
+    font-weight: 600;
     width: 100%;
     min-height: 44px;
     box-sizing: border-box;
-    transition: border-color 0.2s;
-    background-color: #fff;
-    color: #333;
+    background-color: var(--ef-bg);
+    color: var(--ef-text);
+    transition: border-color 0.2s, background-color 0.2s, color 0.2s;
     cursor: pointer;
     line-height: 1.4;
 }
@@ -34,22 +56,21 @@
 .editable-field textarea {
     resize: none;
     overflow-wrap: break-word;
-    word-wrap: break-word;
     white-space: pre-wrap;
     overflow: hidden;
 }
 
 .editable-field input:focus,
 .editable-field textarea:focus {
-    border-color: #6366f1;
+    border-color: var(--ef-focus);
     outline: none;
     cursor: text;
 }
 
 .editable-field.not-editable input,
 .editable-field.not-editable textarea {
-    background-color: #f7f7f7;
-    color: #999;
+    background-color: var(--ef-disabled-bg);
+    color: var(--ef-disabled-text);
     cursor: not-allowed;
 }
 
@@ -64,9 +85,17 @@
     pointer-events: none;
 }
 
-.edit-icon img {
+.edit-icon img,
+.edit-icon svg {
     width: 18px;
     height: 18px;
     object-fit: contain;
-    opacity: 0.7;
+    opacity: 0.8;
+    transition: filter 0.2s ease, opacity 0.2s ease;
+}
+
+[data-theme="dark"] .edit-icon img,
+[data-theme="dark"] .edit-icon svg {
+    filter: brightness(0) invert(1);
+    opacity: 0.9;
 }

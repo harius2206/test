@@ -1,18 +1,37 @@
-/* File: src/components/cardsCheckResult/cardsCheckResult.css */
+:root {
+    --ccr-text: #111827;
+    --ccr-bg: #ffffff;
+    --ccr-learned: #008d1a;
+    --ccr-notlearned: #de5a5a;
+    --ccr-border: #e5e7eb;
+    --ccr-btn-bg: #f3f4f6;
+    --ccr-btn-text: #111827;
+}
+
+[data-theme="dark"] {
+    --ccr-text: #f3f4f6;
+    --ccr-bg: #0e1117;
+    --ccr-learned: #81c784;
+    --ccr-notlearned: #ef5350;
+    --ccr-border: #374151;
+    --ccr-btn-bg: #1f2937;
+    --ccr-btn-text: #f3f4f6;
+}
 
 .ccr-container {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    justify-content: flex-start;
     gap: 24px;
     font-family: "Inter", sans-serif;
-    color: #111827;
+    color: var(--ccr-text);
     width: 100%;
     max-width: 900px;
     margin: 0 auto;
     padding: 24px 20px;
     box-sizing: border-box;
+    background: var(--ccr-bg);
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .ccr-stats-wrapper {
@@ -30,6 +49,7 @@
     align-items: center;
     justify-content: center;
     font-weight: 600;
+    color: var(--ccr-text);
 }
 
 .ccr-stats {
@@ -40,12 +60,12 @@
 }
 
 .ccr-learned {
-    color: #008d1a;
+    color: var(--ccr-learned);
     font-weight: 600;
 }
 
 .ccr-notlearned {
-    color: #de5a5a;
+    color: var(--ccr-notlearned);
     font-weight: 600;
 }
 
@@ -57,6 +77,7 @@
     font-size: 24px;
     font-weight: 500;
     text-align: left;
+    color: var(--ccr-text);
 }
 
 .ccr-time p {
@@ -69,8 +90,57 @@
     border-radius: 6px;
     font-size: 15px;
     font-weight: 500;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-    transition: background-color 0.2s ease;
+    background: var(--ccr-btn-bg);
+    color: var(--ccr-btn-text);
+    border: 1px solid var(--ccr-border);
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.ccr-container .btn:hover {
+    opacity: 0.9;
+}
+
+.ccr-footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 16px;
+    box-sizing: border-box;
+}
+
+.ccr-footer-row .ccr-time {
+    text-align: left;
+}
+
+.ccr-footer-row .btn {
+    align-self: center;
+    padding: 10px 22px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.ccr-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 12px;
+    margin-bottom: 6px;
+    box-sizing: border-box;
+}
+
+.ccr-module-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ccr-text);
+}
+
+.ccr-module-count {
+    font-size: 14px;
+    color: var(--ccr-text);
+    font-weight: 600;
 }
 
 @media (max-width: 768px) {
@@ -109,74 +179,24 @@
         padding: 8px 18px;
         font-size: 14px;
     }
-}
-/* File: src/components/cardsCheckResult/cardsCheckResult.css (append) */
 
-.ccr-footer-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    gap: 16px;
-    box-sizing: border-box;
-}
-
-/* keep time block left, button right */
-.ccr-footer-row .ccr-time {
-    text-align: left;
-}
-
-/* ensure button aligns vertically */
-.ccr-footer-row .btn {
-    align-self: center;
-    padding: 10px 22px;
-    border-radius: 6px;
-    font-size: 15px;
-    font-weight: 500;
-}
-
-/* responsive: stack on small screens */
-@media (max-width: 420px) {
     .ccr-footer-row {
         flex-direction: column;
         align-items: center;
         gap: 10px;
     }
+
     .ccr-footer-row .ccr-time {
         text-align: center;
     }
-    .ccr-footer-row .btn {
-        align-self: center;
-    }
-}
-.ccr-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    box-sizing: border-box;
-    gap: 12px;
-    margin-bottom: 6px;
-}
 
-.ccr-module-name {
-    font-size: 18px;
-    font-weight: 700;
-    color: #111827;
-}
-
-.ccr-module-count {
-    font-size: 14px;
-    color: #000000;
-    font-weight: 600;
-}
-
-/* small screens: stack header */
-@media (max-width: 420px) {
     .ccr-header {
         flex-direction: column;
         align-items: center;
         gap: 6px;
     }
-    .ccr-module-count { text-align: center; }
+
+    .ccr-module-count {
+        text-align: center;
+    }
 }

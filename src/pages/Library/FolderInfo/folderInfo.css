@@ -1,36 +1,74 @@
-/* css */
-.folder-page {
-    /* allow full width of the parent/container */
-    padding: 40px;
-    box-sizing: border-box;
-    width: 100%;
-    max-width: none;
-    margin: 0;
-    position: relative;
+:root {
+    --folder-bg: #f9f9f9;
+    --folder-text: #111;
+    --folder-border: #888;
+    --folder-card-bg: #f9f9f9;
+    --folder-card-border: #ddd;
+    --folder-dropdown-bg: #fff;
+    --folder-dropdown-hover: #f3f4f4;
+    --folder-tag-bg: #6366f1;
+    --folder-tag-text: #fff;
 }
 
+[data-theme="dark"] {
+    --folder-bg: #111827;
+    --folder-text: #f9fafb;
+    --folder-border: #9ca3af;
+    --folder-card-bg: #1f2937;
+    --folder-card-border: #374151;
+    --folder-dropdown-bg: #2a2f3b;
+    --folder-dropdown-hover: #374151;
+    --folder-tag-bg: #6366f1;
+    --folder-tag-text: #fff;
+}
+
+/* ------------------------ PAGE ------------------------ */
+.folder-page {
+    width: 100%;
+    padding: 40px;
+    margin: 0;
+    box-sizing: border-box;
+    background: var(--folder-bg);
+    color: var(--folder-text);
+    position: relative;
+    min-height: 100vh;
+}
+
+/* ------------------------ TITLE & CONTROLS ------------------------ */
 .folder-title {
     font-size: 24px;
-    font-weight: bold;
+    font-weight: 700;
     margin-bottom: 16px;
 }
 
 .folder-controls {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
     gap: 12px;
     margin-bottom: 24px;
-    justify-content: space-between;
+    flex-wrap: wrap;
 }
 
 .sort-btn,
 .add-btn {
     padding: 6px 12px;
-    border: 1px solid #888;
+    border: 1px solid var(--folder-border);
     border-radius: 6px;
-    background: white;
+    background: transparent;
+    color: var(--folder-text);
     cursor: pointer;
+    font-weight: 500;
+    transition: all 0.15s ease;
 }
 
+.sort-btn:hover,
+.add-btn:hover {
+    background: var(--folder-border);
+    color: #fff;
+}
+
+/* ------------------------ MODULES LIST ------------------------ */
 .folder-modules {
     display: flex;
     flex-direction: column;
@@ -39,14 +77,17 @@
 }
 
 .folder-module-card {
-    background: #f9f9f9;
+    background: var(--folder-card-bg);
+    border: 1px solid var(--folder-card-border);
     border-radius: 8px;
     padding: 12px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
+    transition: background 0.2s ease, border-color 0.2s ease;
 }
 
+/* ------------------------ MODULE CONTENT ------------------------ */
 .top-row {
     display: flex;
     align-items: center;
@@ -77,8 +118,8 @@
 }
 
 .tag {
-    background: #6366f1;
-    color: white;
+    background: var(--folder-tag-bg);
+    color: var(--folder-tag-text);
     font-weight: 500;
     padding: 2px 6px;
     border-radius: 4px;
@@ -92,7 +133,8 @@
 
 .module-name {
     font-size: 16px;
-    font-weight: bold;
+    font-weight: 700;
+    color: var(--folder-text);
 }
 
 .module-actions {
@@ -100,15 +142,18 @@
     position: relative;
 }
 
-/* unified dropdown */
+/* ------------------------ DROPDOWN ------------------------ */
 .dropdown {
     position: absolute;
-    background: #fff;
-    border: 1px solid #ddd;
+    right: 0;
+    top: 100%;
+    background: var(--folder-dropdown-bg);
+    border: 1px solid var(--folder-card-border);
     border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     z-index: 100;
     padding: 4px 0;
+    min-width: 140px;
 }
 
 .dropdown-item {
@@ -118,13 +163,45 @@
     padding: 6px 12px;
     cursor: pointer;
     font-size: 14px;
+    color: var(--folder-text);
+    transition: background 0.15s ease;
 }
 
 .dropdown-item:hover {
-    background: #f3f4f4;
+    background: var(--folder-dropdown-hover);
 }
 
 .dropdown-icon {
     display: flex;
     align-items: center;
+}
+
+/* ------------------------ RESPONSIVE ------------------------ */
+@media (max-width: 720px) {
+    .folder-page {
+        padding: 20px;
+    }
+
+    .folder-title {
+        font-size: 20px;
+    }
+
+    .sort-btn,
+    .add-btn {
+        font-size: 14px;
+        padding: 5px 10px;
+    }
+
+    .folder-module-card {
+        padding: 10px;
+    }
+
+    .module-name {
+        font-size: 15px;
+    }
+}
+
+/* Smooth theme transitions */
+*, *::before, *::after {
+    transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
 }
