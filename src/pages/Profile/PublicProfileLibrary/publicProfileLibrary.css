@@ -1,7 +1,35 @@
+:root {
+    --bg: #ffffff;
+    --bg-primary: #f8fafc;
+    --text: #111827;
+    --text-light: #6b7280;
+    --border: #e5e7eb;
+    --accent: #6366f1;
+    --star: #f59e0b;
+}
+
+[data-theme="dark"] {
+    --bg: #000000;
+    --bg-primary: #000000;
+    --text: #f3f4f6;
+    --text-light: #9ca3af;
+    --border: #1f2937;
+    --accent: #818cf8;
+    --star: #fbbf24;
+}
+
+.ppl-sort-row {
+    margin-bottom: 16px;
+}
+
+/* === WRAPPER === */
 .ppl-wrapper {
     font-family: "Inter", sans-serif;
     max-width: 900px;
-    margin: 0 auto;
+    margin: 30px auto 0 auto;
+    background: var(--bg);
+    color: var(--text);
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 .ppl-header {
@@ -9,9 +37,9 @@
     align-items: flex-start;
     gap: 24px;
     padding: 16px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border);
     border-radius: 12px;
-    background: #fff;
+    background: var(--bg-primary);
     margin-bottom: 24px;
 }
 
@@ -24,7 +52,7 @@
 
 .ppl-created {
     font-size: 13px;
-    color: #666;
+    color: var(--text-light);
     margin: 0;
 }
 
@@ -39,18 +67,24 @@
     margin: 0;
     font-weight: 600;
     font-size: 22px;
+    color: var(--text);
 }
 
 .ppl-rating {
     display: inline-flex;
     align-items: center;
     gap: 3px;
-    color: #facc15;
     font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.ppl-rating svg {
+    fill: var(--star);
 }
 
 .ppl-description {
-    color: #444;
+    color: var(--text-light);
     font-size: 15px;
     margin: 8px 0;
 }
@@ -59,10 +93,11 @@
     display: flex;
     flex-direction: column;
     font-size: 15px;
-    color: #222;
+    color: var(--text);
     gap: 2px;
 }
 
+/* === TABS === */
 .ppl-library-title {
     font-size: 20px;
     font-weight: 600;
@@ -70,63 +105,63 @@
 }
 
 .ppl-tabs {
+    position: relative;
     display: flex;
     gap: 12px;
     margin-bottom: 12px;
-    /* removed position:relative and padding-bottom to eliminate the full-width gray underline */
+    border-bottom: 1px solid var(--border);
 }
 
-.ppl-sort-row {
-    margin-top: 8px;
-    margin-bottom: 14px;
+.ppl-tabs button {
+    background: transparent;
+    border: none;
+    padding: 10px 16px;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: color 0.2s ease;
 }
 
+.ppl-tabs button.active {
+    color: var(--text);
+}
+
+.ppl-tabs button:hover {
+    color: var(--accent);
+}
+
+.ppl-underline {
+    position: absolute;
+    bottom: 0;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: all 0.25s ease;
+}
+
+/* === MODULE/FOLDER CARDS === */
 .ppl-content {
     display: flex;
     flex-direction: column;
     gap: 14px;
 }
 
-/* Make the public profile use the shared module-card look */
-.ppl-modules .module-card,
-.ppl-folders .module-card {
-    /* rely on existing .module-card styles from modules.css/moduleCard.css */
-    /* small override for spacing inside public profile */
-    padding: 12px 14px;
+.ppl-module-card,
+.ppl-folder-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
     border-radius: 10px;
-    background: #fff;
-}
-
-/* remove author and visual separators in public profile cards (we don't show avatar/author there) */
-.ppl-wrapper .author-block,
-.ppl-wrapper .separator {
-    display: none !important;
-}
-
-/* ensure tags inside public profile follow the shared tags style */
-.ppl-modules .tags-row,
-.ppl-folders .tags-row {
-    gap: 6px;
-    margin-left: 0;
-}
-
-/* keep header stats column as before */
-.ppl-stats-column { /* ...existing rules... */ }
-
-/* reduce size of dots button to match module list */
-.ppl-wrapper .btn-icon { padding: 6px; }
-
-/* keep other existing styles intact */
-
-/* ===== MODULE CARD ===== */
-.ppl-module-card {
-    background: #f7f8fc;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
     padding: 14px 18px;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    transition: background 0.3s ease, color 0.3s ease, border 0.3s ease;
+}
+
+.ppl-module-card:hover,
+.ppl-folder-card:hover {
+    border-color: var(--accent);
 }
 
 .ppl-module-top {
@@ -140,37 +175,24 @@
     align-items: center;
     gap: 8px;
     font-size: 14px;
-    color: #111;
-}
-
-.ppl-meta-bold {
-    font-weight: 600;
+    color: var(--text);
 }
 
 .ppl-meta-divider {
     width: 1px;
     height: 14px;
-    background: #d1d5db;
-}
-
-.ppl-meta-rating {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    font-weight: 500;
-    color: #111;
+    background: var(--border);
 }
 
 .ppl-tags {
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
-    margin-left: 0; /* вирівняно вліво */
 }
 
 .ppl-tag {
-    background: #6366f1;
-    color: white;
+    background: var(--accent);
+    color: #fff;
     padding: 2px 8px;
     border-radius: 12px;
     font-size: 12px;
@@ -181,25 +203,10 @@
     background: transparent;
     border: none;
     cursor: pointer;
-    color: #111;
+    color: var(--text);
 }
 
-.ppl-module-name {
-    font-weight: 600;
-    font-size: 16px;
-}
-
-/* ===== FOLDER CARD ===== */
-.ppl-folder-card {
-    background: #f7f8fc;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    padding: 14px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
+/* === FOLDER CARD === */
 .ppl-folder-left {
     display: flex;
     align-items: center;
@@ -215,45 +222,10 @@
 .ppl-folder-name {
     font-weight: 600;
     font-size: 15px;
+    color: var(--text);
 }
 
 .ppl-folder-count {
     font-size: 13px;
-    color: #555;
-}
-.ppl-tabs {
-    position: relative;
-    display: flex;
-    gap: 12px;
-    margin-bottom: 12px;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.ppl-tabs button {
-    position: relative;
-    background: transparent;
-    border: none;
-    padding: 10px 16px;
-    font-weight: 600;
-    font-size: 15px;
-    color: #444;
-    cursor: pointer;
-    transition: color 0.2s ease;
-}
-
-.ppl-tabs button.active {
-    color: #111;
-}
-
-.ppl-tabs button:hover {
-    color: #4f46e5;
-}
-
-.ppl-underline {
-    position: absolute;
-    bottom: 0;
-    height: 2px;
-    background: #6366f1;
-    border-radius: 2px;
-    transition: all 0.25s ease;
+    color: var(--text-light);
 }

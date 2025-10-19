@@ -9,9 +9,9 @@
 
 [data-theme="dark"] {
     --dm-purple: #818cf8;
-    --dm-bg: #1e2633;
+    --dm-bg: #000000;
     --dm-border: #374151;
-    --dm-hover-bg: #2c3342;
+    --dm-hover-bg: #262c39;
     --dm-text: #f3f4f6;
     --dm-icon-stroke: #f3f4f6;
 }

@@ -30,11 +30,9 @@ export default function CardsCheck() {
     const [notLearned, setNotLearned] = useState(0);
     const [finished, setFinished] = useState(false);
 
-    // 🕒 Таймер
     const [time, setTime] = useState(0);
     const intervalRef = useRef(null);
 
-    // Старт таймера при завантаженні
     useEffect(() => {
         intervalRef.current = setInterval(() => {
             setTime(prev => prev + 1);
@@ -50,7 +48,7 @@ export default function CardsCheck() {
             setCurrent(prev => prev + 1);
         } else {
             setFinished(true);
-            clearInterval(intervalRef.current); // 🛑 Зупиняємо таймер
+            clearInterval(intervalRef.current);
         }
     };
 
@@ -82,7 +80,6 @@ export default function CardsCheck() {
 
     return (
         <div className="cc-page">
-            {/* Верхня панель — назва модуля, лічильник, хрестик */}
             <div className="cc-header">
                 <h2 className="cc-module-title">{moduleName}</h2>
 
@@ -95,7 +92,6 @@ export default function CardsCheck() {
                 </button>
             </div>
 
-            {/* Основна частина */}
             {!finished ? (
                 <CardsCheckCard
                     term={words[current].term}

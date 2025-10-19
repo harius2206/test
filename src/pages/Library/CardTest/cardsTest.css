@@ -9,16 +9,15 @@
 }
 
 [data-theme="dark"] {
-    --ct-bg: #1f2937;
+    --ct-bg: #000000;
     --ct-text: #f3f4f6;
-    --ct-header-bg: #111827;
-    --ct-border: #374151;
+    --ct-header-bg: #000000;
+    --ct-border: #000000;
     --ct-warning-bg: #3a2e1a;
     --ct-warning-border: #fbbf24;
     --ct-warning-text: #ffffff;
 }
 
-/* Контейнер сторінки */
 .ct-container {
     max-width: 900px;
     width: 100%;
@@ -31,7 +30,6 @@
     transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Sticky header (під час тесту) */
 .ct-header-fixed {
     position: sticky;
     top: 0;
@@ -42,7 +40,6 @@
     border-bottom: 1px solid var(--ct-border);
 }
 
-/* Header на екрані результатів */
 .ct-header {
     position: relative;
     background: var(--ct-header-bg);
@@ -51,7 +48,6 @@
     border-bottom: 1px solid var(--ct-border);
 }
 
-/* Рядок у хедері */
 .ct-header-row {
     display: flex;
     align-items: center;
@@ -59,7 +55,7 @@
     gap: 12px;
 }
 
-/* Назва модуля */
+
 .ct-title {
     font-size: 20px;
     font-weight: 700;
@@ -70,7 +66,6 @@
     transition: color 0.3s ease;
 }
 
-/* Лічильник прогресу */
 .ct-progress {
     font-weight: 600;
     color: var(--ct-text);
@@ -79,7 +74,6 @@
     transition: color 0.3s ease;
 }
 
-/* Кнопка закриття */
 .ct-close-btn {
     border: none;
     background: transparent;

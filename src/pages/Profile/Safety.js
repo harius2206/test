@@ -28,8 +28,10 @@ export default function Safety() {
 
     return (
         <div className="profile-content">
-            <h1 className={"profile-title"}>Safety</h1>
-            <h2 className={"profile-tile-description"}>Here you can change your email or password</h2>
+            <h1 className="profile-title">Safety</h1>
+            <h2 className="profile-tile-description">
+                Here you can change your email or password
+            </h2>
 
             <div className="profile-form">
                 <label>
@@ -41,11 +43,16 @@ export default function Safety() {
                         onSave={(val) => setEmail(val)}
                     />
                 </label>
-                <p className={"advice-message"}>enter a new email, a confirmation message will be sent to it, after confirmation the email will be changed to the new one</p>
-                <div className={"button-wrapper"}>
+
+                <p className="advice-message">
+                    enter a new email, a confirmation message will be sent to it, after confirmation
+                    the email will be changed to the new one
+                </p>
+
+                <div className="button-wrapper">
                     <Button
                         variant="static"
-                        color="#6366f1"
+                        color="var(--accent)"
                         onClick={handleSend}
                         disabled={cooldown > 0}
                         width="170px"
@@ -55,9 +62,7 @@ export default function Safety() {
                     </Button>
 
                     {cooldown > 0 && (
-                        <span style={{ fontSize: "16px", color: "#666" }}>
-                            {cooldown}s
-                        </span>
+                        <span className="cooldown-text">{cooldown}s</span>
                     )}
                 </div>
 
@@ -90,21 +95,26 @@ export default function Safety() {
                     />
                 </label>
 
-                <div className={"button-wrapper"}>
+                <div className="button-wrapper">
                     <Button
                         variant="toggle"
-                        color="#6366f1"
+                        color="var(--accent)"
                         width="170px"
                         height="46px"
                         onClick={() => {
-                            console.log("Change password:", { password, newPassword, confirmPassword });
+                            console.log("Change password:", {
+                                password,
+                                newPassword,
+                                confirmPassword,
+                            });
                         }}
                     >
                         Change password
                     </Button>
+
                     <Button
                         variant="toggle"
-                        color="#6366f1"
+                        color="var(--accent)"
                         width="170px"
                         height="46px"
                     >
@@ -128,19 +138,20 @@ export default function Safety() {
                     />
                 </label>
 
-                <div className={"button-wrapper"}>
+                <div className="button-wrapper">
                     <Button
                         variant="toggle"
-                        color="#6366f1"
+                        color="var(--accent)"
                         width="170px"
                         height="46px"
                         onClick={() => console.log("Save key:", apiKey)}
                     >
                         Save key
                     </Button>
+
                     <Button
                         variant="toggle"
-                        color="#DF4C4C"
+                        color="var(--danger)"
                         width="170px"
                         height="46px"
                         onClick={() => setApiKey("")}

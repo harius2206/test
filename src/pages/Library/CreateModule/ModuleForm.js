@@ -105,7 +105,6 @@ export default function ModuleForm({
                     </div>
                 </div>
 
-                {/* global languages */}
                 <div className="global-lang-row">
                     <ClickOutsideWrapper onClickOutside={() => setOpenLeft(false)}>
                         <div className="lang-dropdown">
@@ -160,7 +159,6 @@ export default function ModuleForm({
                     </ClickOutsideWrapper>
                 </div>
 
-                {/* tags */}
                 <div className="tags-block">
                     <div className="existing-tags">
                         {tags.map((t) => (

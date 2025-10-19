@@ -56,40 +56,49 @@ export default function MainPage() {
             <section className="mp-section">
                 <h2 className="mp-title">Popular modules</h2>
                 <div className="mp-slider-wrapper">
-                    <button className="mp-arrow-btn mp-arrow-left prev-mod">
-                        <ArrowLeft />
-                    </button>
-                    <Swiper
-                        modules={[Navigation, Autoplay]}
-                        slidesPerView={3}
-                        spaceBetween={18}
-                        loop={true}
-                        autoplay={{ delay: 2800, disableOnInteraction: false }}
-                        navigation={{ prevEl: ".prev-mod", nextEl: ".next-mod" }}
-                    >
-                        {modules.map((m) => (
-                            <SwiperSlide key={m.id}>
-                                <div className="mp-module-card">
-                                    <div className="mp-card-header">
-                                        <h4 className="mp-module-name">{m.name}</h4>
-                                        <div className="mp-rating">
-                                            {m.rating}
-                                            <StarIcon className="mp-star" />
+                    <div className="mp-slider-frame">
+                        <button className="mp-arrow-btn mp-arrow-left prev-mod">
+                            <ArrowLeft />
+                        </button>
+                        <Swiper
+                            key="modules-swiper"
+                            modules={[Navigation, Autoplay]}
+                            loop={true}
+                            autoplay={{ delay: 2800, disableOnInteraction: false }}
+                            navigation={{ prevEl: ".prev-mod", nextEl: ".next-mod" }}
+                            observer={true}
+                            observeParents={true}
+                            breakpoints={{
+                                0: { slidesPerView: 1, spaceBetween: 8 },
+                                500: { slidesPerView: 2, spaceBetween: 12 },
+                                700: { slidesPerView: 3, spaceBetween: 16 },
+                                900: { slidesPerView: 4, spaceBetween: 18 },
+                            }}
+                        >
+                            {modules.map((m) => (
+                                <SwiperSlide key={m.id}>
+                                    <div className="mp-module-card">
+                                        <div className="mp-card-header">
+                                            <h4 className="mp-module-name">{m.name}</h4>
+                                            <div className="mp-rating">
+                                                {m.rating}
+                                                <StarIcon className="mp-star" />
+                                            </div>
+                                        </div>
+                                        <p className="mp-module-desc">{m.description}</p>
+                                        <div className="mp-card-bottom">
+                                            <span>{m.words} words</span>
+                                            <div className="mp-bottom-divider" />
+                                            <span>{m.author}</span>
                                         </div>
                                     </div>
-                                    <p className="mp-module-desc">{m.description}</p>
-                                    <div className="mp-card-bottom">
-                                        <span>{m.words} words</span>
-                                        <div className="mp-bottom-divider" />
-                                        <span>{m.author}</span>
-                                    </div>
-                                </div>
-                            </SwiperSlide>
-                        ))}
-                    </Swiper>
-                    <button className="mp-arrow-btn mp-arrow-right next-mod">
-                        <ArrowRight />
-                    </button>
+                                </SwiperSlide>
+                            ))}
+                        </Swiper>
+                        <button className="mp-arrow-btn mp-arrow-right next-mod">
+                            <ArrowRight />
+                        </button>
+                    </div>
                 </div>
             </section>
 
@@ -97,41 +106,47 @@ export default function MainPage() {
             <section className="mp-section">
                 <h2 className="mp-title">Best authors</h2>
                 <div className="mp-slider-wrapper">
-                    <button className="mp-arrow-btn mp-arrow-left prev-auth">
-                        <ArrowLeft />
-                    </button>
-                    <Swiper
-                        modules={[Navigation, Autoplay]}
-                        slidesPerView={4}
-                        spaceBetween={20}
-                        loop={true}
-                        autoplay={{ delay: 3200, disableOnInteraction: false }}
-                        navigation={{ prevEl: ".prev-auth", nextEl: ".next-auth" }}
-                    >
-                        {authors.map((a) => (
-                            <SwiperSlide key={a.id}>
-                                <div className="mp-author-card">
-                                    <UserAvatar name={a.name} size={50} avatar={a.avatar} />
-                                    <div className="mp-author-info">
-                                        <span className="mp-author-name">{a.name}</span>
-
-                                        <div className="mp-author-rating">
-                                            <StarIcon className="mp-star" />
-                                            <span>{a.rating}</span>
-                                        </div>
-
-                                        <div className="mp-author-modules">
-                                            {a.modules} modules
+                    <div className="mp-slider-frame">
+                        <button className="mp-arrow-btn mp-arrow-left prev-auth">
+                            <ArrowLeft />
+                        </button>
+                        <Swiper
+                            key="authors-swiper"
+                            modules={[Navigation, Autoplay]}
+                            loop={true}
+                            autoplay={{ delay: 3200, disableOnInteraction: false }}
+                            navigation={{ prevEl: ".prev-auth", nextEl: ".next-auth" }}
+                            observer={true}
+                            observeParents={true}
+                            breakpoints={{
+                                0: { slidesPerView: 1, spaceBetween: 8 },
+                                500: { slidesPerView: 2, spaceBetween: 12 },
+                                700: { slidesPerView: 3, spaceBetween: 16 },
+                                900: { slidesPerView: 4, spaceBetween: 18 },
+                            }}
+                        >
+                            {authors.map((a) => (
+                                <SwiperSlide key={a.id}>
+                                    <div className="mp-author-card">
+                                        <UserAvatar name={a.name} size={50} avatar={a.avatar} />
+                                        <div className="mp-author-info">
+                                            <span className="mp-author-name">{a.name}</span>
+                                            <div className="mp-author-rating">
+                                                <StarIcon className="mp-star" />
+                                                <span>{a.rating}</span>
+                                            </div>
+                                            <div className="mp-author-modules">
+                                                {a.modules} modules
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </SwiperSlide>
-                        ))}
-                    </Swiper>
-
-                    <button className="mp-arrow-btn mp-arrow-right next-auth">
-                        <ArrowRight />
-                    </button>
+                                </SwiperSlide>
+                            ))}
+                        </Swiper>
+                        <button className="mp-arrow-btn mp-arrow-right next-auth">
+                            <ArrowRight />
+                        </button>
+                    </div>
                 </div>
             </section>
         </div>

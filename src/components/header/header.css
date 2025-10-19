@@ -3,13 +3,15 @@
     --hdr-text: #111111;
     --hdr-hover: #6366f1;
     --hdr-shadow: rgba(0, 0, 0, 0.25);
+    --hdr-bottom-glow: 0 0.1px 25px rgba(241, 241, 241, 0.5);
 }
 
 [data-theme="dark"] {
     --hdr-bg: #0a0a0a;
     --hdr-text: #f9fafb;
     --hdr-hover: #818cf8;
-    --hdr-shadow: rgba(255, 255, 255, 0.08);
+    --hdr-shadow: rgba(255, 255, 255, 0.05);
+    --hdr-bottom-glow: 0 0 25px rgba(44, 44, 44, 0.5);
 }
 
 * {
@@ -20,6 +22,8 @@
 }
 
 .hdr-wrapper {
+    position: relative;
+    z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -27,11 +31,14 @@
     padding: 0 4%;
     height: 96px;
     background: var(--hdr-bg);
-    box-shadow: 0px 10px 20px -5px var(--hdr-shadow);
-    transition: background-color 0.3s ease, color 0.3s ease;
+    box-shadow:
+            0px 10px 20px -5px var(--hdr-shadow),
+            var(--hdr-bottom-glow);
+    transition: background-color 0.3s ease,
+    color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
-/* === Ліва частина (лого + пошук) === */
 .hdr-left {
     display: flex;
     align-items: center;
@@ -46,16 +53,11 @@
     transition: color 0.2s ease;
 }
 
-.hdr-logo:hover {
-    color: var(--hdr-hover);
-}
-
 .hdr-search-container {
     flex-shrink: 0;
     width: 320px;
 }
 
-/* === Права частина (навігація + юзер) === */
 .hdr-right {
     display: flex;
     align-items: center;
@@ -88,9 +90,7 @@
     margin-left: 10px;
 }
 
-/* ====== АДАПТИВ ====== */
 
-/* великі монітори */
 @media (max-width: 1200px) {
     .hdr-left {
         gap: 28px;
@@ -109,7 +109,6 @@
     }
 }
 
-/* середні екрани */
 @media (max-width: 940px) {
     .hdr-left {
         gap: 20px;
@@ -142,7 +141,6 @@
     }
 }
 
-/* мобільні */
 @media (max-width: 480px) {
     .hdr-wrapper {
         height: 80px;

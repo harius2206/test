@@ -10,11 +10,11 @@
 
 [data-theme="dark"] {
     --ccr-text: #f3f4f6;
-    --ccr-bg: #0e1117;
+    --ccr-bg: #000000;
     --ccr-learned: #81c784;
     --ccr-notlearned: #ef5350;
     --ccr-border: #374151;
-    --ccr-btn-bg: #1f2937;
+    --ccr-btn-bg: #000000;
     --ccr-btn-text: #f3f4f6;
 }
 

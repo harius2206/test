@@ -1,5 +1,3 @@
-// javascript
-// File: `src/pages/Library/Folders/Folders.js`
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import EditableField from "../../../components/editableField/editableField";
@@ -7,10 +5,7 @@ import ColoredIcon from "../../../components/coloredIcon";
 import SortMenu from "../../../components/sortMenu/sortMenu";
 import AddUniversalItem from "../../../components/addUniversalItem";
 import DropdownMenu from "../../../components/dropDownMenu/dropDownMenu";
-import "./folders.css";
-import "../Modules/modules.css";
 
-// SVG
 import { ReactComponent as FolderIcon } from "../../../images/folder.svg";
 import { ReactComponent as DotsIcon } from "../../../images/dots.svg";
 import { ReactComponent as RenameIcon } from "../../../images/rename.svg";

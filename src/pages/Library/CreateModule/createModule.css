@@ -8,17 +8,25 @@
     --clr-muted: #666b9a;
     --clr-primary: #6366f1;
     --clr-primary-light: rgba(99,102,241,0.08);
+
+    --clr-card-error: #ef4444;
+    --clr-card-error-border: #dc2626;
+    --clr-card-error-text: #ffffff;
 }
 
 [data-theme="dark"] {
-    --clr-bg: #1f2937;
-    --clr-card-bg: #111827;
-    --clr-border: #2d2d3a;
-    --clr-border-light: #374151;
-    --clr-text: #f3f4f6;
-    --clr-muted: #9ca3af;
+    --clr-bg: #000000;
+    --clr-card-bg: #1a1a1a;
+    --clr-border: rgba(152, 155, 178, 0.04);
+    --clr-border-light: rgba(152, 155, 178, 0.2);
+    --clr-text: #e6eef8;
+    --clr-muted: #9aa6b2;
     --clr-primary: #6366f1;
-    --clr-primary-light: rgba(99,102,241,0.15);
+    --clr-primary-light: rgba(99,102,241,0.18);
+
+    --clr-card-error: #1a1a1a;
+    --clr-card-error-border: rgba(152, 155, 178, 0.2);
+    --clr-card-error-text: #ffffff;
 }
 
 .page-with-layout {
@@ -169,22 +177,26 @@
 }
 
 .tag-input {
-    padding: 6px 10px;
+    height: 32px;                   /* changed: match tag-pill */
+    line-height: 32px;
+    padding: 0 10px;                /* vertical padding removed to center text */
     border-radius: 14px;
     border: 1px solid var(--clr-border-light);
     background: var(--clr-card-bg);
     color: var(--clr-text);
     min-width: 90px;
+    box-sizing: border-box;
 }
 
 .tag-add-btn {
-    padding: 0 12px;
+    height: 32px;                   /* changed: match tag-pill */
+    padding: 0 12px;                /* horizontal padding only */
     border: none;
     border-radius: 14px;
     background: var(--clr-primary);
     color: #fff;
     cursor: pointer;
-    display: inline-flex;
+    display: inline-flex;           /* center icon/text vertically */
     align-items: center;
     justify-content: center;
 }
@@ -228,8 +240,8 @@
     display: flex;
     gap: 12px;
     align-items: flex-start;
-    background: var(--clr-card-bg);
-    border: 1px solid var(--clr-border);
+    background: var(--clr-card-error); /* changed: red background for cards */
+    border: 1px solid var(--clr-card-error-border); /* changed: red border */
     border-radius: 8px;
     padding: 16px;
     width: 100%;
@@ -238,6 +250,7 @@
     position: relative;
     margin: 0 auto;
     padding-right: 84px;
+    color: var(--clr-card-error-text); /* ensure readable text on red bg */
 }
 
 .card-index-col {
@@ -300,9 +313,6 @@
     transition: filter 0.3s ease;
 }
 
-[data-theme="dark"] svg {
-    filter: brightness(0) invert(1);
-}
 
 .card-separator {
     height: 1px;
@@ -537,4 +547,60 @@ button:focus,
 /* Smooth theme transition */
 *, *::before, *::after {
     transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+/* dark-theme specific icon coloring for reverse / trash (make them white-ish) */
+[data-theme="dark"] .swap-btn svg,
+[data-theme="dark"] .icon-top-btn svg,
+[data-theme="dark"] .icon-trash svg,
+[data-theme="dark"] .icon-reverse svg {
+    color: var(--clr-text);
+    fill: currentColor !important;
+    stroke: currentColor !important;
+    filter: none !important;
+}
+
+
+
+.icon-trash {
+    width: 18px;
+    height: 18px;
+}
+.icon-trash svg path {
+    stroke: currentColor !important;
+    fill: transparent !important;
+    stroke-width: 1.5;
+}
+
+/* Remove border and background from reverse button (icon-only) */
+.icon-reverse,
+.icon-reverse:focus,
+.icon-reverse:active,
+[data-theme="dark"] .icon-reverse {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+.icon-reverse svg path {
+    stroke: currentColor !important;
+    fill: none !important;
+    stroke-width: 1.5;
+}
+
+.tag-input + .tag-add-btn,
+.tag-input {
+    margin-right: 8px;
+}
+
+/* slightly tighten add button left-side spacing so it visually aligns with tag pills */
+.tag-add-btn {
+    padding-left: 10px;
+    padding-right: 12px;
+}
+
+/* dark-theme specific coloring (keeps trash and reverse white in dark mode) */
+[data-theme="dark"] .icon-trash,
+[data-theme="dark"] .icon-reverse {
+    color: var(--clr-text);
 }

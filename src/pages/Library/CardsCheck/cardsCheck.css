@@ -8,7 +8,7 @@
 }
 
 [data-theme="dark"] {
-    --cc-bg: #1e1e2a;
+    --cc-bg: #000000;
     --cc-text: #f3f4f6;
     --cc-subtext: #d1d5db;
     --cc-title: #ffffff;

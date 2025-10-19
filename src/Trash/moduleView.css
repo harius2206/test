@@ -46,7 +46,7 @@
 
 
 
-.mv-module-view {
+.module-view {
     display: flex;
     flex-direction: column;
     flex: 1 0 auto;
@@ -77,7 +77,7 @@ main {
 }
 
 /* ===== CARD BOOK BUTTON ===== */
-.mv-card-book {
+.card-book {
     position: absolute;
     top: 8px;
     right: 8px;
@@ -96,7 +96,7 @@ main {
 }
 
 /* ===== MODULE HEADER ===== */
-.mv-module-header-row {
+.module-header-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -104,19 +104,19 @@ main {
     margin-bottom: 8px;
 }
 
-.mv-module-left-row {
+.module-left-row {
     display: flex;
     align-items: center;
     gap: 14px;
 }
 
-.mv-module-title {
+.module-title {
     font-size: 28px;
     margin: 0;
     font-weight: 700;
 }
 
-.mv-module-rating {
+.module-rating {
     display: flex;
     gap: 6px;
     align-items: center;
@@ -125,13 +125,13 @@ main {
 }
 
 /* ===== HEADER CONTROLS ===== */
-.mv-header-controls {
+.header-controls {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.mv-btn-icon {
+.btn-icon {
     border: none;
     background: transparent;
     cursor: pointer;
@@ -142,23 +142,23 @@ main {
     justify-content: center;
 }
 
-.mv-btn-icon:hover {
+.btn-icon:hover {
     background: var(--mv-card-hover);
 }
 
-.mv-btn-icon svg {
+.btn-icon svg {
     width: 18px;
     height: 18px;
     fill: var(--mv-text-muted);
 }
 /* ===== MODULE TABS ===== */
-.mv-mv-tabs {
+.mv-tabs {
     display: flex;
     gap: 12px;
     margin: 12px 0;
 }
 
-.mv-mv-tab-btn {
+.mv-tab-btn {
     flex: 1;
     display: flex;
     align-items: center;
@@ -173,13 +173,13 @@ main {
     color: var(--mv-text);
 }
 
-.mv-mv-tab-btn:active {
+.mv-tab-btn:active {
     transform: scale(0.98);
     transition: transform 0.07s;
 }
 
 /* ===== NAV BUTTONS ===== */
-.mv-nav-btn {
+.nav-btn {
     border: 1px solid var(--mv-border);
     background: var(--mv-card-bg);
     padding: 8px;
@@ -193,45 +193,39 @@ main {
     cursor: default;
 }
 
-.mv-nav-btn.mv-enabled {
+.nav-btn.enabled {
     border-color: var(--mv-accent);
     color: var(--mv-accent);
     cursor: pointer;
     transition: transform 0.12s;
 }
 
-.mv-nav-btn.mv-enabled:active {
+.nav-btn.enabled:active {
     transform: scale(0.96);
 }
 
 /* ===== CONTROLS ROW ===== */
-.mv-controls-row {
+.controls-row {
     display: flex;
     align-items: center;
     margin-top: 8px;
 }
 
-.mv-card-controls {
+.card-controls {
     display: flex;
     align-items: center;
     justify-content: center;
     flex: 1;
     margin-left: 110px;
-    gap: 12px; /* added: spacing between nav buttons and counter */
 }
 
-/* small counter spacing (space on both sides) */
-.mv-counter {
-    margin: 0 12px; /* added: distance between arrows and counter */
-}
-
-.mv-icon-controls {
+.icon-controls {
     display: flex;
     gap: 8px;
     align-items: center;
 }
 
-.mv-icon-controls .mv-icon-btn {
+.icon-controls .icon-btn {
     border: none;
     background: transparent;
     padding: 6px;
@@ -242,18 +236,18 @@ main {
     border-radius: 6px;
 }
 
-.mv-icon-controls .mv-icon-btn svg {
+.icon-controls .icon-btn svg {
     width: 20px;
     height: 20px;
     fill: var(--mv-text-muted);
 }
 
-.mv-icon-controls .mv-icon-btn:active svg {
+.icon-controls .icon-btn:active svg {
     transform: scale(0.95);
     transition: transform 0.08s;
 }
 /* ===== AUTHOR BAND ===== */
-.mv-author-band {
+.author-band {
     margin-top: 24px;
     display: flex;
     flex-direction: column;
@@ -264,13 +258,13 @@ main {
     border-bottom: 1px solid var(--mv-border);
 }
 
-.mv-module-view__author-info-row {
+.module-view__author-info-row {
     display: flex;
     align-items: flex-start;
     gap: 18px;
 }
 
-.mv-author-info-block {
+.author-info-block {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -278,20 +272,20 @@ main {
     margin-top: 2px;
 }
 
-.mv-author-label {
+.author-label {
     font-size: 13px;
     color: var(--mv-text-muted);
     font-weight: 600;
     margin-bottom: 2px;
 }
 
-.mv-author-name {
+.author-name {
     font-size: 18px;
     font-weight: 700;
     color: var(--mv-text);
 }
 
-.mv-author-rating-row {
+.author-rating-row {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -300,13 +294,13 @@ main {
     font-weight: 600;
 }
 
-.mv-author-rating-value {
+.author-rating-value {
     color: var(--mv-text);
     font-size: 16px;
     font-weight: 600;
 }
 
-.mv-author-description {
+.author-description {
     margin-top: 10px;
     color: var(--mv-text-muted);
     font-size: 15px;
@@ -314,46 +308,46 @@ main {
     width: 100%;
 }
 
-.mv-module-view__user-avatar-text {
+.module-view__user-avatar-text {
     line-height: 1;
 }
 
 /* RESPONSIVE */
 @media (max-width: 600px) {
-    .mv-author-band {
+    .author-band {
         padding: 12px 6px 8px 6px;
     }
-    .mv-author-info-block .mv-author-name {
+    .author-info-block .author-name {
         font-size: 15px;
     }
-    .mv-author-info-block .mv-author-rating-row {
+    .author-info-block .author-rating-row {
         font-size: 14px;
     }
 }
 /* ===== CARDS LISTS ===== */
-.mv-cards-lists {
+.cards-lists {
     margin-top: 20px;
 }
-.mv-cards-lists h3 {
+.cards-lists h3 {
     margin: 12px 0 6px;
     font-size: 16px;
 }
 
-.mv-row {
+.cards-lists .row {
     display: flex;
     align-items: stretch;
     border: 1px solid var(--mv-border);
     border-radius: 6px;
-    background: var(--mv-card-bg);
+    background: var(--mv-bg-secondary);
     margin: 4px 0;
     overflow: hidden;
     padding: 0;
 }
 
-.mv-row.mv-empty-message {
+.row.empty-message {
     padding: 10px 12px;
     border-radius: 6px;
-    background: var(--mv-card-bg);
+    background: var(--mv-bg-secondary);
     border: 1px solid var(--mv-border);
     margin: 4px 0;
     width: 100%;
@@ -363,7 +357,7 @@ main {
     justify-content: center;
 }
 
-.mv-row-half {
+.row-half {
     flex: 1;
     display: flex;
     align-items: center;
@@ -371,12 +365,12 @@ main {
     padding: 10px;
 }
 
-.mv-row-divider {
+.row-divider {
     width: 1px;
     background: var(--mv-divider);
 }
 
-.mv-row-right {
+.row-right {
     flex: 1;
     display: flex;
     align-items: center;
@@ -384,13 +378,13 @@ main {
     padding: 10px;
 }
 
-.mv-row-definition {
+.row-definition {
     flex: 1;
     text-align: center;
 }
 
 /* ===== BOOK ICON ===== */
-.mv-book-icon {
+.book-icon {
     width: 20px;
     height: 20px;
     display: inline-block;
@@ -398,19 +392,19 @@ main {
     transition: color 0.12s ease, transform 0.12s ease, stroke 0.12s ease;
 }
 
-.mv-book-icon path {
+.book-icon path {
     stroke: currentColor; /* контур книжки */
     fill: none;           /* всередині прозоро */
     transition: stroke 0.12s ease, transform 0.12s ease;
 }
 
 /* Активна книжка: контур стає фіолетовим */
-.mv-row-book-btn.mv-active .mv-book-icon path {
+.row-book-btn.active .book-icon path {
     stroke: var(--mv-accent);
 }
 
 /* Кнопка */
-.mv-row-book-btn {
+.row-book-btn {
     position: absolute;
     right: 10px;
     background: transparent;
@@ -424,30 +418,30 @@ main {
 }
 
 /* Масштаб при наведенні */
-.mv-row-book-btn:hover .mv-book-icon {
+.row-book-btn:hover .book-icon {
     transform: scale(1.1);
 }
 
 
 /* ===== STAR ICON ===== */
-.mv-star-icon {
+.star-icon {
     width: 22px;
     height: 22px;
     color: var(--mv-divider);
 }
 
-.mv-star-icon.mv-active {
+.star-icon.active {
     color: var(--mv-star);
 }
 
-.mv-star-icon path {
+.star-icon path {
     stroke: currentColor;
     fill: currentColor;
     transition: fill 0.2s ease, stroke 0.2s ease;
 }
 
 /* ===== BOTTOM ACTIONS ===== */
-.mv-bottom-actions {
+.bottom-actions {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -456,7 +450,7 @@ main {
 }
 
 /* ===== REPEAT DROPDOWN ===== */
-.mv-repeat-wrapper .mv-dropdown {
+.repeat-wrapper .dropdown {
     position: absolute;
     top: calc(100% + 8px);
     left: 50%;
@@ -470,7 +464,7 @@ main {
     overflow: hidden;
 }
 
-.mv-repeat-wrapper .mv-dropdown .mv-dropdown-item {
+.repeat-wrapper .dropdown .dropdown-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -480,13 +474,13 @@ main {
     transition: background 0.12s ease, color 0.12s ease;
 }
 
-.mv-repeat-wrapper .mv-dropdown .mv-dropdown-item-left {
+.repeat-wrapper .dropdown .dropdown-item-left {
     display: inline-flex;
     align-items: center;
     gap: 8px;
 }
 
-.mv-repeat-btn {
+.repeat-btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -500,19 +494,19 @@ main {
 }
 
 /* ===== ICONS WITH TRANSITION ===== */
-.mv-repeat-icon svg, .mv-sort-arrow svg {
+.repeat-icon svg, .sort-arrow svg {
     transition: transform 0.25s ease;
     width: 14px;
     height: 14px;
     fill: var(--mv-accent);
 }
 
-.mv-repeat-wrapper.open .mv-repeat-icon svg, .mv-sort-wrapper.open .mv-sort-arrow svg {
+.repeat-wrapper.open .repeat-icon svg, .sort-wrapper.open .sort-arrow svg {
     transform: rotate(180deg);
 }
 
 /* ===== TAGS ROW ===== */
-.mv-view_tags_row {
+.view_tags-row {
     margin-right: auto;
     width: 100%;
     display: flex;
@@ -521,15 +515,8 @@ main {
     padding: 5px;
 }
 
-/* small spacing between tag elements inside the local tags row */
-.mv-view_tags-row .tag,
-.mv-view_tags_row .tag {
-    display: inline-block;
-    margin: 0 8px 6px 0; /* right and bottom spacing between tags */
-}
-
 /* ===== GENERIC BUTTONS ===== */
-.mv-btn {
+.btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -538,13 +525,13 @@ main {
     cursor: pointer;
 }
 
-.mv-btn.mv-btn-toggle {
+.btn.btn-toggle {
     border: 2px solid var(--mv-accent);
     background: transparent;
     color: var(--mv-accent);
 }
 
-.mv-btn.mv-btn-static {
+.btn.btn-static {
     border: 2px solid var(--mv-accent);
     background: var(--mv-accent);
     color: var(--mv-btn-text-light);
@@ -552,19 +539,19 @@ main {
 
 /* ===== MEDIA QUERIES ===== */
 @media (max-width: 680px) {
-    .mv-module-view { padding: 0 12px; }
-    .mv-module-title { font-size: 22px; }
+    .module-view { padding: 0 12px; }
+    .module-title { font-size: 22px; }
     .flashcard { min-height: 150px; max-height: 180px; }
-    .mv-mv-tab-btn { padding: 8px; font-size: 14px; }
+    .mv-tab-btn { padding: 8px; font-size: 14px; }
 }
 
-.mv-mv-tab-btn:active, .mv-btn-icon:active, .mv-repeat-btn:active {
+.mv-tab-btn:active, .btn-icon:active, .repeat-btn:active {
     transform: scale(0.98);
     transition: transform 0.07s;
 }
 
 /* ===== FULLSCREEN FLASHCARD AREA ===== */
-.mv-flashcard-area.mv-fullscreen {
+.flashcard-area.fullscreen {
     position: fixed;
     inset: 0;
     z-index: 10;
@@ -578,7 +565,7 @@ main {
 }
 
 /* Centering the card */
-.mv-flashcard-area.mv-fullscreen .mv-flashcard-wrapper {
+.flashcard-area.fullscreen .flashcard-wrapper {
     width: 90%;
     max-width: 900px;
     max-height: 80vh;
@@ -588,7 +575,7 @@ main {
 }
 
 /* Controls under card */
-.mv-flashcard-area.mv-fullscreen .mv-controls-row {
+.flashcard-area.fullscreen .controls-row {
     display: flex;
     align-items: center;
     margin-top: 8px;
@@ -600,7 +587,7 @@ main {
 }
 
 /* Card controls layout */
-.mv-flashcard-area.mv-fullscreen .mv-card-controls {
+.flashcard-area.fullscreen .card-controls {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -610,7 +597,7 @@ main {
 }
 
 /* Icon controls */
-.mv-flashcard-area.mv-fullscreen .mv-icon-controls {
+.flashcard-area.fullscreen .icon-controls {
     display: flex;
     gap: 8px;
     align-items: center;
@@ -619,7 +606,7 @@ main {
 }
 
 /* Icon buttons */
-.mv-flashcard-area.mv-fullscreen .mv-icon-btn {
+.flashcard-area.fullscreen .icon-btn {
     border: none;
     background: transparent;
     padding: 6px;
@@ -630,120 +617,41 @@ main {
     border-radius: 6px;
 }
 
-.mv-flashcard-area.mv-fullscreen .mv-icon-btn svg {
+.flashcard-area.fullscreen .icon-btn svg {
     width: 20px;
     height: 20px;
     fill: var(--mv-text-muted);
 }
-.mv-view_tags-row{
-    margin-right: 5px;
-}
+
+/* MEDIA QUERIES FOR SMALL SCREENS */
 @media (max-width: 768px) {
-    .mv-flashcard-area.mv-fullscreen .mv-flashcard-wrapper {
+    .flashcard-area.fullscreen .flashcard-wrapper {
         width: 95%;
         max-width: 500px;
         max-height: 70vh;
     }
-    .mv-flashcard-area.mv-fullscreen .mv-controls-row {
+    .flashcard-area.fullscreen .controls-row {
         flex-direction: column;
         gap: 10px;
         margin-top: 12px;
     }
-    .mv-flashcard-area.mv-fullscreen .mv-card-controls {
+    .flashcard-area.fullscreen .card-controls {
         margin-left: 0;
         justify-content: center;
     }
-    .mv-flashcard-area.mv-fullscreen .mv-icon-controls {
+    .flashcard-area.fullscreen .icon-controls {
         justify-content: center;
     }
-    .mv-flashcard-area.mv-fullscreen .mv-icon-btn {
+    .flashcard-area.fullscreen .icon-btn {
         width: 38px;
         height: 38px;
     }
 }
 
 @media (max-width: 480px) {
-    .mv-flashcard-area.mv-fullscreen .mv-flashcard-wrapper {
+    .flashcard-area.fullscreen .flashcard-wrapper {
         width: 100%;
         max-width: 400px;
         max-height: 60vh;
     }
-}
-
-/* Dark theme: force control SVGs (three-dots, nav arrows, restart/play/pause, expand) to use the dark theme text color */
-[data-theme="dark"] .mv-btn-icon svg,
-[data-theme="dark"] .mv-nav-btn svg,
-[data-theme="dark"] .mv-icon-controls .mv-icon-btn svg {
-    fill: var(--mv-text) !important;
-    color: var(--mv-text) !important;
-    stroke: var(--mv-text) !important;
-}
-
-/* Ensure child paths/groups inside SVGs also pick up the color (covers inline fills/strokes) */
-[data-theme="dark"] .mv-btn-icon svg *,
-[data-theme="dark"] .mv-nav-btn svg *,
-[data-theme="dark"] .mv-icon-controls .mv-icon-btn svg * {
-    fill: var(--mv-text) !important;
-    stroke: var(--mv-text) !important;
-}
-
-/* Global book SVG class (keeps compatibility with other/global styles).
-   Mirrors .mv-book-icon behavior so components using .book-icon get same visuals. */
-.book-icon {
-    width: 20px;
-    height: 20px;
-    display: inline-block;
-    color: var(--mv-text-muted);
-    transition: color 0.12s ease, transform 0.12s ease, stroke 0.12s ease;
-}
-
-.book-icon path {
-    stroke: currentColor;
-    fill: none;
-    transition: stroke 0.12s ease, transform 0.12s ease;
-}
-
-/* Active state (reuse same mv-active token used in JSX) */
-.mv-row-book-btn.mv-active .book-icon path,
-.mv-card-book.mv-active .book-icon path {
-    stroke: var(--mv-accent);
-}
-
-/* keep existing mv-book-icon rules to avoid breaking current references */
-.mv-book-icon {
-    width: 20px;
-    height: 20px;
-    display: inline-block;
-    color: var(--mv-text-muted); /* для кольору контуру за замовчуванням */
-    transition: color 0.12s ease, transform 0.12s ease, stroke 0.12s ease;
-}
-
-.mv-book-icon path {
-    stroke: currentColor; /* контур книжки */
-    fill: none;           /* всередині прозоро */
-    transition: stroke 0.12s ease, transform 0.12s ease;
-}
-
-/* Активна книжка: контур стає фіолетовим */
-.mv-row-book-btn.mv-active .mv-book-icon path {
-    stroke: var(--mv-accent);
-}
-
-/* Кнопка */
-.mv-row-book-btn {
-    position: absolute;
-    right: 10px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4px;
-    transition: transform 0.1s ease;
-}
-
-/* Масштаб при наведенні */
-.mv-row-book-btn:hover .mv-book-icon {
-    transform: scale(1.1);
 }

@@ -12,8 +12,8 @@
 [data-theme="dark"] {
     --ef-text: #f3f4f6;
     --ef-subtext: #d1d5db;
-    --ef-bg: #1f2937;
-    --ef-border: #374151;
+    --ef-bg: #000000;
+    --ef-border: #ffffff;
     --ef-disabled-bg: #2d3748;
     --ef-disabled-text: #6b7280;
     --ef-focus: #818cf8;
@@ -39,7 +39,7 @@
 .editable-field textarea {
     flex: 1;
     padding: 10px 40px 10px 14px;
-    border: 1px solid var(--ef-border);
+    border: 1.2px solid var(--ef-border);
     border-radius: 6px;
     font-size: 16px;
     font-weight: 600;

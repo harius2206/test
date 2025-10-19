@@ -10,13 +10,13 @@
 }
 
 [data-theme="dark"] {
-    --tq-bg: #1f1f28;
-    --tq-border: #3b3b4d;
+    --tq-bg: #000000;
+    --tq-border: #1c1c1c;
     --tq-text-main: #ffffff;
     --tq-text-secondary: #a1a1b2;
     --tq-accent: #6366f1;
-    --tq-option-bg: #2a2a36;
-    --tq-selected-bg: #3a3a4a;
+    --tq-option-bg: #1a1a1a;
+    --tq-selected-bg: #272727;
     --tq-skip: #9ca3af;
 }
 

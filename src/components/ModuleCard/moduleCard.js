@@ -9,6 +9,9 @@ import { ReactComponent as EditIcon } from "../../images/editImg.svg";
 import { ReactComponent as DeleteIcon } from "../../images/delete.svg";
 import { ReactComponent as ShareIcon } from "../../images/share.svg";
 
+import { ReactComponent as MoreIcon } from "../../images/dotsHorizontal.svg";
+import { ReactComponent as CloseIcon } from "../../images/close.svg";
+
 import "./moduleCard.css";
 
 export default function ModuleCard({
@@ -22,7 +25,9 @@ export default function ModuleCard({
                                        onClick
                                    }) {
     const showMore = module.tags.length > visibleCount;
-    const visibleTags = expanded ? module.tags : module.tags.slice(0, visibleCount);
+    const visibleTags = expanded
+        ? module.tags
+        : module.tags.slice(0, visibleCount);
     const navigate = useNavigate();
 
     return (
@@ -37,33 +42,50 @@ export default function ModuleCard({
                     </div>
                     <span className="separator">|</span>
                     <span className="rating">
-                        {module.rating}
-                        <StarIcon className="star-icon" />
-                    </span>
-                    <div className="tags-row">
-                        {visibleTags.map((tag, i) => (
-                            <span key={i} className="tag">{tag}</span>
-                        ))}
-                        {showMore && !expanded && (
-                            <a onClick={(e) => { e.stopPropagation(); toggleTags(module.id); }} className="tags-dots" style={{ cursor: "pointer" }}>...</a>
-                        )}
-                        {showMore && expanded && (
-                            <a onClick={(e) => { e.stopPropagation(); toggleTags(module.id); }} className="tags-dots" style={{ cursor: "pointer" }}>▲</a>
-                        )}
+            {module.rating}
+                        <StarIcon className="mc-star-icon" />
+          </span>
+
+                    <div className="mc-tags-wrapper">
+                        <div className="mc-tags-row">
+                            {visibleTags.map((tag, i) => (
+                                <span key={i} className="mc-tag">{tag}</span>
+                            ))}
+
+                            {showMore && (
+                                <a
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        toggleTags(module.id);
+                                    }}
+                                    className="tags-dots"
+                                    style={{ cursor: "pointer" }}
+                                >
+                                    {expanded
+                                        ? <CloseIcon width={14} height={14} />
+                                        : <MoreIcon width={14} height={14} />}
+                                </a>
+                            )}
+                        </div>
                     </div>
                 </div>
+
                 <div className="module-name-row">
                     <span className="module-name-text">{module.name}</span>
                 </div>
             </div>
-            <div className="folder-actions" onClick={e => e.stopPropagation()}>
+
+            <div className="folder-actions" onClick={(e) => e.stopPropagation()}>
                 <DropdownMenu
                     align="left"
                     width={180}
                     items={[
                         {
                             label: "Edit",
-                            onClick: () => navigate("/library/create-module", { state: { mode: "edit", module } }),
+                            onClick: () =>
+                                navigate("/library/create-module", {
+                                    state: { mode: "edit", module }
+                                }),
                             icon: <EditIcon width={16} height={16} />
                         },
                         {

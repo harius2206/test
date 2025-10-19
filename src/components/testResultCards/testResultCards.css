@@ -17,18 +17,18 @@
 }
 
 [data-theme="dark"] {
-    --trc-bg: #1f1f28;
+    --trc-bg: #1a1a1a;
     --trc-border: #3b3b4d;
     --trc-text: #ffffff;
     --trc-gray: #a1a1b2;
-    --trc-option-bg: #2a2a36;
+    --trc-option-bg: #272727;
 
     --trc-green: #22c55e;
-    --trc-green-bg: #164a31;
+    --trc-green-bg: #1a1a1a;
     --trc-green-text: #86efac;
 
     --trc-red: #ef4444;
-    --trc-red-bg: #3f1a1a;
+    --trc-red-bg: #1a1a1a;
     --trc-red-text: #fca5a5;
 
     --trc-skipped: #9ca3af;

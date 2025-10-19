@@ -1,27 +1,47 @@
-.page-wrapper {
-    display: grid;
-    grid-template-rows: auto 1fr auto; /* Header - контент - Footer */
-    min-height: 100vh; /* висота на весь екран */
-}
-
-.content {
-    /* головний контент автоматично займає весь простір між Header і Footer */
-    padding: 20px; /* можна змінити під дизайн */
-}
 :root {
     --accent: #6366f1;
-    --border: #d1d5db;
-    --text: #111827;
-    --text-light: #6b7280;
+    --text: rgb(0, 0, 0);
+    --text-muted: #666666;
+    --text-subtle: #8A8A8A;
+    --border: #dddddd;
+    --border-light: #ccc;
     --bg-primary: #ffffff;
-    --bg-secondary: #f9fafb;
+    --bg-secondary: #ffffff;
+    --status-green: green;
+    --status-red: red;
+    --status-orange: orange;
+    --status-gray: gray;
 }
 
 [data-theme="dark"] {
-    --accent: #818cf8;
-    --border: #374151;
-    --text: #f9fafb;
-    --text-light: #9ca3af;
-    --bg-primary: #1f2937;
-    --bg-secondary: #111827;
+    --accent: #655ADE;
+    --text: #ffffff;
+    --text-muted: #d1d5db;
+    --text-subtle: #aaaaaa;
+    --border: #2a2a2a;
+    --border-light: #333;
+    --bg-primary: #000000;
+    --bg-secondary: #000000;
+    --status-green: #4ade80;
+    --status-red: #f87171;
+    --status-orange: #fbbf24;
+    --status-gray: #9ca3af;
+}
+
+
+
+.page-wrapper {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-height: 100vh;
+    background: var(--bg-primary);
+    color: var(--text);
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.content {
+    padding: 0 10px ;
+    background: var(--bg-secondary);
+    color: var(--text);
+    transition: background 0.3s ease, color 0.3s ease;
 }

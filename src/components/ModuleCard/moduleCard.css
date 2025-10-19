@@ -16,15 +16,15 @@
 }
 
 [data-theme="dark"] {
-    --mc-bg: #1f2937;
-    --mc-bg-hover: #2d3748;
-    --mc-border: #374151;
+    --mc-bg: #2a2a2a;
+    --mc-bg-hover: rgb(48, 48, 48);
+    --mc-border: #323232;
     --mc-text: #f3f4f6;
     --mc-muted: #9ca3af;
     --mc-separator: #6b7280;
     --mc-tag-bg: #6366f1;
     --mc-tag-text: #ffffff;
-    --mc-star: #facc15;
+    --mc-star: #e6e6e6;
     --mc-btn-hover: transparent;
     --mc-dropdown-bg: #111827;
     --mc-dropdown-border: #374151;
@@ -32,7 +32,6 @@
     --mc-dots-color: #ffffff;
 }
 
-/* === базові стилі === */
 .modules-page {
     font-family: "Inter", sans-serif;
     color: var(--mc-text);
@@ -57,16 +56,6 @@
 
 .module-card:hover {
     background: var(--mc-bg-hover);
-}
-
-/* === верхній ряд === */
-.top-row {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    font-size: 14px;
-    color: var(--mc-muted);
 }
 
 .separator {
@@ -95,37 +84,57 @@
     color: var(--mc-star);
 }
 
-.star-icon {
+.mc-star-icon {
     width: 16px;
     height: 16px;
     fill: var(--mc-star);
 }
 
 /* === теги === */
-.tags-row {
+.mc-tags-row {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
+    align-items: center;
+    max-width: 100%;
+}
+.mc-tags-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 100%;
 }
 
-.tags-row.extra {
-    margin-top: 4px;
+/* Перший ряд тегів — однорядковий */
+.tags-primary {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
-.tag {
+/* Теги, які не помістилися у перший ряд */
+.tags-extra {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.mc-tag {
     background: var(--mc-tag-bg);
     color: var(--mc-tag-text);
-    font-weight: 600;
     padding: 2px 8px;
     border-radius: 8px;
     font-size: 12px;
+    white-space: nowrap;
 }
 
 .tags-dots {
+    cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: center;
-    color: var(--mc-dots-color);
+    padding: 0 4px;
 }
 
 .collapse-tags {
@@ -137,7 +146,7 @@
     color: var(--mc-dots-color);
 }
 
-/* === назва === */
+/* === назва модуля === */
 .module-name-row {
     margin-top: 6px;
 }
@@ -162,6 +171,21 @@
     border-radius: 6px;
     transition: none;
     color: var(--mc-dots-color);
+}
+
+/* Крапки для тегів */
+.mc-more-icon {
+    color: #000; /* світлий режим */
+}
+
+[data-theme="dark"] .mc-more-icon {
+    color: #fff; /* темний режим */
+}
+
+/* Три крапки меню (DotsIcon) */
+[data-theme="dark"] .btn-icon svg {
+    fill: #ffffff;
+    color: #ffffff;
 }
 
 .btn-icon:hover {

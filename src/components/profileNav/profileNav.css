@@ -1,5 +1,5 @@
 :root {
-    --profile-border: #ddd;
+    --profile-border: #bcbcbc;
     --profile-bg-hover: rgba(152, 155, 178, 0.1);
     --profile-bg-active: #b0b2bd;
     --profile-text: #111827;
@@ -8,28 +8,25 @@
 }
 
 [data-theme="dark"] {
-    --profile-border: #374151;
+    --profile-border: #e3e3e3;
     --profile-bg-hover: #2f323a;
     --profile-bg-active: #4b4e57;
     --profile-text: #f3f4f6;
     --profile-subtext: #9ca3af;
-    --profile-bg: #1f2937;
+    --profile-bg: #000000;
 }
 
-/* === бокова навігація === */
 .profile-nav {
     width: 21%;
     min-height: 100vh;
-    border-right: 1px solid var(--profile-border);
+    border-right: 2px solid var(--profile-border);
     font-family: "Inter", sans-serif;
     padding-top: 20px;
     background: var(--profile-bg);
     color: var(--profile-text);
     transition: background 0.25s ease, color 0.25s ease;
-    margin: 0; /* прибрано зовнішні відступи */
 }
 
-/* === інформаційний блок === */
 .profile-info {
     text-align: center;
     margin-bottom: 30px;
@@ -54,7 +51,6 @@
     color: var(--profile-subtext);
 }
 
-/* === посилання === */
 .profile-links {
     display: flex;
     flex-direction: column;
@@ -79,55 +75,65 @@
     color: #ffffff;
 }
 
-/* === адаптивність === */
-@media (max-width: 900px) {
-    .profile-nav {
-        width: 100%;
-        min-height: auto;
-        border-right: none;
-        border-bottom: 1px solid var(--profile-border);
-        padding-top: 10px;
-        margin: 0; /* лишається без зовнішніх відступів */
-    }
+/* === АДАПТИВНІСТЬ (без зміни вертикальної структури) === */
 
-    .profile-info {
-        margin-bottom: 20px;
+/* Планшети */
+@media (max-width: 1024px) {
+    .profile-nav {
+        width: 25%;
     }
 
     .profile-avatar {
-        width: 120px;
-        height: 120px;
+        width: 130px;
+        height: 130px;
+    }
+
+    .profile-name {
+        font-size: 26px;
+    }
+
+    .profile-links a {
+        font-size: 18px;
+        padding: 16px;
+    }
+}
+
+/* Мобільні */
+@media (max-width: 768px) {
+    .profile-nav {
+        width: 100%;
+        min-height: auto;
+        border-right: 1px solid var(--profile-border); /* завжди справа */
+    }
+
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
     }
 
     .profile-name {
         font-size: 22px;
     }
 
-    .profile-links {
-        flex-direction: row;
-        justify-content: space-around;
+    .profile-links a {
+        font-size: 16px;
+        padding: 14px 16px;
+    }
+}
+
+/* Дуже маленькі екрани */
+@media (max-width: 480px) {
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+    }
+
+    .profile-name {
         font-size: 18px;
     }
 
     .profile-links a {
-        padding: 12px 10px;
-    }
-}
-
-@media (max-width: 520px) {
-    .profile-links {
-        flex-wrap: wrap;
-        gap: 4px;
-        justify-content: center;
-    }
-
-    .profile-links a {
-        font-size: 16px;
-        padding: 10px 8px;
-    }
-
-    .profile-avatar {
-        width: 90px;
-        height: 90px;
+        font-size: 14px;
+        padding: 12px 14px;
     }
 }

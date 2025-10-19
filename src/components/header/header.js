@@ -18,7 +18,6 @@ const Header = () => {
                 <nav className="hdr-nav">
                     <Link to="/" className="hdr-nav-text">Main</Link>
                     <Link to="/library" className="hdr-nav-text">Library</Link>
-                    <Link to="/folders" className="hdr-nav-text">Folders</Link>
                 </nav>
 
                 <div className="hdr-user">

@@ -195,7 +195,7 @@ export default function FolderPage() {
                         style={{
                             background: "#6366f1",
                             color: "#fff",
-                            border: "1px solid #ccc",
+                            border: "none", /* changed: removed white border */
                             height: 40,
                             minWidth: 140,
                             borderRadius: 6,

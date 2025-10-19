@@ -1,9 +1,32 @@
+:root {
+    --lib-bg: #ffffff;
+    --lib-bg-secondary: #f9f9f9;
+    --lib-text: #111827;
+    --lib-muted: #555;
+    --lib-border: #ddd;
+    --lib-accent: #6366f1;
+    --lib-btn-text-light: #ffffff;
+}
+
+[data-theme="dark"] {
+    --lib-bg: #000000;
+    --lib-bg-secondary: #000000;
+    --lib-text: #f3f4f6;
+    --lib-muted: #9ca3af;
+    --lib-border: #ffffff;
+    --lib-accent: #6265ef;
+    --lib-btn-text-light: #ffffff;
+}
+
 .library-main {
     flex: 1;
     padding: 40px 15%;
     display: flex;
     flex-direction: column;
     gap: 20px;
+    background: var(--lib-bg);
+    color: var(--lib-text);
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 .library-header {
@@ -12,6 +35,7 @@
     align-items: center;
 }
 
+/* ===== Табулятори ===== */
 .tabs-wrapper {
     display: flex;
     position: relative;
@@ -30,17 +54,12 @@
     padding: 10px 20px;
     cursor: pointer;
     font-weight: 500;
-    color: #555;
+    color: var(--lib-muted);
+    transition: color 0.2s;
 }
+
 .tab.active {
-    color: #6366f1;
-}
-.tabs-indicator {
-    position: absolute;
-    bottom: 0;
-    height: 2px;
-    background: #6366f1;
-    transition: left 0.3s ease, width 0.3s ease;
+    color: var(--lib-accent);
 }
 
 .tabs-underline {
@@ -49,68 +68,102 @@
     left: 0;
     right: 0;
     height: 2px;
-    background: #e5e7eb;
+    background: var(--lib-border);
 }
-.tabs-indicator.modules {
-    left: 0;
-    width: 100px;
+
+.tabs-indicator {
+    position: absolute;
+    bottom: 0;
+    height: 2px;
+    background: var(--lib-accent);
+    transition: left 0.3s ease, width 0.3s ease;
 }
-.tabs-indicator.folders {
-    left: 100px;
-    width: 95px;
-}
+
+/* Розміри індикатора */
+.tabs-indicator.modules { left: 0; width: 100px; }
+.tabs-indicator.folders { left: 100px; width: 95px; }
+
+/* ===== Контент ===== */
 .library-content {
     margin-top: 20px;
 }
 
+/* ===== Панель керування ===== */
 .library-controls {
     display: flex;
     justify-content: space-between;
     margin-bottom: 20px;
 }
 
+/* ===== Кнопки ===== */
 .sort-btn,
 .add-btn,
 .create-btn {
-    background: white;
-    border: 1px solid #ccc;
+    background: var(--lib-bg);
+    border: 1px solid var(--lib-border);
     padding: 6px 12px;
     border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
     font-weight: bold;
+    color: var(--lib-text);
+    transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
 }
 
+.sort-btn:hover,
+.create-btn:hover {
+    background: var(--lib-bg-secondary);
+    color: var(--lib-accent);
+}
+
+/* Фіолетова кнопка */
 .add-btn {
-    background: #6366f1;
-    color: white;
+    background: var(--lib-accent);
+    color: var(--lib-btn-text-light);
+    border: 1px solid var(--lib-border);
+    height: 40px;
+    min-width: 140px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.25s ease, transform 0.1s ease;
 }
 
+.add-btn:hover {
+    transform: scale(1.03);
+    background: var(--lib-accent);
+    opacity: 0.9;
+}
 
-
+/* ===== Дропдаун ===== */
 .dropdown {
     position: absolute;
     top: 110%;
     left: 0;
-    background: white;
-    border: 1px solid #ddd;
+    background: var(--lib-bg);
+    border: 1px solid var(--lib-border);
     border-radius: 6px;
     min-width: 120px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.15);
     z-index: 5;
+    overflow: hidden;
+    transition: background 0.25s, border-color 0.25s;
 }
 
 .dropdown-item {
     padding: 8px 12px;
     cursor: pointer;
     font-size: 14px;
+    color: var(--lib-text);
+    transition: background 0.2s, color 0.2s;
 }
 
 .dropdown-item:hover {
-    background: #6366f1;
-    color: white;
+    background: var(--lib-accent);
+    color: #fff;
 }
 
+/* ===== Список папок ===== */
 .folder-list {
     display: flex;
     flex-direction: column;
@@ -121,10 +174,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 1px solid #ddd;
+    border: 1px solid var(--lib-border);
     border-radius: 6px;
     padding: 12px;
-    background: #f9f9f9;
+    background: var(--lib-bg-secondary);
+    transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .folder-info {
@@ -136,6 +190,7 @@
 .folder-name {
     font-weight: bold;
     font-size: 16px;
+    color: var(--lib-text);
 }
 
 .folder-actions {
@@ -153,4 +208,29 @@
     border: none;
     font-size: 20px;
     cursor: pointer;
+    color: var(--lib-text);
+    transition: color 0.2s;
+}
+
+.folder-menu button:hover {
+    color: var(--lib-accent);
+}
+
+/* ===== Адаптив ===== */
+@media (max-width: 768px) {
+    .library-main {
+        padding: 30px 6%;
+    }
+    .tabs {
+        gap: 14px;
+        font-size: 16px;
+    }
+    .tab {
+        padding: 8px 14px;
+    }
+    .add-btn {
+        min-width: 120px;
+        height: 38px;
+        font-size: 13px;
+    }
 }

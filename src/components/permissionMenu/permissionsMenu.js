@@ -18,7 +18,7 @@ export default function PermissionsMenu({ users = [], onClose }) {
     };
 
     return (
-        <div className="permissions-menu" role="dialog" aria-label="Permissions">
+        <div className="pm-permissions-menu" role="dialog" aria-label="Permissions">
             <div style={{ maxWidth: 360, width: "100%", overflow: "hidden", marginBottom: 8 }}>
                 <SearchField
                     data={users}
@@ -29,16 +29,16 @@ export default function PermissionsMenu({ users = [], onClose }) {
                 />
             </div>
 
-            <div className="user-list">
+            <div className="pm-user-list">
                 {filteredUsers.map((user) => (
-                    <div key={user.id} className="user-item">
-                        <div className="user-left">
+                    <div key={user.id} className="pm-user-item">
+                        <div className="pm-user-left">
                             <UserAvatar name={user.name} avatar={user.avatar} size={22} />
-                            <span className="user-name">{user.name}</span>
+                            <span className="pm-user-name">{user.name}</span>
                         </div>
 
-                        <div className="user-right">
-                            <span className="user-role">{user.role}</span>
+                        <div className="pm-user-right">
+                            <span className="pm-user-role">{user.role}</span>
 
                             <DropdownMenu
                                 align="right"
@@ -49,7 +49,7 @@ export default function PermissionsMenu({ users = [], onClose }) {
                                     { label: "None", onClick: () => updatePermission(user.id, "None") },
                                 ]}
                             >
-                                <button className="btn-icon" aria-label="Folder menu">
+                                <button className="pm-btn-icon" aria-label="Folder menu">
                                     <DotsIcon width={16} height={16} />
                                 </button>
                             </DropdownMenu>
@@ -58,9 +58,9 @@ export default function PermissionsMenu({ users = [], onClose }) {
                 ))}
             </div>
 
-            <div className="permissions-footer">
+            <div className="pm-permissions-footer">
                 {onClose && (
-                    <button className="btn-primary" onClick={onClose}>Close</button>
+                    <button className="pm-btn-primary" onClick={onClose}>Close</button>
                 )}
             </div>
         </div>

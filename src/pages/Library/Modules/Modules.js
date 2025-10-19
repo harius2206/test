@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import ModuleCard from "../../../components/ModuleCard/moduleCard";
 import SortMenu from "../../../components/sortMenu/sortMenu";
 import PermissionsMenu from "../../../components/permissionMenu/permissionsMenu";
-import "./modules.css";
 
 const defaultModules = [
     {
@@ -14,7 +13,7 @@ const defaultModules = [
         terms: 150,
         author: "admin",
         rating: 4.2,
-        tags: ["mgr1", "litery", "slowa"],
+        tags: ["mgr1", "litery", "slowa", "slowa", "slowa", "slowa", "slowa", "slowa", "slowa", "slowa", "slowa", "slowa", "slowa", "slowa", "slowa", "slowa", "slowa", "slowa"],
         users: [{ id: 1, name: "admin", avatar: "", role: "Edit" }],
         cards: [
             { id: 1, term: "kot", definition: "cat" },
@@ -38,28 +37,34 @@ const defaultModules = [
 
 export default function Modules({ modulesData }) {
     const [expandedTags, setExpandedTags] = useState({});
-    const [visibleCount, setVisibleCount] = useState(9);
+    const [visibleCount, setVisibleCount] = useState(null); // null до обчислення
     const [modules, setModules] = useState(modulesData || defaultModules);
     const [permissionsTarget, setPermissionsTarget] = useState(null);
     const containerRef = useRef(null);
     const navigate = useNavigate();
 
-    // ✅ читаємо тему з localStorage і застосовуємо
+    // Встановлюємо тему одразу
     useEffect(() => {
         const savedTheme = localStorage.getItem("theme") || "light";
         document.documentElement.setAttribute("data-theme", savedTheme);
     }, []);
 
+    // Обчислення видимих тегів
     useEffect(() => {
-        const observer = new ResizeObserver(() => {
+        const computeVisible = () => {
             if (containerRef.current) {
                 const width = containerRef.current.offsetWidth;
                 const baseTagWidth = 80;
                 const count = Math.max(3, Math.floor(width / baseTagWidth) - 5);
                 setVisibleCount(count);
             }
-        });
+        };
+
+        computeVisible(); // одразу при монтуванні
+
+        const observer = new ResizeObserver(computeVisible);
         if (containerRef.current) observer.observe(containerRef.current);
+
         return () => observer.disconnect();
     }, []);
 
@@ -109,22 +114,25 @@ export default function Modules({ modulesData }) {
                 <SortMenu onSort={handleSort} />
             </div>
 
-            <div className="module-list">
-                {modules.map((module) => (
-                    <ModuleCard
-                        key={module.id}
-                        module={module}
-                        visibleCount={visibleCount}
-                        expanded={expandedTags[module.id]}
-                        toggleTags={toggleTags}
-                        onDelete={handleDelete}
-                        onPermissions={openModulePermissions}
-                        onClick={() =>
-                            navigate("/library/module-view", { state: { module } })
-                        }
-                    />
-                ))}
-            </div>
+            {/* Рендеримо тільки після обчислення visibleCount */}
+            {visibleCount !== null && (
+                <div className="module-list">
+                    {modules.map((module) => (
+                        <ModuleCard
+                            key={module.id}
+                            module={module}
+                            visibleCount={visibleCount}
+                            expanded={expandedTags[module.id]}
+                            toggleTags={toggleTags}
+                            onDelete={handleDelete}
+                            onPermissions={openModulePermissions}
+                            onClick={() =>
+                                navigate("/library/module-view", { state: { module } })
+                            }
+                        />
+                    ))}
+                </div>
+            )}
 
             {permissionsTarget && (
                 <div

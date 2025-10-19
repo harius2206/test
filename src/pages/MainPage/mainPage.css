@@ -1,28 +1,60 @@
-/* === MAIN PAGE WRAPPER === */
+:root {
+    --divider: #d1d5db;
+    --star: #facc15;
+    --shadow: rgba(0, 0, 0, 0.15);
+    --card-bg: #ffffff;
+    --text: #111827;
+    --text-muted: #666;
+    --border: #e5e7eb;
+    --bg-primary: #ffffff;
+    --bg-secondary: #ffffff;
+
+    --arrow-space: 48px;
+    --arrow-gap: 32px;
+}
+
+[data-theme="dark"] {
+    --divider: #444444;
+    --star: #facc15;
+    --shadow: rgba(0, 0, 0, 0.5);
+    --card-bg: #2a2a2a;
+    --text: #f3f4f6;
+    --text-muted: #bbb;
+    --border: #333;
+    --bg-primary: #000000;
+    --bg-secondary: #000000;
+}
+
+/* === WRAPPER === */
 .mp-wrapper {
     font-family: "Inter", sans-serif;
     display: flex;
     flex-direction: column;
-    gap: 40px;
-    max-width: 900px;
+    gap: 15px;
+    max-width: 1000px;
     margin: 0 auto;
-    padding: 24px 16px;
+    padding: 20px 16px;
     box-sizing: border-box;
+    background: var(--bg-primary);
+    color: var(--text);
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 /* === SECTION === */
 .mp-section {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 10px;
     width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
 }
 
 /* === TITLE === */
 .mp-title {
-    font-size: 20px;
+    font-size: 21px;
     font-weight: 600;
-    color: #111;
+    color: var(--text);
     margin: 0;
 }
 
@@ -30,47 +62,48 @@
 .mp-empty {
     text-align: center;
     padding: 50px 0;
-    color: #666;
+    color: var(--text-muted);
     font-size: 15px;
-    border: 1px dashed #ccc;
+    border: 1px dashed var(--border);
     border-radius: 8px;
-    background: #fafafa;
+    background: var(--bg-secondary);
 }
 
-/* === LATEST VIEWED === */
+/* === LATEST VIEWED GRID === */
 .mp-latest-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 14px;
     width: 100%;
+    max-width: 1000px;
 }
 
 .mp-folder-card {
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 16px 18px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     gap: 4px;
-    transition: 0.2s ease;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .mp-folder-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 6px var(--shadow);
 }
 
 .mp-folder-count {
     font-size: 13px;
-    color: #666;
+    color: var(--text-muted);
 }
 
 .mp-folder-name {
     font-weight: 600;
     font-size: 15px;
-    color: #111;
+    color: var(--text);
 }
 
 /* === SWIPER COMMON === */
@@ -78,15 +111,22 @@
     position: relative;
     width: 100%;
     display: flex;
-    align-items: center;
     justify-content: center;
-    min-height: 230px; /* усі слайдери однакової висоти */
+    margin: 0 auto;
+    padding: 0 8px; /* small gutter so frame can center and arrows fit */
+    box-sizing: border-box;
+}
+
+.mp-slider-frame {
+    width: 100%;
+    max-width: 1000px; /* same max as before */
+    position: relative; /* arrows absolute relative to this frame */
+    box-sizing: border-box;
 }
 
 .swiper {
     width: 100%;
     padding: 4px;
-    overflow: hidden;
 }
 
 .swiper-slide {
@@ -94,23 +134,30 @@
     justify-content: center;
 }
 
+/* Якщо залишилась лише одна картка */
+.swiper-slide:only-child .mp-module-card,
+.swiper-slide:only-child .mp-author-card {
+    width: 100%;
+    max-width: 100%;
+}
+
 /* === ARROWS === */
 .mp-arrow-btn {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: none;
+    background: transparent;
     border: none;
     cursor: pointer;
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 0;
-    z-index: 10;
-    opacity: 0.7;
-    transition: opacity 0.2s ease;
+    z-index: 20;
+    transition: opacity 0.2s ease, transform 0.18s ease;
+    opacity: 0.9;
+    pointer-events: auto;
 }
 
 .mp-arrow-btn:hover {
@@ -120,21 +167,29 @@
 .mp-arrow-btn svg {
     width: 22px;
     height: 22px;
-    fill: #111;
+    fill: var(--text);
+    transition: transform 0.2s ease;
 }
 
+.mp-arrow-btn:hover svg {
+    transform: scale(1.08);
+}
+
+
 .mp-arrow-left {
-    left: -48px; /* всі секції однаково */
+    left: 0;
+    transform: translateX(calc(-1 * var(--arrow-gap))) translateY(-50%);
 }
 
 .mp-arrow-right {
-    right: -48px;
+    right: 0;
+    transform: translateX(var(--arrow-gap)) translateY(-50%);
 }
 
 /* === MODULE CARD === */
 .mp-module-card {
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 14px 16px;
     display: flex;
@@ -142,16 +197,14 @@
     justify-content: space-between;
     gap: 6px;
     height: 190px;
-    width: 260px; /* однакова ширина */
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    width: 260px;
+    transition: box-shadow 0.15s ease, background 0.3s ease;
 }
 
 .mp-module-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 8px var(--shadow);
 }
 
-/* назва + рейтинг */
 .mp-card-header {
     display: flex;
     justify-content: space-between;
@@ -161,7 +214,7 @@
 .mp-module-name {
     font-size: 15px;
     font-weight: 600;
-    color: #111;
+    color: var(--text);
     margin: 0;
 }
 
@@ -171,57 +224,53 @@
     gap: 3px;
     font-size: 14px;
     font-weight: 600;
-    color: #000;
+    color: var(--text);
 }
 
 .mp-star {
-    fill: #facc15;
+    fill: var(--star);
 }
 
-/* опис */
 .mp-module-desc {
     flex: 1;
     font-size: 13px;
-    color: #444;
+    color: var(--text-muted);
     margin-top: 2px;
     margin-bottom: 4px;
     line-height: 1.3;
 }
 
-/* низ картки */
 .mp-card-bottom {
     display: flex;
     align-items: center;
     gap: 6px;
     font-size: 13px;
-    color: #333;
+    color: var(--text-muted);
 }
 
 .mp-bottom-divider {
     width: 1px;
     height: 12px;
-    background: #ccc;
+    background: var(--divider);
 }
 
 /* === AUTHOR CARD === */
 .mp-author-card {
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 16px 18px;
     display: flex;
     align-items: flex-start;
     gap: 14px;
-    transition: 0.2s ease;
-    width: 260px; /* така сама ширина як модулі */
+    width: 260px;
+    transition: box-shadow 0.15s ease;
 }
 
 .mp-author-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 8px var(--shadow);
 }
 
-/* права частина — три рядки */
 .mp-author-info {
     display: flex;
     flex-direction: column;
@@ -230,61 +279,185 @@
     margin-top: 2px;
 }
 
-/* ім'я */
 .mp-author-name {
     font-weight: 600;
     font-size: 15px;
-    color: #111;
+    color: var(--text);
 }
 
-/* рейтинг */
 .mp-author-rating {
     display: flex;
     align-items: center;
     gap: 5px;
     font-size: 14px;
     font-weight: 500;
-    color: #000;
+    color: var(--text);
 }
 
 .mp-author-rating .mp-star {
-    fill: #facc15;
+    fill: var(--star);
     width: 16px;
     height: 16px;
 }
 
-/* кількість модулів */
 .mp-author-modules {
     font-size: 13px;
-    color: #444;
-}
-
-/* === ALIGN ARROWS HORIZONTALLY === */
-/* усі стрілки вирівняні по одній лінії */
-.mp-section .mp-arrow-left,
-.mp-section .mp-arrow-right {
-    top: calc(50% + 10px); /* легка корекція вниз */
+    color: var(--text-muted);
 }
 
 /* === ADAPTIVE === */
 @media (max-width: 900px) {
-    .mp-arrow-left {
-        left: -20px;
-    }
-
-    .mp-arrow-right {
-        right: -20px;
-    }
+    :root { --arrow-gap: 28px; }
+    .mp-arrow-btn { width: 34px; height: 34px; }
+    .mp-slider-wrapper { padding: 0 6px; }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+    :root { --arrow-gap: 22px; }
+    .mp-arrow-btn { width: 32px; height: 32px; opacity: 0.95; }
+    .mp-slider-wrapper { padding: 0 6px; }
+}
+
+@media (max-width: 700px) {
+    :root { --arrow-gap: 20px; }
+    .mp-arrow-btn { width: 30px; height: 30px; }
+    .mp-slider-wrapper { padding: 0 6px; }
+}
+
+@media (max-width: 480px) {
+    :root { --arrow-gap: 14px; }
+    .mp-arrow-btn { width: 28px; height: 28px; }
+    .mp-slider-wrapper { padding: 0 6px; }
+}
+
+/* keep arrows available down to very small phones; hide only below 320px */
+@media (max-width: 320px) {
+    .mp-arrow-btn { display: none; }
+}
+
+@media (max-width: 900px) {
+    .mp-wrapper,
+    .mp-section,
+    .mp-slider-wrapper,
+    .mp-latest-grid {
+        max-width: 720px;
+    }
+
     .mp-wrapper {
-        padding: 12px;
+        gap: 8px;
+        padding: 28px 14px;
+    }
+
+    .mp-section {
+        gap: 16px;
+    }
+
+    .mp-title {
+        font-size: 19px;
     }
 
     .mp-module-card,
     .mp-author-card {
-        width: 200px;
-        height: 170px;
+        width: 220px;
+        height: 180px;
+    }
+
+    .mp-arrow-btn {
+        width: 34px;
+        height: 34px;
+    }
+
+    /* slightly reduce arrow reserve and bring arrows a bit closer */
+    :root { --arrow-space: 40px; }
+    .mp-arrow-left { transform: translate(-110%, -50%); }
+    .mp-arrow-right { transform: translate(110%, -50%); }
+}
+
+@media (max-width: 768px) {
+    /* keep arrows visible on tablets/phones, but bring them closer and reduce size */
+    .mp-arrow-btn {
+        width: 32px;
+        height: 32px;
+        opacity: 0.95;
+    }
+    :root { --arrow-space: 32px; }
+    .mp-arrow-left { transform: translate(-100%, -50%); }
+    .mp-arrow-right { transform: translate(100%, -50%); }
+}
+
+@media (max-width: 700px) {
+    .mp-wrapper,
+    .mp-section,
+    .mp-slider-wrapper,
+    .mp-latest-grid {
+        max-width: 560px;
+    }
+
+    .mp-wrapper {
+        gap: 32px;
+        padding: 24px 12px;
+    }
+
+    .mp-section {
+        gap: 14px;
+    }
+
+    .mp-title {
+        font-size: 18px;
+    }
+
+    .mp-module-card,
+    .mp-author-card {
+        max-width: 180px;
+        height: 160px;
+    }
+
+    .mp-card-bottom,
+    .mp-author-modules {
+        font-size: 12px;
+    }
+
+    .mp-arrow-btn {
+        width: 30px;
+        height: 30px;
+    }
+
+    :root { --arrow-space: 28px; }
+    .mp-arrow-left { transform: translate(-90%, -50%); }
+    .mp-arrow-right { transform: translate(90%, -50%); }
+}
+
+/* below this width arrows are hidden to save space */
+@media (max-width: 480px) {
+    .mp-arrow-btn {
+        display: none;
+    }
+
+    .mp-wrapper,
+    .mp-section,
+    .mp-slider-wrapper,
+    .mp-latest-grid {
+        max-width: 400px;
+    }
+
+    .mp-wrapper {
+        gap: 28px;
+        padding: 20px 10px;
+    }
+
+    .mp-section {
+        gap: 8px;
+    }
+
+    .mp-title {
+        font-size: 17px;
+    }
+
+    .mp-module-card,
+    .mp-author-card {
+        max-width: 100%;
+        width: 100%;
+        height: auto;
+        padding: 12px;
     }
 }

@@ -21,7 +21,6 @@ export default function SearchField({
         if (controlledValue !== undefined && controlledValue !== query) {
             setQuery(controlledValue);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [controlledValue]);
 
     useEffect(() => {
@@ -40,22 +39,20 @@ export default function SearchField({
     const handleChange = (e) => {
         const v = e.target.value;
         if (controlledValue === undefined) setQuery(v);
-        else setQuery(v); // keep visual sync for controlled as well
+        else setQuery(v);
         onChange?.(v);
-        // immediate onSearch for callers who prefer instant filtering (in addition to debounced)
-        // main filtered callback will run via debounced effect
     };
 
     const wrapperStyle = { width, height, ...style };
 
     return (
-        <div className={`search-wrapper ${className}`} style={wrapperStyle}>
-            <img src={searchIcon} alt="Search" className="search-icon" />
+        <div className={`sf-wrapper ${className}`} style={wrapperStyle}>
+            <img src={searchIcon} alt="Search" className="sf-icon" />
             <input
                 type="text"
                 value={query}
                 onChange={handleChange}
-                className="search-input"
+                className="sf-input"
                 placeholder={placeholder}
                 aria-label={placeholder}
             />

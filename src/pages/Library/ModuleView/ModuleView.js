@@ -127,41 +127,39 @@ export default function ModuleView() {
 
     return (
         <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-            <main className="module-view">
-                {/* Header */}
-                <div className="module-header-row">
-                    <div className="module-left-row">
-                        <h1 className="module-title">{module.name}</h1>
-                        <div className="module-rating">
+            <main className="mv-module-view">
+                <div className="mv-module-header-row">
+                    <div className="mv-module-left-row">
+                        <h1 className="mv-module-title">{module.name}</h1>
+                        <div className="mv-module-rating">
                             <Rating
                                 name="module-rating"
                                 value={rating}
                                 precision={1}
                                 onChange={(e, newValue) => setRating(newValue)}
-                                icon={<StarSvg className="star-icon active" />}
-                                emptyIcon={<StarSvg className="star-icon" />}
+                                icon={<StarSvg className="mv-star-icon mv-active" />}
+                                emptyIcon={<StarSvg className="mv-star-icon" />}
                             />
                         </div>
                     </div>
 
-                    <div className="header-controls">
+                    <div className="mv-header-controls">
                         <DropdownMenu align="left" width={200} items={menuItems}>
-                            <button className="btn-icon">
+                            <button className="mv-btn-icon">
                                 <DotsIcon width={18} height={18} />
                             </button>
                         </DropdownMenu>
                     </div>
                 </div>
 
-                {/* Tags */}
-                <div className="view_tags-row">
+                <div className="mv-view_tags-row">
                     {(module.tags || []).map((t, i) => (
                         <span key={i} className="tag">{t}</span>
                     ))}
                 </div>
 
                 {/* Tabs */}
-                <div className="mv-tabs">
+                <div className="mv-mv-tabs">
                     <Button
                         variant="toggle"
                         onClick={() => navigate("/cardscheck", { state: { module } })}
@@ -181,20 +179,20 @@ export default function ModuleView() {
                 </div>
 
                 {/* Flashcard */}
-                <div className={`flashcard-area ${isFullscreen ? "fullscreen" : ""}`}>
-                    <div className="flashcard-wrapper">
+                <div className={`mv-flashcard-area ${isFullscreen ? "mv-fullscreen" : ""}`}>
+                    <div className="mv-flashcard-wrapper">
                         <FlipCard
                             frontContent={
                                 <>
                                     {cards[currentIndex]?.term || "—"}
                                     <button
-                                        className={`card-book ${learned.has(cards[currentIndex]?.id) ? "active" : ""}`}
+                                        className={`mv-card-book ${learned.has(cards[currentIndex]?.id) ? "mv-active" : ""}`}
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             toggleCardLearned(cards[currentIndex]?.id);
                                         }}
                                     >
-                                        <BookSvg className={`book-icon ${learned.has(cards[currentIndex]?.id) ? "active" : ""}`} />
+                                        <BookSvg className={`book-icon ${learned.has(cards[currentIndex]?.id) ? "mv-active" : ""}`} />
                                     </button>
                                 </>
                             }
@@ -202,10 +200,10 @@ export default function ModuleView() {
                                 <>
                                     {cards[currentIndex]?.definition || "—"}
                                     <button
-                                        className={`card-book ${learned.has(cards[currentIndex]?.id) ? "active" : ""}`}
+                                        className={`mv-card-book ${learned.has(cards[currentIndex]?.id) ? "mv-active" : ""}`}
                                         onClick={(e) => toggleCardLearned(cards[currentIndex]?.id, e)}
                                     >
-                                        <BookSvg className={`book-icon ${learned.has(cards[currentIndex]?.id) ? "active" : ""}`} />
+                                        <BookSvg className={`book-icon ${learned.has(cards[currentIndex]?.id) ? "mv-active" : ""}`} />
                                     </button>
                                 </>
                             }
@@ -215,26 +213,26 @@ export default function ModuleView() {
                     </div>
 
                     {/* Controls */}
-                    <div className="controls-row">
-                        <div className="card-controls">
-                            <button className={`nav-btn ${hasPrev ? "enabled" : ""}`} onClick={hasPrev ? prevCard : undefined}>
+                    <div className="mv-controls-row">
+                        <div className="mv-card-controls">
+                            <button className={`mv-nav-btn ${hasPrev ? "mv-enabled" : ""}`} onClick={hasPrev ? prevCard : undefined}>
                                 <PrevIcon />
                             </button>
-                            <div className="counter">{currentIndex + 1} / {cards.length}</div>
-                            <button className={`nav-btn ${hasNext ? "enabled" : ""}`} onClick={hasNext ? nextCard : undefined}>
+                            <div className="mv-counter">{currentIndex + 1} / {cards.length}</div>
+                            <button className={`mv-nav-btn ${hasNext ? "mv-enabled" : ""}`} onClick={hasNext ? nextCard : undefined}>
                                 <NextIcon />
                             </button>
                         </div>
 
-                        <div className="icon-controls">
-                            <button className="icon-btn" onClick={restartDeck} title="Restart">
+                        <div className="mv-icon-controls">
+                            <button className="mv-icon-btn" onClick={restartDeck} title="Restart">
                                 <RestartcreenIcon />
                             </button>
-                            <button className="icon-btn" onClick={() => setAutoplay(v => !v)} title="Play/Pause">
+                            <button className="mv-icon-btn" onClick={() => setAutoplay(v => !v)} title="Play/Pause">
                                 {autoplay ? <PauseIcon /> : <PlayIcon />}
                             </button>
                             <button
-                                className="icon-btn"
+                                className="mv-icon-btn"
                                 title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
                                 onClick={toggleFullscreen}
                             >
@@ -245,45 +243,45 @@ export default function ModuleView() {
                 </div>
 
                 {/* Author */}
-                <div className="author-band">
-                    <div className="module-view__author-info-row">
+                <div className="mv-author-band">
+                    <div className="mv-module-view__author-info-row">
                         <UserAvatar name={module.author} size={80} fontSize={34} avatar={module.authorAvatar} />
-                        <div className="author-info-block">
-                            <div className="author-label">Author</div>
-                            <div className="author-name">{module.author}</div>
-                            <div className="author-rating-row">
-                                <span className="author-rating-value">{rating} / 5</span>
-                                <StarSvg className="star-icon active" />
+                        <div className="mv-author-info-block">
+                            <div className="mv-author-label">Author</div>
+                            <div className="mv-author-name">{module.author}</div>
+                            <div className="mv-author-rating-row">
+                                <span className="mv-author-rating-value">{rating} / 5</span>
+                                <StarSvg className="mv-star-icon mv-active" />
                             </div>
                         </div>
                     </div>
-                    <div className="author-description">
+                    <div className="mv-author-description">
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod urna eu tincidunt.
                     </div>
                 </div>
 
                 {/* Learned / Not learned */}
-                <div className="cards-lists">
+                <div className="mv-cards-lists">
                     <h3>Learned</h3>
                     {cards.filter((c) => learned.has(c.id)).length === 0 && (
-                        <div className="row empty-message">No learned cards</div>
+                        <div className="mv-row mv-empty-message">No learned cards</div>
                     )}
                     {cards
                         .filter((c) => learned.has(c.id))
                         .map((c) => (
-                            <div key={c.id} className="row">
-                                <div className="row-half row-left">
+                            <div key={c.id} className="mv-row">
+                                <div className="mv-row-half mv-row-left">
                                     {c.term}
                                 </div>
-                                <div className="row-divider" />
-                                <div className="row-right">
-                                    <span className="row-definition">{c.definition}</span>
+                                <div className="mv-row-divider" />
+                                <div className="mv-row-right">
+                                    <span className="mv-row-definition">{c.definition}</span>
                                     <button
-                                        className={`row-book-btn ${learned.has(c.id) ? "active" : ""}`}
+                                        className={`mv-row-book-btn ${learned.has(c.id) ? "mv-active" : ""}`}
                                         onClick={() => toggleCardLearned(c.id)}
                                         title={learned.has(c.id) ? "Unmark learned" : "Mark learned"}
                                     >
-                                        <BookSvg className={`book-icon ${learned.has(c.id) ? "active" : ""}`} />
+                                        <BookSvg className={`book-icon ${learned.has(c.id) ? "mv-active" : ""}`} />
                                     </button>
                                 </div>
                             </div>
@@ -291,24 +289,24 @@ export default function ModuleView() {
 
                     <h3>Not learned</h3>
                     {cards.filter((c) => !learned.has(c.id)).length === 0 && (
-                        <div className="row empty-message">All cards learned</div>
+                        <div className="mv-row mv-empty-message">All cards learned</div>
                     )}
                     {cards
                         .filter((c) => !learned.has(c.id))
                         .map((c) => (
-                            <div key={c.id} className="row">
-                                <div className="row-half row-left">
+                            <div key={c.id} className="mv-row">
+                                <div className="mv-row-half mv-row-left">
                                     {c.term}
                                 </div>
-                                <div className="row-divider" />
-                                <div className="row-right">
-                                    <span className="row-definition">{c.definition}</span>
+                                <div className="mv-row-divider" />
+                                <div className="mv-row-right">
+                                    <span className="mv-row-definition">{c.definition}</span>
                                     <button
-                                        className={`row-book-btn ${learned.has(c.id) ? "active" : ""}`}
+                                        className={`mv-row-book-btn ${learned.has(c.id) ? "mv-active" : ""}`}
                                         onClick={() => toggleCardLearned(c.id)}
                                         title={learned.has(c.id) ? "Unmark learned" : "Mark learned"}
                                     >
-                                        <BookSvg className={`book-icon ${learned.has(c.id) ? "active" : ""}`} />
+                                        <BookSvg className={`book-icon ${learned.has(c.id) ? "mv-active" : ""}`} />
                                     </button>
                                 </div>
                             </div>

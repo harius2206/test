@@ -11,10 +11,10 @@
 }
 
 [data-theme="dark"] {
-    --folder-bg: #111827;
+    --folder-bg: #000000;
     --folder-text: #f9fafb;
     --folder-border: #9ca3af;
-    --folder-card-bg: #1f2937;
+    --folder-card-bg: #000000;
     --folder-card-border: #374151;
     --folder-dropdown-bg: #2a2f3b;
     --folder-dropdown-hover: #374151;

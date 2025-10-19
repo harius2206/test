@@ -7,7 +7,7 @@
 }
 
 [data-theme="dark"] {
-    --ccc-card-bg: #1e2633;
+    --ccc-card-bg: #000000;
     --ccc-border: #3b4354;
     --ccc-text: #f3f4f6;
     --ccc-wrong: #ef5350;
