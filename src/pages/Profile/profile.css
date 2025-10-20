@@ -25,6 +25,13 @@
     --border-light: #4b4e57;
 }
 
+/* make container relative so side panel (absolute) can attach */
+.profile-nav-wrapper {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+}
+
 /* === Батьківський контейнер === */
 .app-wrapper {
     display: flex;
@@ -154,7 +161,17 @@
     border-radius: 6px;
     cursor: pointer;
 }
-
+.button-wrapper {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: nowrap; /* keep buttons in one row */
+}
+.cooldown-text {
+    margin-left: 8px;
+    font-size: 14px;
+    color: var(--text-subtle);
+}
 @media (max-width: 1024px) {
     .profile-nav {
         min-width: 200px; max-width: 25%;

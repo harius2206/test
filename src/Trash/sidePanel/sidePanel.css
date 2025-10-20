@@ -1,0 +1,167 @@
+/* базові */
+.side-panel.in-content {
+    width: 220px;              /* open width */
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 90;
+    transition: width 0.32s cubic-bezier(.2,.9,.2,1), box-shadow 0.28s, opacity 0.28s;
+    will-change: width, transform;
+    display: flex;
+    align-items: stretch;
+    transform-origin: left center;
+}
+
+/* closed: compact strip (max width 50px) — panel stays at edge and button remains attached */
+.side-panel.closed {
+    width: 50px; /* compact closed width requested */
+    box-shadow: none;
+}
+
+/* when open, ensure panel is on-screen and has elevation */
+.side-panel.open {
+    width: 220px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+/* attached toggle button (rendered inside panel) */
+.side-toggle-btn {
+    position: absolute;
+    /* moved lower: reduce bottom so button sits closer to viewport bottom */
+    top: auto;
+    bottom: 12px;                /* ↓ lowered from 24px to 12px */
+    transform: none;
+    width: 44px;
+    height: 36px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1002;            /* above panel content but below global overlays */
+    transition: transform 0.18s, background 0.18s, right 0.18s, left 0.18s;
+    background: var(--bg-primary);
+}
+
+/* left panel: button sits on the right edge of the panel, half-out */
+.side-panel.left .side-toggle-btn {
+    right: -22px; /* half of button width so it sticks out and remains attached */
+    left: auto;
+    border-radius: 0 8px 8px 0; /* sharp left side (attached), rounded right side */
+}
+
+/* right panel: mirrored */
+.side-panel.right .side-toggle-btn {
+    left: -22px;
+    right: auto;
+    border-radius: 8px 0 0 8px; /* rounded left side, sharp right side (attached) */
+}
+
+/* arrow rotation controlled by panel state classes */
+.side-panel.left.open .side-toggle-btn .arrow { transform: rotate(180deg); }
+.side-panel.left.closed .side-toggle-btn .arrow { transform: rotate(0deg); }
+.side-panel.right.open .side-toggle-btn .arrow { transform: rotate(-180deg); }
+.side-panel.right.closed .side-toggle-btn .arrow { transform: rotate(0deg); }
+
+/* ensure panel clips its visuals while width animates */
+.side-panel {
+    overflow: hidden;
+}
+
+/* side-content fades together with width change to avoid flicker */
+.side-panel .side-content {
+    width: 100%;
+    max-width: 220px;
+    box-sizing: border-box;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+    padding: 56px 12px 12px 12px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: opacity 0.28s ease; /* match width timing closely */
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* when closed, fade content but keep layout so no sudden jump/flash */
+.side-panel.closed .side-content {
+    opacity: 0;
+    pointer-events: none;
+    /* keep border/background so edge doesn't flash; padding kept so slide is smooth */
+}
+
+/* when open, restore visuals */
+.side-panel.open .side-content {
+    opacity: 1;
+    pointer-events: auto;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+    padding: 56px 12px 12px 12px;
+}
+
+/* правий бордер для правої панелі (mirroring) */
+.side-panel.right .side-content {
+    border-right: none;
+    border-left: 1px solid var(--border);
+    padding-left: 12px;
+    padding-right: 56px;
+}
+
+/* items — keep small icon-only items when closed */
+.side-item {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    cursor: pointer;
+    margin: 4px auto;
+    transition: background 0.12s ease, transform 0.08s;
+}
+.side-item:hover { background: var(--border-light); transform: translateY(-1px); }
+.side-icon { width: 22px; height: 22px; }
+
+/* глобальний туліп (портал) — залишаю тут, але без animation conflicts */
+.side-global-tooltip {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.12);
+    white-space: nowrap;
+    pointer-events: none;
+    transform: translateY(-50%);
+    z-index: 10000;
+}
+
+/* стрілочка туліпу */
+.side-global-tooltip::after{
+    content: "";
+    position: absolute;
+    width: 10px; height: 10px;
+    background: var(--bg-primary);
+    border-left: 1px solid var(--border);
+    border-top: 1px solid var(--border);
+    transform: rotate(45deg);
+    top: 50%;
+    margin-top: -5px;
+}
+
+/* положення стрілки ліворуч/праворуч */
+.side-global-tooltip.left::after { left: -6px; }
+.side-global-tooltip.right::after { right: -6px; }
+
+/* accessibility focus */
+.side-item:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* mobile: hide in-content panel as before */
+@media (max-width: 720px) {
+    .side-panel.in-content { display: none; }
+}
