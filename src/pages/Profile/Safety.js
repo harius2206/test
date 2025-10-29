@@ -26,6 +26,8 @@ export default function Safety() {
         }
     }, [cooldown]);
 
+    const apiKeyStatus = apiKey ? "active key" : "no key";
+
     return (
         <div className="profile-content">
             <h1 className="profile-title">Safety</h1>
@@ -126,7 +128,11 @@ export default function Safety() {
 
                 <label>
                     Your DeepL API key status
-                    <div className="api-input active">active key</div>
+                    <EditableField
+                        type="text"
+                        value={apiKeyStatus}
+                        editable={false}
+                    />
                 </label>
 
                 <label>

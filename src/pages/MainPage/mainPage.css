@@ -6,7 +6,7 @@
     --text: #111827;
     --text-muted: #666;
     --border: #e5e7eb;
-    --bg-primary: #ffffff;
+    --mp-bg-primary: #ffffff;
     --bg-secondary: #ffffff;
 
     --arrow-space: 48px;
@@ -21,7 +21,7 @@
     --text: #f3f4f6;
     --text-muted: #bbb;
     --border: #333;
-    --bg-primary: #000000;
+    --mp-bg-primary: #000000;
     --bg-secondary: #000000;
 }
 
@@ -35,9 +35,8 @@
     margin: 0 auto;
     padding: 20px 16px;
     box-sizing: border-box;
-    background: var(--bg-primary);
+    background: var(--mp-bg-primary);
     color: var(--text);
-    transition: background 0.3s ease, color 0.3s ease;
 }
 
 /* === SECTION === */
@@ -154,7 +153,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 20;
+    z-index: 1;
     transition: opacity 0.2s ease, transform 0.18s ease;
     opacity: 0.9;
     pointer-events: auto;
@@ -303,6 +302,18 @@
 .mp-author-modules {
     font-size: 13px;
     color: var(--text-muted);
+}
+.mp-module-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.mp-module-name {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
 }
 
 /* === ADAPTIVE === */

@@ -6,6 +6,8 @@ import ModuleView from "../pages/Library/ModuleView/ModuleView";
 import CardsTest from "../pages/Library/CardTest/CardsTest";
 import CardsCheck from "../pages/Library/CardsCheck/CardsCheck";
 import PublicProfileLibrary from "../pages/Profile/PublicProfileLibrary/PublicProfileLibrary";
+import Saves from "../pages/Library/Saves/Saves";
+
 
 const appRoutes = [
     { path: "/", component: MainPage },
@@ -16,6 +18,8 @@ const appRoutes = [
     { path: "/library/module-view", component: ModuleView, exact: true },
     { path: "/cardscheck", component: CardsCheck, exact: true },
     { path: "/cardstest", component: CardsTest, exact: true },
+    { path: "/saves", component: Saves }
+
 ];
 
 export default appRoutes;

@@ -1,5 +1,5 @@
 :root {
-    --folder-bg: #f9f9f9;
+    --folder-bg: #ffffff;
     --folder-text: #111;
     --folder-border: #888;
     --folder-card-bg: #f9f9f9;
@@ -12,7 +12,7 @@
 
 [data-theme="dark"] {
     --folder-bg: #000000;
-    --folder-text: #f9fafb;
+    --folder-text: #ffffff;
     --folder-border: #9ca3af;
     --folder-card-bg: #000000;
     --folder-card-border: #374151;

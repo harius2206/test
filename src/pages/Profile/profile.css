@@ -7,7 +7,7 @@
     --text-subtle: #999;
     --bg-primary: #ffffff;
     --bg-secondary: #f9f9f9;
-    --border: #ddd;
+    --border: #ffffff;
     --border-light: #ccc;
     --status-green: #4CAF50;
     --status-red: #DF4C4C;
@@ -32,6 +32,10 @@
     align-items: stretch;
 }
 
+.profile-nav {
+    flex-shrink: 0;
+    width: 250px; /* Adjust as needed for normal size */
+}
 /* === Батьківський контейнер === */
 .app-wrapper {
     display: flex;

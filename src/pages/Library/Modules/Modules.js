@@ -6,14 +6,23 @@ import ModuleCard from "../../../components/ModuleCard/moduleCard";
 import SortMenu from "../../../components/sortMenu/sortMenu";
 import PermissionsMenu from "../../../components/permissionMenu/permissionsMenu";
 
-const defaultModules = [
+const libraryModules = [
     {
         id: 1,
         name: "Polisz",
         terms: 150,
         author: "admin",
         rating: 4.2,
-        tags: ["mgr1", "litery", "slowa", "slowa", "slowa", "slowa", "slowa", "slowa", "slowa", "slowa", "slowa", "slowa", "slowa", "slowa", "slowa", "slowa", "slowa", "slowa"],
+        tags: [
+            "mgr1",
+            "litery",
+            "slowa",
+            "exam",
+            "verbs",
+            "grammar",
+            "words",
+            "school"
+        ],
         users: [{ id: 1, name: "admin", avatar: "", role: "Edit" }],
         cards: [
             { id: 1, term: "kot", definition: "cat" },
@@ -35,21 +44,49 @@ const defaultModules = [
     }
 ];
 
-export default function Modules({ modulesData }) {
-    const [expandedTags, setExpandedTags] = useState({});
-    const [visibleCount, setVisibleCount] = useState(null); // null до обчислення
-    const [modules, setModules] = useState(modulesData || defaultModules);
-    const [permissionsTarget, setPermissionsTarget] = useState(null);
-    const containerRef = useRef(null);
-    const navigate = useNavigate();
+const savedModules = [
+    {
+        id: 101,
+        name: "Saved - History",
+        terms: 180,
+        author: "John",
+        rating: 4.9,
+        tags: ["dates", "wars", "figures"],
+        users: [],
+        cards: [{ id: 1, term: "WW2", definition: "1939–1945" }]
+    },
+    {
+        id: 102,
+        name: "Saved - Chemistry",
+        terms: 120,
+        author: "Nina",
+        rating: 4.7,
+        tags: ["atoms", "reactions", "science"],
+        users: [],
+        cards: [{ id: 1, term: "H2O", definition: "Water" }]
+    }
+];
 
-    // Встановлюємо тему одразу
+export default function Modules({ modulesData, source = "library" }) {
+    const navigate = useNavigate();
+    const containerRef = useRef(null);
+
+    // --- визначаємо з яких даних брати модулі ---
+    const [modules, setModules] = useState(
+        modulesData || (source === "saves" ? savedModules : libraryModules)
+    );
+
+    const [expandedTags, setExpandedTags] = useState({});
+    const [visibleCount, setVisibleCount] = useState(null);
+    const [permissionsTarget, setPermissionsTarget] = useState(null);
+
+    // --- тема ---
     useEffect(() => {
         const savedTheme = localStorage.getItem("theme") || "light";
         document.documentElement.setAttribute("data-theme", savedTheme);
     }, []);
 
-    // Обчислення видимих тегів
+    // --- обчислення кількості видимих тегів ---
     useEffect(() => {
         const computeVisible = () => {
             if (containerRef.current) {
@@ -59,16 +96,15 @@ export default function Modules({ modulesData }) {
                 setVisibleCount(count);
             }
         };
-
-        computeVisible(); // одразу при монтуванні
-
+        computeVisible();
         const observer = new ResizeObserver(computeVisible);
         if (containerRef.current) observer.observe(containerRef.current);
-
         return () => observer.disconnect();
     }, []);
 
+    // --- сортування ---
     const handleSort = (type) => {
+        if (source === "saves") return; // у сейвах не сортуємо
         if (type === "date") {
             setModules([...modules].sort((a, b) => b.id - a.id));
         } else if (type === "name") {
@@ -76,13 +112,18 @@ export default function Modules({ modulesData }) {
         }
     };
 
+    // --- теги ---
     const toggleTags = (id) =>
         setExpandedTags((prev) => ({ ...prev, [id]: !prev[id] }));
 
+    // --- видалення ---
     const handleDelete = (id) => {
+        if (source === "saves") return; // у сейвах не видаляємо
+        if (!window.confirm("Delete this module?")) return;
         setModules((prev) => prev.filter((m) => m.id !== id));
     };
 
+    // --- permissions ---
     const closePermissions = () => setPermissionsTarget(null);
 
     const openModulePermissions = (module, evt, trigger) => {
@@ -102,7 +143,11 @@ export default function Modules({ modulesData }) {
     };
 
     return (
-        <div className="modules-page" ref={containerRef} style={{ position: "relative" }}>
+        <div
+            className="modules-page"
+            ref={containerRef}
+            style={{ position: "relative" }}
+        >
             <div
                 className="library-controls"
                 style={{
@@ -114,7 +159,6 @@ export default function Modules({ modulesData }) {
                 <SortMenu onSort={handleSort} />
             </div>
 
-            {/* Рендеримо тільки після обчислення visibleCount */}
             {visibleCount !== null && (
                 <div className="module-list">
                     {modules.map((module) => (
@@ -124,11 +168,19 @@ export default function Modules({ modulesData }) {
                             visibleCount={visibleCount}
                             expanded={expandedTags[module.id]}
                             toggleTags={toggleTags}
-                            onDelete={handleDelete}
+                            onDelete={() => handleDelete(module.id)}
                             onPermissions={openModulePermissions}
-                            onClick={() =>
-                                navigate("/library/module-view", { state: { module } })
-                            }
+                            onClick={() => {
+                                if (source === "saves") {
+                                    navigate("/saves/module-view", {
+                                        state: { module }
+                                    });
+                                } else {
+                                    navigate("/library/module-view", {
+                                        state: { module }
+                                    });
+                                }
+                            }}
                         />
                     ))}
                 </div>

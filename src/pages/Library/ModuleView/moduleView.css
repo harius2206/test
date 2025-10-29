@@ -543,11 +543,39 @@ main {
     background: transparent;
     color: var(--mv-accent);
 }
+.mv-card-save {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 6px;
+    z-index: 2;
+    transition: transform 0.1s ease;
+}
 
-.mv-btn.mv-btn-static {
-    border: 2px solid var(--mv-accent);
-    background: var(--mv-accent);
-    color: var(--mv-btn-text-light);
+.save-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--mv-text-muted);
+    transition: color 0.12s ease, stroke 0.12s ease;
+}
+
+.save-icon path {
+    stroke: currentColor;
+    fill: none;
+    transition: stroke 0.12s ease;
+}
+
+.mv-card-save.mv-active .save-icon path {
+    stroke: var(--mv-accent);
 }
 
 /* ===== MEDIA QUERIES ===== */

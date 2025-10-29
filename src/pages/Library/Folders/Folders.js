@@ -14,9 +14,10 @@ import { ReactComponent as ExportIcon } from "../../../images/export.svg";
 import { ReactComponent as TickIcon } from "../../../images/tick.svg";
 import { ReactComponent as UntickIcon } from "../../../images/unTick.svg";
 
-export default function Folders({ addFolder, setAddFolder }) {
+export default function Folders({ addFolder, setAddFolder, source = "library" }) {
     const navigate = useNavigate();
 
+    // --- базові дані бібліотеки ---
     const [folders, setFolders] = useState([
         {
             id: 1,
@@ -41,10 +42,36 @@ export default function Folders({ addFolder, setAddFolder }) {
         }
     ]);
 
+    // --- збережені папки ---
+    const savedFolders = [
+        {
+            id: 101,
+            name: "Saved: Biology",
+            color: "#22c55e",
+            modules: 3,
+            pinned: true,
+            private: false,
+            modulesList: [
+                { id: 1, name: "Cells", terms: 40, author: "admin", rating: 4.7, tags: ["science", "bio"] }
+            ]
+        },
+        {
+            id: 102,
+            name: "Saved: Geography",
+            color: "#06b6d4",
+            modules: 5,
+            pinned: false,
+            private: false,
+            modulesList: []
+        }
+    ];
+
+    // 🔄 використовуємо дані залежно від джерела
+    const data = source === "saves" ? savedFolders : folders;
+
     const [colorMenuOpen, setColorMenuOpen] = useState(null);
     const [renamingId, setRenamingId] = useState(null);
     const [renameValue, setRenameValue] = useState("");
-
     const colorMenuRef = useRef(null);
 
     const colors = [
@@ -54,33 +81,27 @@ export default function Folders({ addFolder, setAddFolder }) {
     ];
 
     const handleDeleteFolder = (id) => {
-        if (!window.confirm("Delete this folder? This action cannot be undone.")) return;
+        if (!window.confirm("Delete this folder?")) return;
+        if (source === "saves") return; // у сейвах видалення не дозволене
         setFolders(prev => prev.filter(f => f.id !== id));
     };
 
     const handleSort = (type) => {
-        if (type === "date") {
-            setFolders([...folders].sort((a, b) => b.id - a.id));
-        } else if (type === "name") {
-            setFolders([...folders].sort((a, b) => a.name.localeCompare(b.name)));
-        }
+        const setter = source === "saves" ? () => {} : setFolders;
+        if (type === "date") setter(prev => [...prev].sort((a, b) => b.id - a.id));
+        if (type === "name") setter(prev => [...prev].sort((a, b) => a.name.localeCompare(b.name)));
     };
 
     const startRenaming = (folder) => {
+        if (source === "saves") return; // у сейвах не редагуємо
         setRenamingId(folder.id);
         setRenameValue(folder.name);
     };
 
     const saveRename = (id) => {
-        if (!renameValue.trim()) {
-            // cancel if empty
-            setRenamingId(null);
-            setRenameValue("");
-            return;
-        }
+        if (!renameValue.trim()) return cancelRename();
         setFolders(prev => prev.map(f => (f.id === id ? { ...f, name: renameValue.trim() } : f)));
-        setRenamingId(null);
-        setRenameValue("");
+        cancelRename();
     };
 
     const cancelRename = () => {
@@ -105,7 +126,7 @@ export default function Folders({ addFolder, setAddFolder }) {
             </div>
 
             <div className="module-list">
-                {addFolder && (
+                {source === "library" && addFolder && (
                     <AddUniversalItem
                         type="folder"
                         fields={["name", "color"]}
@@ -130,7 +151,7 @@ export default function Folders({ addFolder, setAddFolder }) {
                     />
                 )}
 
-                {folders.map(folder => (
+                {data.map(folder => (
                     <div
                         className="module-card"
                         key={folder.id}
@@ -145,10 +166,8 @@ export default function Folders({ addFolder, setAddFolder }) {
                             <div className="top-row">
                                 <span className="terms-count">{folder.modules} modules</span>
                             </div>
-
                             <div className="module-name-row" style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                 <ColoredIcon icon={FolderIcon} color={folder.color} size={20} />
-
                                 {renamingId === folder.id ? (
                                     <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
                                         <EditableField
@@ -158,12 +177,8 @@ export default function Folders({ addFolder, setAddFolder }) {
                                             autosave={true}
                                             placeholder="Folder name"
                                         />
-                                        <button className="btn-primary" onClick={() => saveRename(folder.id)}>
-                                            Save
-                                        </button>
-                                        <button className="btn-secondary" onClick={cancelRename}>
-                                            Cancel
-                                        </button>
+                                        <button className="btn-primary" onClick={() => saveRename(folder.id)}>Save</button>
+                                        <button className="btn-secondary" onClick={cancelRename}>Cancel</button>
                                     </div>
                                 ) : (
                                     <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
@@ -180,16 +195,14 @@ export default function Folders({ addFolder, setAddFolder }) {
                                 items={[
                                     {
                                         label: folder.pinned ? "Unpin" : "Pin",
-                                        onClick: () => setFolders(prev => prev.map(f =>
-                                            f.id === folder.id ? { ...f, pinned: !f.pinned } : f
-                                        )),
+                                        onClick: () =>
+                                            setFolders(prev => prev.map(f => f.id === folder.id ? { ...f, pinned: !f.pinned } : f)),
                                         icon: <ColoredIcon icon={folder.pinned ? TickIcon : UntickIcon} size={16} />
                                     },
                                     {
                                         label: folder.private ? "Unprivate" : "Private",
-                                        onClick: () => setFolders(prev => prev.map(f =>
-                                            f.id === folder.id ? { ...f, private: !f.private } : f
-                                        )),
+                                        onClick: () =>
+                                            setFolders(prev => prev.map(f => f.id === folder.id ? { ...f, private: !f.private } : f)),
                                         icon: <ColoredIcon icon={folder.private ? TickIcon : UntickIcon} size={16} />
                                     },
                                     {

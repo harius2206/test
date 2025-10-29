@@ -25,6 +25,7 @@
     background: var(--profile-bg);
     color: var(--profile-text);
     transition: background 0.25s ease, color 0.25s ease;
+    z-index: 10;
 }
 
 .profile-info {

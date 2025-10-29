@@ -36,7 +36,7 @@
     border-radius: 6px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     padding: 6px 0;
-    z-index: 1000;
+    z-index: 99999;
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 

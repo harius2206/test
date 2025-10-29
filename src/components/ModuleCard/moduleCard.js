@@ -70,9 +70,11 @@ export default function ModuleCard({
                     </div>
                 </div>
 
-                <div className="module-name-row">
+                <div className="module-name-row hover-wrapper">
                     <span className="module-name-text">{module.name}</span>
+                    <span className="hover-hint">{module.description || "No description"}</span>
                 </div>
+
             </div>
 
             <div className="folder-actions" onClick={(e) => e.stopPropagation()}>

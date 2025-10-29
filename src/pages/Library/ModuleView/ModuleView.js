@@ -18,6 +18,8 @@ import { ReactComponent as PrevIcon } from "../../../images/arrowLeft.svg";
 import { ReactComponent as NextIcon } from "../../../images/arrowRight.svg";
 import { ReactComponent as RestartcreenIcon } from "../../../images/restart.svg";
 import { ReactComponent as BookSvg } from "../../../images/book.svg";
+import { ReactComponent as SaveIcon } from "../../../images/save.svg";
+
 
 import "./moduleView.css";
 
@@ -102,7 +104,6 @@ export default function ModuleView() {
 
     const toggleFullscreen = () => setIsFullscreen((v) => !v);
 
-    // 🔒 блокування скролу при fullscreen
     useEffect(() => {
         if (isFullscreen) {
             document.body.style.overflow = "hidden";
@@ -158,7 +159,6 @@ export default function ModuleView() {
                     ))}
                 </div>
 
-                {/* Tabs */}
                 <div className="mv-mv-tabs">
                     <Button
                         variant="toggle"
@@ -178,7 +178,6 @@ export default function ModuleView() {
                     </Button>
                 </div>
 
-                {/* Flashcard */}
                 <div className={`mv-flashcard-area ${isFullscreen ? "mv-fullscreen" : ""}`}>
                     <div className="mv-flashcard-wrapper">
                         <FlipCard
@@ -194,6 +193,15 @@ export default function ModuleView() {
                                     >
                                         <BookSvg className={`book-icon ${learned.has(cards[currentIndex]?.id) ? "mv-active" : ""}`} />
                                     </button>
+                                    <button
+                                        className="mv-card-save"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            alert("Save action triggered!");
+                                        }}
+                                    >
+                                        <SaveIcon className="save-icon" />
+                                    </button>
                                 </>
                             }
                             backContent={
@@ -204,6 +212,15 @@ export default function ModuleView() {
                                         onClick={(e) => toggleCardLearned(cards[currentIndex]?.id, e)}
                                     >
                                         <BookSvg className={`book-icon ${learned.has(cards[currentIndex]?.id) ? "mv-active" : ""}`} />
+                                    </button>
+                                    <button
+                                        className="mv-card-save"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            alert("Save action triggered!");
+                                        }}
+                                    >
+                                        <SaveIcon className="save-icon" />
                                     </button>
                                 </>
                             }

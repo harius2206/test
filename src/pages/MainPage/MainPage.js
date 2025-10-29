@@ -8,14 +8,20 @@ import "swiper/css/autoplay";
 import { ReactComponent as ArrowLeft } from "../../images/arrowLeft.svg";
 import { ReactComponent as ArrowRight } from "../../images/arrowRight.svg";
 import { ReactComponent as StarIcon } from "../../images/star.svg";
-
 import UserAvatar from "../../components/avatar/avatar";
+
+import DiagonalFlagRect from "../../components/diagonalFlagRect";
+import ua from "../../images/flags/ua.svg";
+import us from "../../images/flags/us.svg";
+import fr from "../../images/flags/fr.svg";
+import de from "../../images/flags/de.svg";
+import jp from "../../images/flags/jp.svg";
 
 import "./mainPage.css";
 
 export default function MainPage() {
     // demo data
-    const latest = []; // пустий масив для тесту стану "нічого не переглядав"
+    const latest = [];
     const modules = Array.from({ length: 10 }).map((_, i) => ({
         id: i + 1,
         name: `Module ${i + 1}`,
@@ -32,6 +38,8 @@ export default function MainPage() {
         modules: 10 + i,
         avatar: "",
     }));
+
+    const flags = [ua, us, fr, de, jp];
 
     return (
         <div className="mp-wrapper">
@@ -60,6 +68,7 @@ export default function MainPage() {
                         <button className="mp-arrow-btn mp-arrow-left prev-mod">
                             <ArrowLeft />
                         </button>
+
                         <Swiper
                             key="modules-swiper"
                             modules={[Navigation, Autoplay]}
@@ -75,26 +84,39 @@ export default function MainPage() {
                                 900: { slidesPerView: 4, spaceBetween: 18 },
                             }}
                         >
-                            {modules.map((m) => (
-                                <SwiperSlide key={m.id}>
-                                    <div className="mp-module-card">
-                                        <div className="mp-card-header">
-                                            <h4 className="mp-module-name">{m.name}</h4>
-                                            <div className="mp-rating">
-                                                {m.rating}
-                                                <StarIcon className="mp-star" />
+                            {modules.map((m) => {
+                                const flag1 = flags[m.id % flags.length];
+                                const flag2 = flags[(m.id + 1) % flags.length];
+                                return (
+                                    <SwiperSlide key={m.id}>
+                                        <div className="mp-module-card">
+                                            <div className="mp-card-header">
+                                                <div className="mp-module-top">
+                                                    <h4 className="mp-module-name">{m.name}</h4>
+                                                    <DiagonalFlagRect
+                                                        flag1={flag1}
+                                                        flag2={flag2}
+                                                        width={20}
+                                                        height={15}
+                                                    />
+                                                </div>
+                                                <div className="mp-rating">
+                                                    {m.rating}
+                                                    <StarIcon className="mp-star" />
+                                                </div>
+                                            </div>
+                                            <p className="mp-module-desc">{m.description}</p>
+                                            <div className="mp-card-bottom">
+                                                <span>{m.words} words</span>
+                                                <div className="mp-bottom-divider" />
+                                                <span>{m.author}</span>
                                             </div>
                                         </div>
-                                        <p className="mp-module-desc">{m.description}</p>
-                                        <div className="mp-card-bottom">
-                                            <span>{m.words} words</span>
-                                            <div className="mp-bottom-divider" />
-                                            <span>{m.author}</span>
-                                        </div>
-                                    </div>
-                                </SwiperSlide>
-                            ))}
+                                    </SwiperSlide>
+                                );
+                            })}
                         </Swiper>
+
                         <button className="mp-arrow-btn mp-arrow-right next-mod">
                             <ArrowRight />
                         </button>
@@ -110,6 +132,7 @@ export default function MainPage() {
                         <button className="mp-arrow-btn mp-arrow-left prev-auth">
                             <ArrowLeft />
                         </button>
+
                         <Swiper
                             key="authors-swiper"
                             modules={[Navigation, Autoplay]}
@@ -143,6 +166,7 @@ export default function MainPage() {
                                 </SwiperSlide>
                             ))}
                         </Swiper>
+
                         <button className="mp-arrow-btn mp-arrow-right next-auth">
                             <ArrowRight />
                         </button>

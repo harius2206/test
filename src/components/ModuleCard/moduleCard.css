@@ -42,6 +42,29 @@
     flex-direction: column;
     gap: 12px;
 }
+.hover-wrapper {
+    position: relative;
+}
+
+.hover-hint {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    background: var(--mc-bg-hover);
+    border: 1px solid var(--mc-border);
+    padding: 4px 8px;
+    border-radius: 6px;
+    color: var(--mc-muted);
+    font-size: 13px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+.hover-wrapper:hover .hover-hint {
+    opacity: 1;
+}
 
 .module-card {
     display: flex;

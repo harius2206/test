@@ -1,50 +1,36 @@
+:root {
+    --sp-bg-primary: #ffffff;
+}
+
+[data-theme="dark"] {
+    --sp-bg-primary: #000000;
+}
+
 .side-panel-wrapper {
-    position: absolute; /* attach to nearest positioned ancestor */
-    top: 0;
-    bottom: 0;
+    position: fixed;
+    left: 0;
+    top: var(--header-height, 60px);
+    height: calc(100vh - var(--header-height, 60px) - var(--footer-height, 40px));
     display: flex;
     align-items: stretch;
-    z-index: 100;
-    pointer-events: auto;
-    transition: transform 0.18s ease;
+    z-index: 1000; /* Для панелі */
 }
 
-/* anchor variants */
-.side-panel-wrapper.attach-left {
-    left: 0;
-    flex-direction: row;
-}
-
-.side-panel-wrapper.attach-right {
-    right: 0;
-    left: auto;
-    flex-direction: row-reverse; /* place toggle on the inner side */
-}
-
-/* ===== Кнопка ===== */
+/* ===== Button ===== */
 .side-toggle-btn {
     width: 40px;
     height: 80px;
-    background: var(--bg-primary);
+    background: var(--sp-bg-primary);
     border: 1px solid var(--border);
+    border-left: none;
+    border-radius: 0 8px 8px 0;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    align-self: flex-end;
-    margin-bottom: 12px;
+    align-self: start;
+    margin-top: 20px;
     color: var(--text);
-    z-index: 101;
-}
-
-/* fix border rounding depending on anchor */
-.side-panel-wrapper.attach-left .side-toggle-btn {
-    border-left: none;
-    border-radius: 0 8px 8px 0;
-}
-.side-panel-wrapper.attach-right .side-toggle-btn {
-    border-right: none;
-    border-radius: 8px 0 0 8px;
 }
 
 .side-toggle-btn svg {
@@ -54,7 +40,7 @@
     stroke: currentColor;
 }
 
-/* ===== Панель ===== */
+/* ===== Panel ===== */
 .side-panel {
     width: 80px;
     background: var(--bg-secondary);
@@ -65,20 +51,23 @@
     flex-direction: column;
     align-items: center;
     padding: 12px 8px;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    /* Ховаємо скролбар */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE 10+ */
 }
 
-/* adjust border when attached to right */
-.side-panel-wrapper.attach-right .side-panel {
-    border-right: none;
-    border-left: 1px solid var(--border);
-    border-radius: 10px 0 0 10px;
+.side-panel::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
 }
 
 .side-panel-wrapper.open .side-panel {
     display: flex;
 }
 
-/* ===== Іконки ===== */
+/* ===== Icons ===== */
 .side-icons {
     display: flex;
     flex-direction: column;
@@ -87,14 +76,7 @@
     align-items: center;
 }
 
-.side-separator {
-    width: 60%;
-    height: 1px;
-    background: var(--border);
-    margin: 8px 0;
-    opacity: 0.6;
-}
-
+/* ===== Icon ===== */
 .side-icon-wrapper {
     position: relative;
     display: flex;
@@ -109,12 +91,11 @@
     padding: 6px;
     border-radius: 8px;
     color: var(--text);
-    transition: background 0.12s ease, transform 0.12s ease;
+    transition: background 0.12s ease;
 }
 
 .side-icon:hover {
     background: var(--bg-primary);
-    transform: scale(1.05);
 }
 
 .side-icon svg {
@@ -124,47 +105,22 @@
     stroke: currentColor;
 }
 
-/* ===== Tooltip ===== */
-.side-tooltip {
-    position: absolute;
-    left: 90%;
-    top: 50%;
-    transform: translateY(-50%);
-    background: var(--bg-primary);
-    color: var(--text);
-    border: 1px solid var(--border);
-    padding: 4px 8px;
-    border-radius: 6px;
-    white-space: nowrap;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.15s ease, left 0.15s ease;
-    font-size: 14px;
-    font-weight: 500;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    z-index: 10;
-}
-
-/* flip tooltip for right-anchored panel */
-.side-panel-wrapper.attach-right .side-tooltip {
-    right: 90%;
-    left: auto;
-    transform: translateY(-50%);
-}
-
-.side-icon-wrapper:hover .side-tooltip {
-    opacity: 1;
-    left: 105%;
-}
-
-/* ===== Темна тема ===== */
+/* ===== Dark theme ===== */
 [data-theme="dark"] .side-toggle-btn,
 [data-theme="dark"] .side-icon {
     color: #f3f4f6 !important;
 }
 
-[data-theme="dark"] .side-tooltip {
-    background: #111;
-    color: #f3f4f6;
-    border-color: #333;
+/* Позиціонування тултіпу через портал, колір через сам Tooltip */
+.side-panel-wrapper.left-aligned {
+    left: 0;
+}
+
+@media (max-width: 768px) {
+    .side-panel {
+        width: 60px;
+    }
+    .side-toggle-btn {
+        width: 30px;
+    }
 }

@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import ClickOutsideWrapper from "../clickOutsideWrapper";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import "./dropDownMenu.css";
 
 export default function DropdownMenu({
@@ -12,19 +12,53 @@ export default function DropdownMenu({
                                      }) {
     const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
     const btnRef = useRef(null);
+    const menuRef = useRef(null);
 
     const isControlled = controlledOpen !== undefined && controlledSetOpen !== undefined;
     const open = isControlled ? controlledOpen : uncontrolledOpen;
     const setOpen = isControlled ? controlledSetOpen : setUncontrolledOpen;
 
-    const getMenuStyle = () => {
+    const getMenuStyle = useCallback(() => {
         if (!btnRef.current) return {};
+        const rect = btnRef.current.getBoundingClientRect();
+        const scrollY = window.scrollY || window.pageYOffset;
+        const scrollX = window.scrollX || window.pageXOffset;
+        let left;
+        if (align === "right") {
+            left = rect.left + scrollX + rect.width - width;
+        } else {
+            left = rect.left + scrollX;
+        }
+        const top = rect.top + scrollY + rect.height + 4;
         return {
-            top: `${btnRef.current.offsetHeight + 4}px`,
-            [align]: "0",
-            width: `${width}px`
+            position: "absolute",
+            top: `${Math.round(top)}px`,
+            left: `${Math.round(left)}px`,
+            width: `${width}px`,
+            zIndex: 99999
         };
-    };
+    }, [align, width]);
+
+    useEffect(() => {
+        if (!open) return;
+        const onDocDown = (e) => {
+            const target = e.target;
+            if (btnRef.current && btnRef.current.contains(target)) return;
+            if (menuRef.current && menuRef.current.contains(target)) return;
+            setOpen(false);
+        };
+        const onKey = (e) => {
+            if (e.key === "Escape") setOpen(false);
+        };
+        document.addEventListener("mousedown", onDocDown);
+        document.addEventListener("touchstart", onDocDown);
+        document.addEventListener("keydown", onKey);
+        return () => {
+            document.removeEventListener("mousedown", onDocDown);
+            document.removeEventListener("touchstart", onDocDown);
+            document.removeEventListener("keydown", onKey);
+        };
+    }, [open, setOpen]);
 
     return (
         <div className="dm-wrapper" ref={btnRef}>
@@ -38,9 +72,14 @@ export default function DropdownMenu({
                 {children}
             </div>
 
-            {open && (
-                <ClickOutsideWrapper onClickOutside={() => setOpen(false)}>
-                    <div className="dm-menu" style={getMenuStyle()}>
+            {open &&
+                createPortal(
+                    <div
+                        ref={menuRef}
+                        className="dm-menu"
+                        style={getMenuStyle()}
+                        role="menu"
+                    >
                         {items.map((item, i) => (
                             <div
                                 key={i}
@@ -55,9 +94,9 @@ export default function DropdownMenu({
                                 <span className="dm-label">{item.label}</span>
                             </div>
                         ))}
-                    </div>
-                </ClickOutsideWrapper>
-            )}
+                    </div>,
+                    document.body
+                )}
         </div>
     );
 }

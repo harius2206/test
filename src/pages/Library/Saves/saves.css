@@ -1,0 +1,111 @@
+/* --- Загальна обгортка --- */
+.saves-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    background-color: var(--background-color, #fafafa);
+    padding: 40px 16px;
+}
+.tabs-indicator.cards { left: 195px; width: 75px; }
+/* --- Основний контейнер --- */
+.saves-main {
+    width: 100%;
+    max-width: 900px; /* ✅ нормальна ширина сторінки */
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    padding: 32px 40px;
+    box-sizing: border-box;
+}
+
+/* --- Заголовок --- */
+.saves-header h1 {
+    font-size: 28px;
+    font-weight: 600;
+    color: #111;
+    margin-bottom: 24px;
+}
+
+/* --- Таби --- */
+.saves-tabs {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+    position: relative;
+    border-bottom: 2px solid #eee;
+    margin-bottom: 28px;
+}
+
+.saves-tab {
+    position: relative;
+    padding-bottom: 10px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.saves-tab:hover {
+    color: #444;
+}
+
+.saves-tab.active {
+    color: #7c3aed;
+}
+
+/* --- Підкреслення --- */
+.saves-underline {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: transparent;
+}
+
+.saves-indicator {
+    position: absolute;
+    bottom: 0;
+    height: 2px;
+    background-color: #7c3aed;
+    border-radius: 2px;
+    transition: left 0.3s ease, width 0.3s ease;
+}
+
+.saves-indicator.folders {
+    left: 0;
+    width: 80px;
+}
+
+.saves-indicator.modules {
+    left: 110px;
+    width: 90px;
+}
+
+.saves-indicator.cards {
+    left: 220px;
+    width: 64px;
+}
+
+/* --- Контент --- */
+.saves-content {
+    margin-top: 24px;
+}
+
+/* --- Адаптив --- */
+@media (max-width: 768px) {
+    .saves-main {
+        padding: 24px 20px;
+    }
+
+    .saves-tabs {
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .saves-tab {
+        font-size: 15px;
+    }
+}
