@@ -42,9 +42,9 @@ export default function ModuleCard({
                     </div>
                     <span className="separator">|</span>
                     <span className="rating">
-            {module.rating}
+                        {module.rating}
                         <StarIcon className="mc-star-icon" />
-          </span>
+                    </span>
 
                     <div className="mc-tags-wrapper">
                         <div className="mc-tags-row">
@@ -71,7 +71,9 @@ export default function ModuleCard({
                 </div>
 
                 <div className="module-name-row hover-wrapper">
-                    <span className="module-name-text">{module.name}</span>
+                    <span className="module-name-text">
+                        {module.topic ? module.topic + " - " + module.name : module.name}
+                    </span>
                     <span className="hover-hint">{module.description || "No description"}</span>
                 </div>
 

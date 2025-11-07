@@ -273,3 +273,17 @@ hr {
         max-height: 78vh;
     }
 }
+.um-avatar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.um-avatar-btn .user-avatar {
+    transition: transform 0.2s ease;
+}
+
+.um-avatar-btn .user-avatar:hover {
+    transform: scale(1.05);
+}

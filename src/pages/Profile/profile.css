@@ -2,7 +2,7 @@
     --accent: #6366f1;
     --danger: #DF4C4C;
     --text-gray: #666;
-    --text: #111827;
+    --text: #000000;
     --text-muted: #666;
     --text-subtle: #999;
     --bg-primary: #ffffff;
@@ -16,7 +16,7 @@
 }
 
 [data-theme="dark"] {
-    --text: #f3f4f6;
+    --text: #ffffff;
     --text-muted: #9ca3af;
     --text-subtle: #d1d5db;
     --bg-primary: #000000;
@@ -222,5 +222,90 @@
     }
     .profile-form .btn {
         width: 100%;
+    }
+}
+
+.photo-preview-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+.profile-info .user-avatar {
+    width: var(--profile-avatar-size) !important;
+    height: var(--profile-avatar-size) !important;
+    font-size: var(--profile-avatar-font) !important;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.photo-preview-box {
+    border: 1px solid var(--border-light);
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    width: 100%;
+    max-width: 380px;
+    min-height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-top: 8px;
+    text-align: center;
+}
+
+.photo-preview-img {
+    max-height: 350px;
+    width: 100%;
+    object-fit: contain;
+}
+
+.photo-avatar {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.photo-placeholder {
+    color: var(--text-muted);
+    font-size: 14px;
+    padding: 10px;
+}
+
+.photo-buttons-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.photo-upload-label {
+    display: inline-flex;
+    cursor: pointer;
+}
+
+.photo-upload-input {
+    display: none;
+}
+
+/* Responsive layout */
+@media (max-width: 600px) {
+    .photo-preview-box {
+        max-width: 280px;
+        min-height: 180px;
+    }
+    .photo-avatar {
+        width: 100px;
+        height: 100px;
+    }
+    .photo-buttons-row button {
+        width: 110px !important;
+        height: 36px !important;
+        font-size: 13px;
     }
 }

@@ -7,7 +7,9 @@ import CardsTest from "../pages/Library/CardTest/CardsTest";
 import CardsCheck from "../pages/Library/CardsCheck/CardsCheck";
 import PublicProfileLibrary from "../pages/Profile/PublicProfileLibrary/PublicProfileLibrary";
 import Saves from "../pages/Library/Saves/Saves";
-
+import RegisterPage from "../pages/Forms/AuthPage/RegisterPage";
+import LoginPage from "../pages/Forms/AuthPage/LoginPage";
+import PasswordReset from "../pages/Forms/AuthPage/PasswordReset";
 
 const appRoutes = [
     { path: "/", component: MainPage },
@@ -18,7 +20,12 @@ const appRoutes = [
     { path: "/library/module-view", component: ModuleView, exact: true },
     { path: "/cardscheck", component: CardsCheck, exact: true },
     { path: "/cardstest", component: CardsTest, exact: true },
-    { path: "/saves", component: Saves }
+    { path: "/saves", component: Saves },
+    { path: "/login", component: LoginPage },
+    { path: "/register", component: RegisterPage },
+    { path: "/reset-password", component: PasswordReset },
+
+
 
 ];
 

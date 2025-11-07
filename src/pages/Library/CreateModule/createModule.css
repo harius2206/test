@@ -9,14 +9,14 @@
     --clr-primary: #6366f1;
     --clr-primary-light: rgba(99,102,241,0.08);
 
-    --clr-card-error: #ef4444;
-    --clr-card-error-border: #dc2626;
+    --clr-card-error: #ffffff;
+    --clr-card-error-border: #d6d6d6;
     --clr-card-error-text: #ffffff;
 }
 
 [data-theme="dark"] {
     --clr-bg: #000000;
-    --clr-card-bg: #1a1a1a;
+    --clr-card-bg: #000000;
     --clr-border: rgba(152, 155, 178, 0.04);
     --clr-border-light: rgba(152, 155, 178, 0.2);
     --clr-text: #e6eef8;
@@ -24,8 +24,8 @@
     --clr-primary: #6366f1;
     --clr-primary-light: rgba(99,102,241,0.18);
 
-    --clr-card-error: #1a1a1a;
-    --clr-card-error-border: rgba(152, 155, 178, 0.2);
+    --clr-card-error: #000000;
+    --clr-card-error-border: rgba(237, 237, 237, 0.2);
     --clr-card-error-text: #ffffff;
 }
 
@@ -240,8 +240,8 @@
     display: flex;
     gap: 12px;
     align-items: flex-start;
-    background: var(--clr-card-error); /* changed: red background for cards */
-    border: 1px solid var(--clr-card-error-border); /* changed: red border */
+    background: var(--clr-card-error);
+    border: 1px solid var(--clr-card-error-border);
     border-radius: 8px;
     padding: 16px;
     width: 100%;

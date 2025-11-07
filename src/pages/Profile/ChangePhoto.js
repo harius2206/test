@@ -1,10 +1,187 @@
+// src/pages/Profile/ChangePhoto.js
+import React, { useState, useRef, useCallback, useEffect } from "react";
+import ReactCrop, { makeAspectCrop, centerCrop } from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
+import Button from "../../components/button/button";
 import "./profile.css";
 
 export default function ChangePhoto() {
+    const [src, setSrc] = useState(null);
+    const [crop, setCrop] = useState();
+    const [completedCrop, setCompletedCrop] = useState(null);
+    const [croppedImage, setCroppedImage] = useState(localStorage.getItem("userAvatar"));
+    const [isEditing, setIsEditing] = useState(false);
+    const [hasChanged, setHasChanged] = useState(false);
+    const imgRef = useRef(null);
+    const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        const saved = localStorage.getItem("userAvatar");
+        if (saved) setCroppedImage(saved);
+    }, []);
+
+    const onSelectFile = (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const file = e.target.files[0];
+            setSrc(URL.createObjectURL(file));
+            setIsEditing(true);
+            setCrop(undefined);
+            setHasChanged(true);
+        }
+    };
+
+    const handleOpenFileDialog = () => {
+        if (fileInputRef.current) fileInputRef.current.click();
+    };
+
+    const onPaste = useCallback((e) => {
+        const item = Array.from(e.clipboardData.items).find((x) =>
+            x.type.includes("image")
+        );
+        if (item) {
+            const file = item.getAsFile();
+            setSrc(URL.createObjectURL(file));
+            setIsEditing(true);
+            setHasChanged(true);
+        }
+    }, []);
+
+    useEffect(() => {
+        window.addEventListener("paste", onPaste);
+        return () => window.removeEventListener("paste", onPaste);
+    }, [onPaste]);
+
+    const onImageLoad = (e) => {
+        const { width, height } = e.currentTarget;
+        const crop = centerCrop(
+            makeAspectCrop({ unit: "%", width: 80 }, 1, width, height),
+            width,
+            height
+        );
+        setCrop(crop);
+    };
+
+    const getCroppedBase64 = useCallback(() => {
+        if (!completedCrop || !imgRef.current) return null;
+        const canvas = document.createElement("canvas");
+        const scaleX = imgRef.current.naturalWidth / imgRef.current.width;
+        const scaleY = imgRef.current.naturalHeight / imgRef.current.height;
+        canvas.width = completedCrop.width;
+        canvas.height = completedCrop.height;
+        const ctx = canvas.getContext("2d");
+
+        ctx.drawImage(
+            imgRef.current,
+            completedCrop.x * scaleX,
+            completedCrop.y * scaleY,
+            completedCrop.width * scaleX,
+            completedCrop.height * scaleY,
+            0,
+            0,
+            completedCrop.width,
+            completedCrop.height
+        );
+
+        return canvas.toDataURL("image/png");
+    }, [completedCrop]);
+
+    const handleCropConfirm = () => {
+        const base64 = getCroppedBase64();
+        if (base64) {
+            setCroppedImage(base64);
+            localStorage.setItem("userAvatar", base64);
+            setIsEditing(false);
+        }
+    };
+
+    const handleSave = () => {
+        setIsEditing(false);
+        setSrc(null);
+        setHasChanged(false);
+        // small delay so UI can update
+        setTimeout(() => {
+            window.location.reload();
+        }, 300);
+    };
+
+    const handleDelete = () => {
+        setCroppedImage(null);
+        localStorage.removeItem("userAvatar");
+        setHasChanged(false);
+    };
+
     return (
-        <div className="profile-content">
-            <h1 className="profile-title">Change photo</h1>
-            <p className="profile-tile-description">Here you can update your profile picture.</p>
+        <div className="profile-section-wrapper">
+            <div className="profile-section-header">
+                <h1 className="profile-title">Change Photo</h1>
+                <h2 className="profile-tile-description">
+                    You can change your profile picture here.
+                </h2>
+            </div>
+
+            <div className="photo-preview-container">
+                <div className="photo-preview-box">
+                    {isEditing && src ? (
+                        <ReactCrop
+                            crop={crop}
+                            onChange={(c) => setCrop(c)}
+                            onComplete={(c) => setCompletedCrop(c)}
+                            aspect={1}
+                        >
+                            <img
+                                ref={imgRef}
+                                src={src}
+                                alt="Crop preview"
+                                onLoad={onImageLoad}
+                                className="photo-preview-img"
+                            />
+                        </ReactCrop>
+                    ) : croppedImage ? (
+                        <img src={croppedImage} alt="User avatar" className="photo-avatar" />
+                    ) : (
+                        <p className="photo-placeholder">
+                            Upload or paste an image (Ctrl + V) to start editing.
+                        </p>
+                    )}
+                </div>
+            </div>
+
+            <div className="photo-buttons-row">
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={onSelectFile}
+                    className="photo-upload-input"
+                />
+
+                <Button variant="hover" width={130} height={40} onClick={handleOpenFileDialog}>
+                    {croppedImage ? "Change" : "Upload"}
+                </Button>
+
+                {hasChanged && !isEditing && (
+                    <Button variant="static" width={130} height={40} onClick={handleSave}>
+                        Save
+                    </Button>
+                )}
+
+                {croppedImage && !isEditing && (
+                    <Button variant="toggle" width={130} height={40} onClick={handleDelete}>
+                        Delete
+                    </Button>
+                )}
+            </div>
+
+            {isEditing && (
+                <div className="photo-buttons-row">
+                    <Button variant="static" width={130} height={40} onClick={handleCropConfirm}>
+                        Crop
+                    </Button>
+                    <Button variant="toggle" width={130} height={40} onClick={() => setIsEditing(false)}>
+                        Cancel
+                    </Button>
+                </div>
+            )}
         </div>
     );
 }

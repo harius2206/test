@@ -1,6 +1,4 @@
 :root {
-    --lib-bg: #ffffff;
-    --lib-bg-secondary: #f9f9f9;
     --lib-text: #111827;
     --lib-muted: #555;
     --lib-border: #ddd;
@@ -9,8 +7,6 @@
 }
 
 [data-theme="dark"] {
-    --lib-bg: #000000;
-    --lib-bg-secondary: #000000;
     --lib-text: #f3f4f6;
     --lib-muted: #9ca3af;
     --lib-border: #ffffff;

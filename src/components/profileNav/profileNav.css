@@ -1,10 +1,34 @@
 :root {
+    /* profile-related variables */
     --profile-border: #bcbcbc;
     --profile-bg-hover: rgba(152, 155, 178, 0.1);
     --profile-bg-active: #b0b2bd;
     --profile-text: #111827;
     --profile-subtext: #666;
     --profile-bg: #ffffff;
+
+    /* fallback avatar variables (can be overridden in .profile-info) */
+    --user-avatar-size: 160px;
+    --user-avatar-min: 64px;
+    --user-avatar-font: 64px;
+
+    /* global app / login variables (merged so login styles can use them) */
+    --text: #f5f5f5;
+    --text-muted: #a6a6a6;
+    --text-inverted: #0f0f0f;
+    --bg-primary: #000000;
+    --bg-secondary: #000000;
+    --bg-hover: #222222;
+    --bg-hover-light: #2a2a2a;
+    --bg-button: #ffffff;
+    --text-button: #000000;
+    --accent: #6366f1;
+    --accent-fade: rgb(73, 78, 197);
+    --border-light: #2f2f2f;
+    --border-strong: #000000;
+    --icon-filter: invert(1);
+    --shadow-light: rgba(255, 255, 255, 0.05);
+    --shadow-strong: rgba(0, 0, 0, 0.4);
 }
 
 [data-theme="dark"] {
@@ -14,6 +38,26 @@
     --profile-text: #f3f4f6;
     --profile-subtext: #9ca3af;
     --profile-bg: #000000;
+}
+
+/* add light theme variables used by login and other components */
+[data-theme="light"] {
+    --text: #0f0f0f;
+    --text-muted: #5c5c5c;
+    --text-inverted: #ffffff;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f8f8;
+    --bg-hover: #f1f1f1;
+    --bg-hover-light: #e8e8e8;
+    --bg-button: #000000;
+    --text-button: #ffffff;
+    --accent: #6366f1;
+    --accent-fade: rgb(73, 78, 197);
+    --border-light: #d8d8d8;
+    --border-strong: #000000;
+    --icon-filter: invert(0);
+    --shadow-light: rgba(0, 0, 0, 0.1);
+    --shadow-strong: rgba(0, 0, 0, 0.2);
 }
 
 .profile-nav {
@@ -28,14 +72,42 @@
     z-index: 10;
 }
 
+/* center and make avatar sizing configurable via CSS variables */
 .profile-info {
+    /* center horizontally and keep vertical flow */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
     margin-bottom: 30px;
+
+    /* default avatar size/font for this block (overrides :root fallback) */
+    --user-avatar-size: 160px;
+    --user-avatar-font: 64px;
+
+    /* authoritative vars used by this container to control final avatar rendering
+       (these are used directly for width/height/font-size so they win over any
+       inline `--user-avatar-size` set on the image by the component) */
+    --profile-avatar-size: 160px;
+    --profile-avatar-font: 64px;
 }
 
+/* ensure avatar component inside profile-info follows variables and is centered */
+/* use the authoritative vars with !important so CSS-driven media queries win */
+.profile-info .user-avatar {
+    width: var(--profile-avatar-size) !important;
+    height: var(--profile-avatar-size) !important;
+    font-size: var(--profile-avatar-font) !important;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 auto;
+    display: block; /* ensure centering via margin auto */
+}
+
+/* keep legacy .profile-avatar selector as fallback (if used elsewhere) */
 .profile-avatar {
-    width: 160px;
-    height: 160px;
+    width: var(--user-avatar-size);
+    height: var(--user-avatar-size);
     border-radius: 50%;
     object-fit: cover;
 }
@@ -76,6 +148,96 @@
     color: #ffffff;
 }
 
+/* ===== LOGIN PAGE STYLES (integrated) ===== */
+
+/* Structure */
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    font-family: "Inter", sans-serif;
+    color: var(--text);
+    background: var(--bg-primary);
+    padding: 0 20px;
+}
+
+.login-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: var(--text);
+}
+
+.reset-description {
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 340px;
+    line-height: 1.4;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Inputs & Button */
+.login-input {
+    width: 100%;
+    max-width: 340px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    background: var(--bg-secondary);
+    color: var(--text);
+    outline: none;
+    font-size: 15px;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.login-input:focus {
+    border-color: var(--accent);
+    background: var(--bg-hover);
+}
+
+.login-main-btn {
+    width: 100%;
+    max-width: 340px;
+    padding: 10px;
+    margin-top: 8px;
+    background: var(--bg-button);
+    color: var(--text-button);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
+}
+
+.login-main-btn:hover {
+    background: var(--bg-hover-light);
+    transform: scale(1.01);
+}
+
+/* Footer */
+.reset-footer {
+    margin-top: 24px;
+    font-size: 15px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.login-link {
+    color: var(--accent);
+    cursor: pointer;
+    font-weight: 600;
+    transition: opacity 0.2s ease;
+}
+
+.login-link:hover {
+    opacity: 0.8;
+}
+
 /* === АДАПТИВНІСТЬ (без зміни вертикальної структури) === */
 
 /* Планшети */
@@ -84,9 +246,14 @@
         width: 25%;
     }
 
-    .profile-avatar {
-        width: 130px;
-        height: 130px;
+    /* reduce avatar via variables */
+    .profile-info {
+        --user-avatar-size: 130px;
+        --user-avatar-font: 52px;
+
+        /* authoritative vars adjusted for this breakpoint */
+        --profile-avatar-size: 130px;
+        --profile-avatar-font: 52px;
     }
 
     .profile-name {
@@ -107,9 +274,13 @@
         border-right: 1px solid var(--profile-border); /* завжди справа */
     }
 
-    .profile-avatar {
-        width: 100px;
-        height: 100px;
+    .profile-info {
+        --user-avatar-size: 100px;
+        --user-avatar-font: 40px;
+
+        /* authoritative vars adjusted for this breakpoint */
+        --profile-avatar-size: 100px;
+        --profile-avatar-font: 40px;
     }
 
     .profile-name {
@@ -124,9 +295,13 @@
 
 /* Дуже маленькі екрани */
 @media (max-width: 480px) {
-    .profile-avatar {
-        width: 80px;
-        height: 80px;
+    .profile-info {
+        --user-avatar-size: 80px;
+        --user-avatar-font: 32px;
+
+        /* authoritative vars adjusted for this breakpoint */
+        --profile-avatar-size: 80px;
+        --profile-avatar-font: 32px;
     }
 
     .profile-name {

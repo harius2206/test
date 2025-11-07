@@ -17,7 +17,6 @@ import { ReactComponent as UntickIcon } from "../../../images/unTick.svg";
 export default function Folders({ addFolder, setAddFolder, source = "library" }) {
     const navigate = useNavigate();
 
-    // --- базові дані бібліотеки ---
     const [folders, setFolders] = useState([
         {
             id: 1,
@@ -42,7 +41,6 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
         }
     ]);
 
-    // --- збережені папки ---
     const savedFolders = [
         {
             id: 101,
@@ -66,7 +64,6 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
         }
     ];
 
-    // 🔄 використовуємо дані залежно від джерела
     const data = source === "saves" ? savedFolders : folders;
 
     const [colorMenuOpen, setColorMenuOpen] = useState(null);
@@ -82,7 +79,7 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
 
     const handleDeleteFolder = (id) => {
         if (!window.confirm("Delete this folder?")) return;
-        if (source === "saves") return; // у сейвах видалення не дозволене
+        if (source === "saves") return;
         setFolders(prev => prev.filter(f => f.id !== id));
     };
 

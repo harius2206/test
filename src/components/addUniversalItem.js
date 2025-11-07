@@ -1,6 +1,8 @@
+// javascript
 import React, { useRef, useEffect, useState } from "react";
 import EditableField from "./editableField/editableField";
 import ColoredIcon from "./coloredIcon";
+import Button from "./button/button";
 
 export default function AddUniversalItem({
                                              type = "module",
@@ -114,9 +116,9 @@ export default function AddUniversalItem({
             </div>
 
             <div className="folder-actions">
-                <button className="btn-primary" onClick={handleCreate}>
+                <Button width={70} height={24} variant="static" color="#655ADE" onClick={handleCreate}>
                     Create
-                </button>
+                </Button>
             </div>
         </div>
     );

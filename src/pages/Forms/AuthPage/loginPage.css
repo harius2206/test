@@ -1,0 +1,349 @@
+:root {
+    --text: #f5f5f5;
+    --text-muted: #a6a6a6;
+    --text-inverted: #0f0f0f;
+
+    --bg-primary: #000000;
+    --bg-secondary: #000000;
+    --bg-hover: #222222;
+    --bg-hover-light: #2a2a2a;
+    --bg-button: #ffffff;
+    --text-button: #000000;
+    --accent: #6366f1;
+    --accent-fade: rgb(73, 78, 197);
+    --border-light: #2f2f2f;
+    --border-strong: #000000;
+    --icon-filter: invert(1);
+    --shadow-light: rgba(255, 255, 255, 0.05);
+    --shadow-strong: rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="light"] {
+    --text: #0f0f0f;
+    --text-muted: #5c5c5c;
+    --text-inverted: #ffffff;
+
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f8f8;
+    --bg-hover: #f1f1f1;
+    --bg-hover-light: #e8e8e8;
+
+    --bg-button: #000000;
+    --text-button: #ffffff;
+
+    --accent: #6366f1;
+    --accent-fade: rgb(73, 78, 197);
+
+    --border-light: #d8d8d8;
+    --border-strong: #000000;
+
+    --icon-filter: invert(0);
+
+    --shadow-light: rgba(0, 0, 0, 0.1);
+    --shadow-strong: rgba(0, 0, 0, 0.2);
+}
+
+/* Container and typography */
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    font-family: "Inter", sans-serif;
+    color: var(--text);
+    background: var(--bg-primary);
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+.login-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--text);
+    text-align: center;
+}
+
+/* Inputs */
+.login-input {
+    width: 100%;
+    max-width: 340px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    background: var(--bg-secondary, #1c1c1c);
+    color: var(--text);
+    outline: none;
+    font-size: 15px;
+    transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.12s ease;
+    box-sizing: border-box;
+}
+
+.login-input::placeholder {
+    color: var(--text-muted);
+}
+
+.login-input:focus {
+    border-color: var(--accent);
+    background: var(--bg-hover);
+    box-shadow: 0 6px 18px rgba(99, 102, 241, 0.06);
+}
+
+.login-input:not(:placeholder-shown) {
+    background: var(--bg-secondary);
+    color: var(--text);
+}
+
+.login-main-btn {
+    width: 100%;
+    max-width: 340px;
+    height: 40px;
+    margin-top: 8px;
+    margin-bottom: 6px;
+    background: var(--bg-button);
+    color: var(--text-button);
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+}
+
+.login-main-btn:hover {
+    transform: translateY(-1px);
+    opacity: 0.95;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+/* Divider and social buttons */
+.login-divider {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 340px;
+    margin: 24px 0 18px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.login-divider::before,
+.login-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border-light);
+}
+
+.login-divider span {
+    margin: 0 10px;
+}
+
+.login-socials {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    width: 100%;
+    max-width: 340px;
+}
+
+.login-social-btn {
+    width: 50px;
+    height: 50px;
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 0 transparent;
+}
+
+.login-social-btn:hover {
+    border-color: var(--accent);
+    transform: scale(1.05);
+    box-shadow: 0 0 8px var(--accent-fade);
+}
+
+.login-social-btn img {
+    width: 24px;
+    height: 24px;
+}
+
+.login-social-btn img[alt="GitHub"] {
+    filter: var(--icon-filter);
+}
+
+.login-social-btn img[alt="Google"] {
+    filter: none !important;
+}
+
+/* Footer text and links */
+.login-footer {
+    margin-top: 26px;
+    font-size: 15px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+/* Link styles used across forms */
+.login-link {
+    color: var(--accent);
+    cursor: pointer;
+    font-weight: 600;
+    transition: opacity 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.login-link:hover {
+    opacity: 0.8;
+    text-decoration: none;
+}
+
+/* Reset-specific styles (aligned to login layout) */
+.reset-description {
+    max-width: 340px;
+    width: 100%;
+    margin-bottom: 12px;
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.35;
+    text-align: left;
+}
+
+/* Ensure reset footer sits directly under inputs and left-aligned link */
+.reset-footer {
+    width: 100%;
+    max-width: 340px;
+    margin: 6px 0 12px;
+    text-align: left;
+    font-size: 14px;
+}
+
+/* Small utility and responsive tweaks */
+@media (max-width: 420px) {
+    .login-input,
+    .login-main-btn,
+    .login-divider,
+    .login-socials,
+    .reset-description,
+    .reset-footer {
+        max-width: 100%;
+    }
+
+    .login-title {
+        font-size: 20px;
+        margin-bottom: 18px;
+    }
+}
+
+/* Added: tighter adjustments for smaller devices */
+@media (max-width: 360px) {
+    .login-container {
+        min-height: 70vh;
+        padding: 0 14px;
+    }
+
+    .login-title {
+        font-size: 18px;
+        margin-bottom: 14px;
+    }
+
+    .login-input {
+        padding: 8px 12px;
+        font-size: 14px;
+        border-radius: 8px;
+    }
+
+    .login-main-btn {
+        height: 36px;
+        font-size: 14px;
+        border-radius: 8px;
+    }
+
+    .login-divider {
+        margin: 18px 0 14px;
+        font-size: 13px;
+    }
+
+    .login-socials {
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .login-social-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 8px;
+    }
+
+    .login-social-btn img {
+        width: 20px;
+        height: 20px;
+    }
+
+    .reset-description,
+    .reset-footer {
+        font-size: 13px;
+    }
+}
+
+/* Added: smallest phones */
+@media (max-width: 320px) {
+    .login-container {
+        min-height: 66vh;
+        padding: 0 10px;
+    }
+
+    .login-title {
+        font-size: 16px;
+        margin-bottom: 12px;
+        font-weight: 700;
+    }
+
+    .login-input {
+        padding: 7px 10px;
+        font-size: 13px;
+    }
+
+    .login-main-btn {
+        height: 34px;
+        font-size: 13px;
+        padding: 0 8px;
+    }
+
+    .login-divider {
+        margin: 14px 0 12px;
+        font-size: 12px;
+    }
+
+    .login-socials {
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .login-social-btn {
+        width: 40px;
+        height: 40px;
+    }
+
+    .login-social-btn img {
+        width: 18px;
+        height: 18px;
+    }
+
+    .login-footer,
+    .reset-description,
+    .reset-footer {
+        font-size: 12px;
+    }
+}

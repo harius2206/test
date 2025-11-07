@@ -9,6 +9,7 @@ import PermissionsMenu from "../../../components/permissionMenu/permissionsMenu"
 const libraryModules = [
     {
         id: 1,
+        topic: "Grammar",
         name: "Polisz",
         terms: 150,
         author: "admin",
@@ -31,6 +32,7 @@ const libraryModules = [
     },
     {
         id: 2,
+        topic: "Vocabulary",
         name: "Angielski",
         terms: 200,
         author: "adam",
@@ -47,6 +49,7 @@ const libraryModules = [
 const savedModules = [
     {
         id: 101,
+        topic: "History",
         name: "Saved - History",
         terms: 180,
         author: "John",
@@ -57,6 +60,7 @@ const savedModules = [
     },
     {
         id: 102,
+        topic: "Science",
         name: "Saved - Chemistry",
         terms: 120,
         author: "Nina",

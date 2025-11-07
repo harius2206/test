@@ -1,4 +1,4 @@
-// JavaScript
+// javascript
 import { useState, useEffect } from "react";
 import Folders from "../Folders/Folders";
 import Modules from "../Modules/Modules";
@@ -17,13 +17,6 @@ export default function Saves() {
             <main className="library-main">
                 <div className="library-header">
                     <h1>Your saves</h1>
-                    {activeTab === "folders" ? (
-                        <button className="add-btn" onClick={() => {}}>Add folder</button>
-                    ) : activeTab === "modules" ? (
-                        <button className="add-btn" onClick={() => {}}>Add module</button>
-                    ) : (
-                        <button className="add-btn" onClick={() => {}}>Add card</button>
-                    )}
                 </div>
 
                 <div className="tabs-wrapper">

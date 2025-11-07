@@ -1,3 +1,4 @@
+// src/App.js
 import ThemeProvider from "./context/ThemeContext";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
@@ -8,7 +9,11 @@ import SidePanel from "./components/sidePanel/sidePanel";
 
 function AppLayout() {
     const location = useLocation();
-    const hideSide = location.pathname.startsWith("/profile");
+    const hideSide =
+        location.pathname.startsWith("/profile") ||
+        location.pathname.startsWith("/login") ||
+        location.pathname.startsWith("/register") ||
+        location.pathname.startsWith("/reset-password");
 
     return (
         <div className="page-wrapper">

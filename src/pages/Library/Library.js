@@ -1,21 +1,23 @@
+// src/pages/Library/Library.js
 import { useState, useEffect } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import Folders from "./Folders/Folders";
 import Modules from "./Modules/Modules";
 import FolderInfo from "./FolderInfo/FolderInfo";
+import Button from "../../components/button/button";
 import "./library.css";
 
 export default function Library() {
     const navigate = useNavigate();
 
-    // Читаємо стан з localStorage або ставимо "folders" за замовчуванням
+    // Read active tab from localStorage or default to "folders"
     const [activeTab, setActiveTab] = useState(() => {
         return localStorage.getItem("libraryActiveTab") || "folders";
     });
 
     const [addFolder, setAddFolder] = useState(false);
 
-    // Зберігаємо стан у localStorage при зміні activeTab
+    // Persist activeTab to localStorage when it changes
     useEffect(() => {
         localStorage.setItem("libraryActiveTab", activeTab);
     }, [activeTab]);
@@ -31,17 +33,27 @@ export default function Library() {
                                 <div className="library-header">
                                     <h1>Your library</h1>
                                     {activeTab === "folders" ? (
-                                        <button className="add-btn" onClick={() => setAddFolder(true)}>Add folder</button>
+                                        <Button variant="static" width={170} height={40} onClick={() => setAddFolder(true)}>
+                                            Add folder
+                                        </Button>
                                     ) : (
-                                        <button className="add-btn" onClick={() => navigate("/library/create-module")}>Add module</button>
+                                        <Button variant="static" width={170} height={40} onClick={() => navigate("/library/create-module")}>
+                                            Add module
+                                        </Button>
                                     )}
                                 </div>
 
                                 <div className="tabs-wrapper">
-                                    <div className={`tab ${activeTab === "modules" ? "active" : ""}`} onClick={() => setActiveTab("modules")}>
+                                    <div
+                                        className={`tab ${activeTab === "modules" ? "active" : ""}`}
+                                        onClick={() => setActiveTab("modules")}
+                                    >
                                         Modules
                                     </div>
-                                    <div className={`tab ${activeTab === "folders" ? "active" : ""}`} onClick={() => setActiveTab("folders")}>
+                                    <div
+                                        className={`tab ${activeTab === "folders" ? "active" : ""}`}
+                                        onClick={() => setActiveTab("folders")}
+                                    >
                                         Folders
                                     </div>
                                     <div className="tabs-underline">

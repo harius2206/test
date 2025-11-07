@@ -1,3 +1,5 @@
+// javascript
+// src/pages/Library/CreateModule/ModuleForm.js
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../../components/button/button";
@@ -27,6 +29,7 @@ export default function ModuleForm({
     const tagInputRef = useRef(null);
 
     const [name, setName] = useState(initialData.name || "");
+    const [topic, setTopic] = useState(initialData.topic || "");
     const [description, setDescription] = useState(initialData.description || "");
 
     const [globalLangLeft, setGlobalLangLeft] = useState(initialData.globalLangLeft || "Polish");
@@ -71,6 +74,7 @@ export default function ModuleForm({
         const moduleObj = {
             id: initialData.id || Date.now(),
             name,
+            topic,
             description,
             tags,
             cards,
@@ -184,13 +188,19 @@ export default function ModuleForm({
                     </div>
                 </div>
 
-                {/* name/description */}
+                {/* name/topic/description */}
                 <div className="module-inputs">
                     <input
                         className="module-input"
                         placeholder="Name"
                         value={name}
                         onChange={e => setName(e.target.value)}
+                    />
+                    <input
+                        className="module-input"
+                        placeholder="Topic"
+                        value={topic}
+                        onChange={e => setTopic(e.target.value)}
                     />
                     <input
                         className="module-input"

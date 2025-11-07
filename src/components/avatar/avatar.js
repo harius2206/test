@@ -12,13 +12,21 @@ export default function UserAvatar({ name, avatar, size = 32, fontSize = 16 }) {
         return colors[Math.floor(Math.random() * colors.length)];
     }, [name]);
 
+    // перевіряємо локальне збережене зображення
+    const storedAvatar = localStorage.getItem("userAvatar");
+    const finalAvatar = storedAvatar || avatar;
+
     return (
         <div
             className="user-avatar"
-            style={{ width: size, height: size, backgroundColor: avatar ? "transparent" : bgColor }}
+            style={{
+                width: size,
+                height: size,
+                backgroundColor: finalAvatar ? "transparent" : bgColor,
+            }}
         >
-            {avatar ? (
-                <img src={avatar} alt={name} className="user-avatar-img" />
+            {finalAvatar ? (
+                <img src={finalAvatar} alt={name} className="user-avatar-img" />
             ) : (
                 <span
                     className="user-avatar-text"

@@ -24,7 +24,6 @@ export default function Button({
         transition: "all 0.2s ease",
     };
 
-    // --- new: ensure plain buttons in dark theme use the dark surface and text color
     if (isDark && (!variant || variant === "")) {
         Object.assign(styles, {
             backgroundColor: "var(--clr-card-bg)",
