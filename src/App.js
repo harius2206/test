@@ -6,7 +6,7 @@ import appRoutes from "./routes/appRoutes";
 import Header from "./components/header/header";
 import Footer from "./components/footer/footer";
 import SidePanel from "./components/sidePanel/sidePanel";
-
+import { AuthProvider } from "./context/AuthContext";
 function AppLayout() {
     const location = useLocation();
     const hideSide =
@@ -35,10 +35,12 @@ function AppLayout() {
 
 export default function App() {
     return (
-        <ThemeProvider>
-            <Router>
-                <AppLayout />
-            </Router>
-        </ThemeProvider>
+        <Router>
+            <ThemeProvider>
+                <AuthProvider>
+                    <AppLayout />
+                </AuthProvider>
+            </ThemeProvider>
+        </Router>
     );
 }

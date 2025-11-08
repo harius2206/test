@@ -26,7 +26,6 @@ const appRoutes = [
     { path: "/reset-password", component: PasswordReset },
 
 
-
 ];
 
 export default appRoutes;

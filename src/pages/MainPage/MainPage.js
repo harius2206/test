@@ -1,4 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import axios from "axios";
+
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
@@ -20,6 +23,26 @@ import jp from "../../images/flags/jp.svg";
 import "./mainPage.css";
 
 export default function MainPage() {
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    useEffect(() => {
+        const key = searchParams.get("key");
+        if (!key) return;
+
+        const verifyAccount = async () => {
+            try {
+                await axios.post("https://72e9f2d28dc7.ngrok-free.app/api/v1/auth/registration/verify-email/", { key });
+                alert("✅ Акаунт підтверджено!");
+                setSearchParams({});
+            } catch (err) {
+                console.error(err);
+                alert("❌ Помилка підтвердження");
+            }
+        };
+
+        verifyAccount();
+    }, [searchParams, setSearchParams]);
+
     // demo data
     const latest = [];
     const modules = Array.from({ length: 10 }).map((_, i) => ({
@@ -176,3 +199,4 @@ export default function MainPage() {
         </div>
     );
 }
+
