@@ -1,4 +1,3 @@
-// src/App.js
 import ThemeProvider from "./context/ThemeContext";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
@@ -7,6 +6,7 @@ import Header from "./components/header/header";
 import Footer from "./components/footer/footer";
 import SidePanel from "./components/sidePanel/sidePanel";
 import { AuthProvider } from "./context/AuthContext";
+import { ErrorProvider } from "./context/ErrorContext";
 function AppLayout() {
     const location = useLocation();
     const hideSide =
@@ -38,7 +38,9 @@ export default function App() {
         <Router>
             <ThemeProvider>
                 <AuthProvider>
-                    <AppLayout />
+                    <ErrorProvider>
+                        <AppLayout />
+                    </ErrorProvider>
                 </AuthProvider>
             </ThemeProvider>
         </Router>

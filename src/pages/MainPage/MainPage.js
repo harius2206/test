@@ -1,6 +1,8 @@
-import React, { useEffect } from "react";
+// javascript
+import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import axios from "axios";
+import { verifyEmail } from "../../api/authApi";
+import ModalMessage from "../../components/ModalMessage/ModalMessage";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
@@ -24,27 +26,36 @@ import "./mainPage.css";
 
 export default function MainPage() {
     const [searchParams, setSearchParams] = useSearchParams();
+    const [modal, setModal] = useState({ open: false, type: "info", message: "" });
 
     useEffect(() => {
         const key = searchParams.get("key");
         if (!key) return;
 
-        const verifyAccount = async () => {
+        (async () => {
             try {
-                await axios.post("https://72e9f2d28dc7.ngrok-free.app/api/v1/auth/registration/verify-email/", { key });
-                alert("✅ Акаунт підтверджено!");
+                await verifyEmail(key);
+                setModal({
+                    open: true,
+                    type: "success",
+                    message: "Your account has been successfully verified!",
+                });
                 setSearchParams({});
             } catch (err) {
                 console.error(err);
-                alert("❌ Помилка підтвердження");
+                setModal({
+                    open: true,
+                    type: "error",
+                    message: "Account verification failed. Please try again later.",
+                });
             }
-        };
-
-        verifyAccount();
+        })();
     }, [searchParams, setSearchParams]);
 
-    // demo data
+    const handleCloseModal = () => setModal({ open: false, type: "info", message: "" });
+
     const latest = [];
+
     const modules = Array.from({ length: 10 }).map((_, i) => ({
         id: i + 1,
         name: `Module ${i + 1}`,
@@ -196,7 +207,13 @@ export default function MainPage() {
                     </div>
                 </div>
             </section>
+
+            <ModalMessage
+                open={modal.open}
+                type={modal.type}
+                message={modal.message}
+                onClose={handleCloseModal}
+            />
         </div>
     );
 }
-
