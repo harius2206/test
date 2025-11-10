@@ -1,28 +1,42 @@
+// src/pages/Forms/AuthPage/RegisterPage.js
 import React, { useState, useContext, useEffect } from "react";
 import "./loginPage.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { registerUser, verifyEmail } from "../../../api/authApi";
 import { AuthContext } from "../../../context/AuthContext";
-import ErrorModal from "../../../components/ErrorModal/ErrorModal";
 import githubIcon from "../../../images/github.svg";
 import googleIcon from "../../../images/google.svg";
+import { useError } from "../../../context/ErrorContext";
+import { ReactComponent as EyeOpen } from "../../../images/eyeOpened.svg";
+import { ReactComponent as EyeClosed } from "../../../images/eyeClosed.svg";
+
+// ✅ Мапа уніфікованих повідомлень
+const PASSWORD_HINT = {
+    too_common: "Password must not be too common.",
+    too_short: "Password must be at least 8 characters long.",
+    too_similar: "Password is too similar to username or email.",
+    entirely_numeric: "Password cannot be entirely numeric.",
+    invalid: "Password must be 8+ characters, not too common, and not entirely numeric.",
+};
 
 export default function RegisterPage() {
     const { login } = useContext(AuthContext);
     const navigate = useNavigate();
     const location = useLocation();
+    const { showError, showMessage } = useError();
 
-    const [form, setForm] = useState({
+    const [formData, setFormData] = useState({
         username: "",
         email: "",
         password1: "",
         password2: "",
     });
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [info, setInfo] = useState(null);
 
-    // 🔹 1. якщо користувач відкрив лінк з пошти (http://localhost:3000/?key=...)
+    const [fieldErrors, setFieldErrors] = useState({});
+    const [loading, setLoading] = useState(false);
+    const [info, setInfo] = useState(null);
+    const [showPasswords, setShowPasswords] = useState(false);
+
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const key = params.get("key");
@@ -31,69 +45,92 @@ export default function RegisterPage() {
             (async () => {
                 setLoading(true);
                 try {
-                    const res = await verifyEmail(key);
-                    if (res?.data?.detail) {
-                        setInfo("Account verified successfully");
-                    } else {
-                        setInfo("Account verified successfully");
-                    }
+                    await verifyEmail(key);
+                    setInfo("Account verified successfully");
                 } catch (err) {
-                    const msg =
-                        err?.response?.data?.detail ||
-                        err?.response?.data ||
-                        "Email not verified";
-                    setError(msg);
+                    showError(err);
                 } finally {
                     setLoading(false);
                 }
             })();
         }
-    }, []);
+    }, [showError]);
 
-    // 🔹 2. хендлер форми реєстрації
-    const handleChange = (e) =>
-        setForm({ ...form, [e.target.name]: e.target.value });
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+        if (fieldErrors[name]) setFieldErrors((prev) => ({ ...prev, [name]: "" }));
+    };
+
+    // ✅ Функція для уніфікації помилок від Django
+    const normalizePasswordError = (errorText) => {
+        const text = errorText.toLowerCase();
+
+        if (text.includes("too common")) return PASSWORD_HINT.too_common;
+        if (text.includes("too short")) return PASSWORD_HINT.too_short;
+        if (text.includes("similar")) return PASSWORD_HINT.too_similar;
+        if (text.includes("numeric")) return PASSWORD_HINT.entirely_numeric;
+        return PASSWORD_HINT.invalid;
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setFieldErrors({});
 
-        if (form.password1 !== form.password2) {
-            setError("Passwords do not match");
+        if (formData.password1 !== formData.password2) {
+            setFieldErrors({ password2: "Passwords don’t match" });
             return;
         }
 
-        setLoading(true);
-        setError(null);
-        setInfo(null);
-
         try {
-            const res = await registerUser(form);
-            const data = res?.data || res;
-            console.log("Register success:", data);
-
-            if (data?.access && data?.refresh) {
-                login(data);
-                navigate("/");
-            } else {
-                if (form.email) {
-                    setInfo("Verification email sent. Check your inbox.");
-                } else {
-                    setInfo("Account registered successfully");
-                }
-            }
+            setLoading(true);
+            await registerUser({
+                username: formData.username,
+                email: formData.email,
+                password1: formData.password1,
+                password2: formData.password2,
+            });
+            showMessage("Registration successful! Please check your email.", "success");
         } catch (err) {
-            const msg =
-                err?.response?.data?.detail ||
-                err?.response?.data ||
-                err?.message ||
-                "Registration error";
-            setError(msg);
+            const data = err?.response?.data || err?.data;
+            if (data && typeof data === "object") {
+                const newErrors = {};
+
+                ["username", "email", "password1", "password2"].forEach((key) => {
+                    if (data[key]) {
+                        let value = Array.isArray(data[key])
+                            ? data[key].join(" ")
+                            : String(data[key]);
+
+                        if (key.includes("password")) {
+                            value = normalizePasswordError(value);
+                        }
+
+                        newErrors[key] = value;
+                    }
+                });
+
+                if (data.non_field_errors) {
+                    const nonField = Array.isArray(data.non_field_errors)
+                        ? data.non_field_errors.join(" ")
+                        : data.non_field_errors;
+                    newErrors.password2 = nonField;
+                }
+
+                if (Object.keys(newErrors).length === 0) {
+                    newErrors.general =
+                        data.detail || "Registration failed. Please check your data.";
+                }
+
+                setFieldErrors(newErrors);
+            } else {
+                showError(err);
+            }
         } finally {
             setLoading(false);
         }
     };
 
-    // 🔹 3. рендер
     return (
         <div className="login-container">
             <h2 className="login-title">Registration</h2>
@@ -114,39 +151,65 @@ export default function RegisterPage() {
                     type="text"
                     name="username"
                     placeholder="Username"
-                    value={form.username}
+                    value={formData.username}
                     onChange={handleChange}
                     required
                 />
+                {fieldErrors.username && (
+                    <p className="field-error">{fieldErrors.username}</p>
+                )}
 
                 <input
                     className="login-input"
                     type="email"
                     name="email"
                     placeholder="Email (optional)"
-                    value={form.email}
+                    value={formData.email}
                     onChange={handleChange}
                 />
+                {fieldErrors.email && (
+                    <p className="field-error">{fieldErrors.email}</p>
+                )}
 
-                <input
-                    className="login-input"
-                    type="password"
-                    name="password1"
-                    placeholder="Password"
-                    value={form.password1}
-                    onChange={handleChange}
-                    required
-                />
+                <div className="password-wrapper">
+                    <input
+                        className="login-input"
+                        type={showPasswords ? "text" : "password"}
+                        name="password1"
+                        placeholder="Password"
+                        value={formData.password1}
+                        onChange={handleChange}
+                        required
+                    />
+                    <span
+                        className="password-toggle-icon"
+                        onClick={() => setShowPasswords(!showPasswords)}
+                    >
+                        {showPasswords ? <EyeOpen /> : <EyeClosed />}
+                    </span>
+                </div>
+                {fieldErrors.password1 && (
+                    <p className="field-error">{fieldErrors.password1}</p>
+                )}
 
-                <input
-                    className="login-input"
-                    type="password"
-                    name="password2"
-                    placeholder="Confirm password"
-                    value={form.password2}
-                    onChange={handleChange}
-                    required
-                />
+                <div className="password-wrapper">
+                    <input
+                        className="login-input"
+                        type={showPasswords ? "text" : "password"}
+                        name="password2"
+                        placeholder="Confirm password"
+                        value={formData.password2}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+                {fieldErrors.password2 && (
+                    <p className="field-error">{fieldErrors.password2}</p>
+                )}
+
+                {fieldErrors.general && (
+                    <p className="field-error">{fieldErrors.general}</p>
+                )}
 
                 <button
                     type="submit"
@@ -158,7 +221,6 @@ export default function RegisterPage() {
                 </button>
             </form>
 
-            {/* 🔹 повідомлення */}
             {info && (
                 <p
                     style={{
@@ -188,11 +250,9 @@ export default function RegisterPage() {
             <p className="login-footer">
                 Already have an account?{" "}
                 <span className="login-link" onClick={() => navigate("/login")}>
-          Sign in
-        </span>
+                    Sign in
+                </span>
             </p>
-
-            <ErrorModal error={error} onClose={() => setError(null)} />
         </div>
     );
 }
