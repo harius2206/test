@@ -1,9 +1,4 @@
-// javascript
-import React, { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { verifyEmail } from "../../api/authApi";
-import ModalMessage from "../../components/ModalMessage/ModalMessage";
-
+import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
@@ -14,8 +9,8 @@ import { ReactComponent as ArrowLeft } from "../../images/arrowLeft.svg";
 import { ReactComponent as ArrowRight } from "../../images/arrowRight.svg";
 import { ReactComponent as StarIcon } from "../../images/star.svg";
 import UserAvatar from "../../components/avatar/avatar";
-
 import DiagonalFlagRect from "../../components/diagonalFlagRect";
+
 import ua from "../../images/flags/ua.svg";
 import us from "../../images/flags/us.svg";
 import fr from "../../images/flags/fr.svg";
@@ -25,37 +20,10 @@ import jp from "../../images/flags/jp.svg";
 import "./mainPage.css";
 
 export default function MainPage() {
-    const [searchParams, setSearchParams] = useSearchParams();
-    const [modal, setModal] = useState({ open: false, type: "info", message: "" });
-
-    useEffect(() => {
-        const key = searchParams.get("key");
-        if (!key) return;
-
-        (async () => {
-            try {
-                await verifyEmail(key);
-                setModal({
-                    open: true,
-                    type: "success",
-                    message: "Your account has been successfully verified!",
-                });
-                setSearchParams({});
-            } catch (err) {
-                console.error(err);
-                setModal({
-                    open: true,
-                    type: "error",
-                    message: "Account verification failed. Please try again later.",
-                });
-            }
-        })();
-    }, [searchParams, setSearchParams]);
-
-    const handleCloseModal = () => setModal({ open: false, type: "info", message: "" });
-
+    // 🔹 “Останні переглянуті” (поки порожньо)
     const latest = [];
 
+    // 🔹 Демонстраційні дані для модулів і авторів
     const modules = Array.from({ length: 10 }).map((_, i) => ({
         id: i + 1,
         name: `Module ${i + 1}`,
@@ -207,13 +175,6 @@ export default function MainPage() {
                     </div>
                 </div>
             </section>
-
-            <ModalMessage
-                open={modal.open}
-                type={modal.type}
-                message={modal.message}
-                onClose={handleCloseModal}
-            />
         </div>
     );
 }

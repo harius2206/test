@@ -14,7 +14,6 @@ function AppLayout() {
         location.pathname.startsWith("/login") ||
         location.pathname.startsWith("/register") ||
         location.pathname.startsWith("/reset-password");
-
     return (
         <div className="page-wrapper">
             <Header />

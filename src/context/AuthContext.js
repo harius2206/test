@@ -1,29 +1,59 @@
 import React, { createContext, useState, useEffect } from "react";
-import { getAccessToken, setTokens, clearTokens } from "../utils/storage";
+import { loginUser, registerUser } from "../api/authApi";
+import {
+    saveAuthTokens,
+    getUserData,
+    saveUserData,
+    clearAuthData,
+} from "../utils/storage";
 
 export const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
 
-    const login = (data) => {
-        setTokens(data.access, data.refresh);
-        setUser(data.user || null);
+    // 🔹 логін
+    const login = async (credentials) => {
+        try {
+            const res = await loginUser(credentials);
+            const { access, refresh, user } = res.data;
+
+            // зберігаємо все
+            saveAuthTokens(access, refresh);
+            saveUserData(user);
+            setUser(user);
+
+            return user;
+        } catch (err) {
+            throw err;
+        }
+    };
+
+    // 🔹 реєстрація — тепер чистимо токени перед дією
+    const register = async (data) => {
+        try {
+            clearAuthData(); // <--- очищення перед запитом
+            const res = await registerUser(data);
+            return res.data;
+        } catch (err) {
+            clearAuthData(); // безпечне очищення навіть при помилці
+            throw err;
+        }
     };
 
     const logout = () => {
-        clearTokens();
+        clearAuthData();
         setUser(null);
     };
 
     useEffect(() => {
-        const token = getAccessToken();
-        if (token) setUser({ token });
+        const storedUser = getUserData();
+        if (storedUser) setUser(storedUser);
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, setUser, login, logout, register }}>
             {children}
         </AuthContext.Provider>
     );
-}
+};
