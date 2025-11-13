@@ -1,4 +1,3 @@
-// src/pages/Forms/AuthPage/RegisterPage.js
 import React, { useState, useContext, useEffect } from "react";
 import "./loginPage.css";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -10,7 +9,6 @@ import { useError } from "../../../context/ErrorContext";
 import { ReactComponent as EyeOpen } from "../../../images/eyeOpened.svg";
 import { ReactComponent as EyeClosed } from "../../../images/eyeClosed.svg";
 
-// ✅ Мапа уніфікованих повідомлень
 const PASSWORD_HINT = {
     too_common: "Password must not be too common.",
     too_short: "Password must be at least 8 characters long.",
@@ -62,7 +60,6 @@ export default function RegisterPage() {
         if (fieldErrors[name]) setFieldErrors((prev) => ({ ...prev, [name]: "" }));
     };
 
-    // ✅ Функція для уніфікації помилок від Django
     const normalizePasswordError = (errorText) => {
         const text = errorText.toLowerCase();
 
@@ -129,6 +126,34 @@ export default function RegisterPage() {
         } finally {
             setLoading(false);
         }
+    };
+
+    // GitHub OAuth (same behavior as LoginPage)
+    const handleGitHubLogin = () => {
+        const clientId = "Ov23lih0hmDrxiIyvXiN";
+        const redirectUri = "http://localhost:3000/github/callback";
+        const scope = "read:user user:email";
+        const allowSignup = true;
+        const prompt = "consent";
+
+        window.location.href =
+            `https://github.com/login/oauth/authorize?` +
+            `client_id=${clientId}` +
+            `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+            `&scope=${encodeURIComponent(scope)}` +
+            `&allow_signup=${allowSignup}` +
+            `&prompt=${prompt}`;
+    };
+
+    // Google OAuth (same behavior as LoginPage)
+    const handleGoogleLogin = () => {
+        const clientId = "86692327760-lm1rijlk59sbq9hg2jm9o858a6b8ohhn.apps.googleusercontent.com";
+        const redirectUri = "http://localhost:3000/google/callback/";
+        const scope = "openid profile email";
+        const responseType = "code";
+        const prompt = "select_account";
+
+        window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${encodeURIComponent(scope)}&prompt=${prompt}`;
     };
 
     return (
@@ -239,10 +264,20 @@ export default function RegisterPage() {
             </div>
 
             <div className="login-socials">
-                <button className="login-social-btn" type="button" aria-label="GitHub">
+                <button
+                    className="login-social-btn"
+                    type="button"
+                    aria-label="Sign in with GitHub"
+                    onClick={handleGitHubLogin}
+                >
                     <img src={githubIcon} alt="GitHub" />
                 </button>
-                <button className="login-social-btn" type="button" aria-label="Google">
+                <button
+                    className="login-social-btn"
+                    type="button"
+                    aria-label="Sign in with Google"
+                    onClick={handleGoogleLogin}
+                >
                     <img src={googleIcon} alt="Google" />
                 </button>
             </div>

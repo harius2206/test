@@ -7,7 +7,7 @@ import Button from "../../../components/button/button";
 import { AuthContext } from "../../../context/AuthContext";
 import ModalMessage from "../../../components/ModalMessage/ModalMessage";
 import { parseApiErrors } from "../../../utils/parseApiErrors";
-import { verifyEmail, githubLogin } from "../../../api/authApi";
+import { verifyEmail, githubLogin, googleLogin } from "../../../api/authApi";
 import { setTokens, saveUserData } from "../../../utils/storage";
 import { ReactComponent as EyeOpen } from "../../../images/eyeOpened.svg";
 import { ReactComponent as EyeClosed } from "../../../images/eyeClosed.svg";
@@ -21,31 +21,42 @@ export default function LoginPage() {
     const [modal, setModal] = useState({ open: false, type: "error", message: "" });
     const [showPassword, setShowPassword] = useState(false);
 
+    // --- OAuth логіка (GitHub + Google) ---
     useEffect(() => {
         const code = searchParams.get("code");
-        if (code) {
-            (async () => {
-                try {
-                    const res = await githubLogin(code);
-                    const { access, refresh, user } = res.data;
+        if (!code) return;
 
-                    setTokens(access, refresh);
-                    saveUserData(user);
-                    setUser(user);
+        const isGitHub = window.location.pathname.includes("github");
+        const isGoogle = window.location.pathname.includes("google");
 
-                    navigate("/", { replace: true });
-                } catch (err) {
-                    console.error("GitHub login failed:", err);
-                    setModal({
-                        open: true,
-                        type: "error",
-                        message: "GitHub authorization failed. Please try again.",
-                    });
-                } finally {
-                    setSearchParams({});
-                }
-            })();
-        }
+        (async () => {
+            try {
+                const res = isGitHub
+                    ? await githubLogin(code)
+                    : isGoogle
+                        ? await googleLogin(code)
+                        : null;
+
+                if (!res) return;
+
+                const { access, refresh, user } = res.data;
+                setTokens(access, refresh);
+                saveUserData(user);
+                setUser(user);
+                navigate("/", { replace: true });
+            } catch (err) {
+                console.error("OAuth login failed:", err);
+                setModal({
+                    open: true,
+                    type: "error",
+                    message: isGoogle
+                        ? "Google authorization failed. Please try again."
+                        : "GitHub authorization failed. Please try again.",
+                });
+            } finally {
+                setSearchParams({});
+            }
+        })();
     }, [searchParams, setSearchParams, navigate, setUser]);
 
     const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -62,7 +73,6 @@ export default function LoginPage() {
         } catch (err) {
             console.error("Login error:", err);
             const apiErrors = err?.data || err?.response?.data || {};
-
             if (apiErrors.non_field_errors?.[0]) {
                 setModal({
                     open: true,
@@ -81,11 +91,30 @@ export default function LoginPage() {
         }
     };
 
-
+    // GitHub OAuth
     const handleGitHubLogin = () => {
         const clientId = "Ov23lih0hmDrxiIyvXiN";
-        const redirectUri = 'http://localhost:3000/github/callback';
-        window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}/`;
+        const redirectUri = "http://localhost:3000/github/callback";
+        const scope = "read:user user:email";
+        const allowSignup = true;
+        const prompt = "consent";
+
+        window.location.href =
+            `https://github.com/login/oauth/authorize?` +
+            `client_id=${clientId}` +
+            `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+            `&scope=${encodeURIComponent(scope)}` +
+            `&allow_signup=${allowSignup}` +
+            `&prompt=${prompt}`;
+    };
+    const handleGoogleLogin = () => {
+        const clientId = "86692327760-lm1rijlk59sbq9hg2jm9o858a6b8ohhn.apps.googleusercontent.com";
+        const redirectUri = "http://localhost:3000/google/callback/";
+        const scope = "openid profile email";
+        const responseType = "code";
+        const prompt = "select_account";
+
+        window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=${responseType}&scope=${scope}&prompt=${prompt}`;
     };
 
     return (
@@ -148,7 +177,11 @@ export default function LoginPage() {
                     <img src={githubIcon} alt="GitHub" />
                 </button>
 
-                <button className="login-social-btn" aria-label="Sign in with Google">
+                <button
+                    className="login-social-btn"
+                    aria-label="Sign in with Google"
+                    onClick={handleGoogleLogin}
+                >
                     <img src={googleIcon} alt="Google" />
                 </button>
             </div>

@@ -10,6 +10,9 @@ export const verifyEmail = (key) =>
 export const githubLogin = (code) =>
     axiosNoAuth.post("/api/v1/auth/login/github/callback/", { code });
 
+export const googleLogin = (code) =>
+    axiosNoAuth.post("/api/v1/auth/login/google/callback/", { code });
+
 export const loginUser = (data) => {
     const payload = {
         username: data.username,

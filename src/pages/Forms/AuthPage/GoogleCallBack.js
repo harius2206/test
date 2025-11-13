@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { githubLogin } from "../../../api/authApi";
+import { googleLogin } from "../../../api/authApi";
 import { setTokens, saveUserData } from "../../../utils/storage";
 import { useAuth } from "../../../context/AuthContext";
 
-export default function GitHubCallback() {
+export default function GoogleCallback() {
     const [params] = useSearchParams();
     const navigate = useNavigate();
     const { setUser } = useAuth();
@@ -20,21 +20,18 @@ export default function GitHubCallback() {
         if (handledRef.current) return;
         handledRef.current = true;
 
-        githubLogin(code)
+        googleLogin(code)
             .then((res) => {
                 const { access, refresh, user } = res.data;
-
                 setTokens(access, refresh);
                 saveUserData(user);
                 setUser(user);
-
                 navigate("/");
             })
-            .catch((err) => {
-                console.error("GitHub login failed:", err);
+            .catch(() => {
                 navigate("/login");
             });
     }, [params, navigate, setUser]);
 
-    return <div>Logging in with GitHub...</div>;
+    return <div>Logging in with Google...</div>;
 }
