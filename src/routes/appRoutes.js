@@ -10,6 +10,7 @@ import Saves from "../pages/Library/Saves/Saves";
 import RegisterPage from "../pages/Forms/AuthPage/RegisterPage";
 import LoginPage from "../pages/Forms/AuthPage/LoginPage";
 import PasswordReset from "../pages/Forms/AuthPage/PasswordReset";
+import GitHubCallback from "../pages/Forms/AuthPage/GitHubCallback";
 
 const appRoutes = [
     { path: "/", component: MainPage },
@@ -24,6 +25,7 @@ const appRoutes = [
     { path: "/login", component: LoginPage },
     { path: "/register", component: RegisterPage },
     { path: "/reset-password", component: PasswordReset },
+    { path: "/github/callback", component: GitHubCallback },
 
 
 ];

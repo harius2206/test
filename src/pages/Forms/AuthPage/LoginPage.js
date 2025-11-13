@@ -1,4 +1,3 @@
-// src/pages/Forms/AuthPage/LoginPage.js
 import React, { useState, useContext, useEffect } from "react";
 import "./loginPage.css";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
@@ -8,13 +7,14 @@ import Button from "../../../components/button/button";
 import { AuthContext } from "../../../context/AuthContext";
 import ModalMessage from "../../../components/ModalMessage/ModalMessage";
 import { parseApiErrors } from "../../../utils/parseApiErrors";
-import { verifyEmail } from "../../../api/authApi";
+import { verifyEmail, githubLogin } from "../../../api/authApi";
+import { setTokens, saveUserData } from "../../../utils/storage";
 import { ReactComponent as EyeOpen } from "../../../images/eyeOpened.svg";
 import { ReactComponent as EyeClosed } from "../../../images/eyeClosed.svg";
 
 export default function LoginPage() {
     const navigate = useNavigate();
-    const { login } = useContext(AuthContext);
+    const { login, setUser } = useContext(AuthContext);
     const [searchParams, setSearchParams] = useSearchParams();
 
     const [form, setForm] = useState({ username: "", password: "" });
@@ -22,28 +22,31 @@ export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
-        const key = searchParams.get("key");
-        if (!key) return;
+        const code = searchParams.get("code");
+        if (code) {
+            (async () => {
+                try {
+                    const res = await githubLogin(code);
+                    const { access, refresh, user } = res.data;
 
-        (async () => {
-            try {
-                await verifyEmail(key);
-                setModal({
-                    open: true,
-                    type: "success",
-                    message: "Your account has been successfully verified! You can now log in.",
-                });
-                setSearchParams({});
-            } catch (err) {
-                console.error("Email verification failed:", err);
-                setModal({
-                    open: true,
-                    type: "error",
-                    message: "Account verification failed. Please try again later.",
-                });
-            }
-        })();
-    }, [searchParams, setSearchParams]);
+                    setTokens(access, refresh);
+                    saveUserData(user);
+                    setUser(user);
+
+                    navigate("/", { replace: true });
+                } catch (err) {
+                    console.error("GitHub login failed:", err);
+                    setModal({
+                        open: true,
+                        type: "error",
+                        message: "GitHub authorization failed. Please try again.",
+                    });
+                } finally {
+                    setSearchParams({});
+                }
+            })();
+        }
+    }, [searchParams, setSearchParams, navigate, setUser]);
 
     const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -55,7 +58,7 @@ export default function LoginPage() {
 
         try {
             await login(form);
-            navigate("/main", { replace: true });
+            navigate("/", { replace: true });
         } catch (err) {
             console.error("Login error:", err);
             const apiErrors = err?.data || err?.response?.data || {};
@@ -76,6 +79,13 @@ export default function LoginPage() {
                 });
             }
         }
+    };
+
+
+    const handleGitHubLogin = () => {
+        const clientId = "Ov23lih0hmDrxiIyvXiN";
+        const redirectUri = 'http://localhost:3000/github/callback';
+        window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}/`;
     };
 
     return (
@@ -130,9 +140,14 @@ export default function LoginPage() {
             </div>
 
             <div className="login-socials">
-                <button className="login-social-btn" aria-label="Sign in with GitHub">
+                <button
+                    className="login-social-btn"
+                    aria-label="Sign in with GitHub"
+                    onClick={handleGitHubLogin}
+                >
                     <img src={githubIcon} alt="GitHub" />
                 </button>
+
                 <button className="login-social-btn" aria-label="Sign in with Google">
                     <img src={googleIcon} alt="Google" />
                 </button>

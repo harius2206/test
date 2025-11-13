@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useContext } from "react";
 import { loginUser, registerUser } from "../api/authApi";
 import {
     saveAuthTokens,
@@ -12,7 +12,6 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
 
-    // 🔹 логін
     const login = async (credentials) => {
         try {
             const res = await loginUser(credentials);
@@ -29,14 +28,13 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // 🔹 реєстрація — тепер чистимо токени перед дією
     const register = async (data) => {
         try {
-            clearAuthData(); // <--- очищення перед запитом
+            clearAuthData();
             const res = await registerUser(data);
             return res.data;
         } catch (err) {
-            clearAuthData(); // безпечне очищення навіть при помилці
+            clearAuthData();
             throw err;
         }
     };
@@ -56,4 +54,8 @@ export const AuthProvider = ({ children }) => {
             {children}
         </AuthContext.Provider>
     );
+};
+
+export const useAuth = () => {
+    return useContext(AuthContext);
 };

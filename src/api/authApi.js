@@ -1,11 +1,14 @@
-import axiosClient from "./axiosClient";
+import axiosNoAuth from "./axiosNoAuth";
 import endpoints from "./endpoints";
 
 export const registerUser = (data) =>
-    axiosClient.post("/api/v1/auth/registration/", data);
+    axiosNoAuth.post(endpoints.auth.register, data);
 
-export const verifyEmail = async (key) =>
-    axiosClient.post("/api/v1/auth/registration/verify-email/", { key });
+export const verifyEmail = (key) =>
+    axiosNoAuth.post("/api/v1/auth/registration/verify-email/", { key });
+
+export const githubLogin = (code) =>
+    axiosNoAuth.post("/api/v1/auth/login/github/callback/", { code });
 
 export const loginUser = (data) => {
     const payload = {
@@ -13,5 +16,5 @@ export const loginUser = (data) => {
         email: data.email || "",
         password: data.password,
     };
-    return axiosClient.post(endpoints.auth.login, payload);
+    return axiosNoAuth.post(endpoints.auth.login, payload);
 };
