@@ -6,44 +6,47 @@ import ClickOutsideWrapper from "../clickOutsideWrapper";
 import { ThemeContext } from "../../context/ThemeContext";
 import SearchField from "../searchField/searchField";
 import UserAvatar from "../avatar/avatar";
+import { useAuth } from "../../context/AuthContext";
+import { getUserData, saveUserData } from "../../utils/storage";
 
 export default function UserMenu() {
     const [open, setOpen] = useState(false);
-    const [user, setUser] = useState(null);
     const [avatarVersion, setAvatarVersion] = useState(0);
+    const { user, logout, setUser } = useAuth();
+
     const navigate = useNavigate();
     const location = useLocation();
     const { theme, setLight, setDark } = useContext(ThemeContext);
 
-    const handleThemeChange = (mode) => {
+    const handleThemeChange = (mode) =>
         mode === "light" ? setLight() : setDark();
-    };
 
     const isMobile = window.innerWidth <= 768;
     const showSearchInsideMenu = window.innerWidth <= 570;
     const isSavesPage =
-        location.pathname.includes("/saves") || location.pathname.includes("/library/saves");
+        location.pathname.includes("/saves") ||
+        location.pathname.includes("/library/saves");
 
-    // Оновлюємо користувача при відкритті меню
+    /* ==== UPDATE USER WHEN MENU OPENS ==== */
     const toggleMenu = () => {
-        const storedUser = localStorage.getItem("user");
-        setUser(storedUser ? JSON.parse(storedUser) : null);
-        setOpen((prev) => !prev);
+        const storedUser = getUserData();
+        if (storedUser) setUser(storedUser);
+        setOpen((p) => !p);
     };
 
+    /* ==== LISTEN STORAGE CHANGES ==== */
     useEffect(() => {
         const update = () => {
-            const storedUser = localStorage.getItem("user");
-            setUser(storedUser ? JSON.parse(storedUser) : null);
+            const storedUser = getUserData();
+            setUser(storedUser);
             setAvatarVersion((v) => v + 1);
         };
         window.addEventListener("storage", update);
         return () => window.removeEventListener("storage", update);
-    }, []);
+    }, [setUser]);
 
     const handleLogout = () => {
-        localStorage.removeItem("user");
-        setUser(null);
+        logout();
         setOpen(false);
         navigate("/");
     };
@@ -86,9 +89,7 @@ export default function UserMenu() {
                             />
                             <div>
                                 <div className="um-name">{user?.username || "Guest"}</div>
-                                <div className="um-email">
-                                    {user?.email || "not logged in"}
-                                </div>
+                                <div className="um-email">{user?.email || "not logged in"}</div>
                             </div>
                         </div>
 
@@ -129,9 +130,7 @@ export default function UserMenu() {
                                     </div>
                                     <div
                                         className="um-link"
-                                        onClick={() =>
-                                            handleNavigate("/profile/public-library")
-                                        }
+                                        onClick={() => handleNavigate("/profile/public-library")}
                                     >
                                         Public profile
                                     </div>
@@ -141,8 +140,8 @@ export default function UserMenu() {
                                     <div className="um-link um-row">
                                         <span>Language</span>
                                         <span className="um-lang">
-                                            English <GlobeIcon className="um-lang-icon" />
-                                        </span>
+                      English <GlobeIcon className="um-lang-icon" />
+                    </span>
                                     </div>
 
                                     <div className="um-theme-selector">
@@ -154,14 +153,14 @@ export default function UserMenu() {
                                                 }`}
                                                 onClick={() => handleThemeChange("dark")}
                                                 aria-label="Dark theme"
-                                            ></button>
+                                            />
                                             <button
                                                 className={`um-theme-button white ${
                                                     theme === "light" ? "active" : ""
                                                 }`}
                                                 onClick={() => handleThemeChange("light")}
                                                 aria-label="Light theme"
-                                            ></button>
+                                            />
                                         </div>
                                     </div>
 
@@ -171,17 +170,13 @@ export default function UserMenu() {
                                         <>
                                             <div
                                                 className="um-link"
-                                                onClick={() =>
-                                                    handleNavigate("/library/create-module")
-                                                }
+                                                onClick={() => handleNavigate("/library/create-module")}
                                             >
                                                 Create module
                                             </div>
                                             <div
                                                 className="um-link"
-                                                onClick={() =>
-                                                    handleNavigate("/library/create-folder")
-                                                }
+                                                onClick={() => handleNavigate("/library/create-folder")}
                                             >
                                                 Create folder
                                             </div>
@@ -189,10 +184,7 @@ export default function UserMenu() {
                                         </>
                                     )}
 
-                                    <div
-                                        className="um-link um-logout"
-                                        onClick={handleLogout}
-                                    >
+                                    <div className="um-link um-logout" onClick={handleLogout}>
                                         Log out
                                     </div>
                                 </>
@@ -215,8 +207,8 @@ export default function UserMenu() {
                                     <div className="um-link um-row">
                                         <span>Language</span>
                                         <span className="um-lang">
-                                            English <GlobeIcon className="um-lang-icon" />
-                                        </span>
+                      English <GlobeIcon className="um-lang-icon" />
+                    </span>
                                     </div>
 
                                     <div className="um-theme-selector">
@@ -228,14 +220,14 @@ export default function UserMenu() {
                                                 }`}
                                                 onClick={() => handleThemeChange("dark")}
                                                 aria-label="Dark theme"
-                                            ></button>
+                                            />
                                             <button
                                                 className={`um-theme-button white ${
                                                     theme === "light" ? "active" : ""
                                                 }`}
                                                 onClick={() => handleThemeChange("light")}
                                                 aria-label="Light theme"
-                                            ></button>
+                                            />
                                         </div>
                                     </div>
                                 </>

@@ -1,5 +1,5 @@
 import PrivateProfile from "../pages/Profile/PrivateProfile";
-import PublicProfile from "../pages/Profile/PublicProfile";
+import PublicProfile from "../Trash/PublicProfile";
 import ChangePhoto from "../pages/Profile/ChangePhoto";
 import Safety from "../pages/Profile/Safety";
 import DeleteAccount from "../pages/Profile/DeleteAccount";

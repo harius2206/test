@@ -12,22 +12,25 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
 
+    /* ==== LOGIN ==== */
     const login = async (credentials) => {
         try {
             const res = await loginUser(credentials);
             const { access, refresh, user } = res.data;
 
-            // зберігаємо все
             saveAuthTokens(access, refresh);
             saveUserData(user);
             setUser(user);
 
+            window.dispatchEvent(new Event("storage"));
             return user;
         } catch (err) {
+            console.error("Login failed:", err);
             throw err;
         }
     };
 
+    /* ==== REGISTER ==== */
     const register = async (data) => {
         try {
             clearAuthData();
@@ -35,18 +38,30 @@ export const AuthProvider = ({ children }) => {
             return res.data;
         } catch (err) {
             clearAuthData();
+            console.error("Register failed:", err);
             throw err;
         }
     };
 
+    /* ==== LOGOUT ==== */
     const logout = () => {
         clearAuthData();
         setUser(null);
+        window.dispatchEvent(new Event("storage"));
     };
 
+    /* ==== LOAD ON START ==== */
     useEffect(() => {
         const storedUser = getUserData();
         if (storedUser) setUser(storedUser);
+
+        const onStorage = () => {
+            const updated = getUserData();
+            setUser(updated);
+        };
+
+        window.addEventListener("storage", onStorage);
+        return () => window.removeEventListener("storage", onStorage);
     }, []);
 
     return (
@@ -56,6 +71,4 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
-export const useAuth = () => {
-    return useContext(AuthContext);
-};
+export const useAuth = () => useContext(AuthContext);

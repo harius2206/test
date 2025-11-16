@@ -1,22 +1,23 @@
-// src/pages/Profile/ChangePhoto.js
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import ReactCrop, { makeAspectCrop, centerCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import Button from "../../components/button/button";
+import { getUserAvatar, saveUserAvatar } from "../../utils/storage";
 import "./profile.css";
 
 export default function ChangePhoto() {
     const [src, setSrc] = useState(null);
     const [crop, setCrop] = useState();
     const [completedCrop, setCompletedCrop] = useState(null);
-    const [croppedImage, setCroppedImage] = useState(localStorage.getItem("userAvatar"));
+    const [croppedImage, setCroppedImage] = useState(getUserAvatar());
     const [isEditing, setIsEditing] = useState(false);
     const [hasChanged, setHasChanged] = useState(false);
+
     const imgRef = useRef(null);
     const fileInputRef = useRef(null);
 
     useEffect(() => {
-        const saved = localStorage.getItem("userAvatar");
+        const saved = getUserAvatar();
         if (saved) setCroppedImage(saved);
     }, []);
 
@@ -30,9 +31,7 @@ export default function ChangePhoto() {
         }
     };
 
-    const handleOpenFileDialog = () => {
-        if (fileInputRef.current) fileInputRef.current.click();
-    };
+    const handleOpenFileDialog = () => fileInputRef.current?.click();
 
     const onPaste = useCallback((e) => {
         const item = Array.from(e.clipboardData.items).find((x) =>
@@ -53,12 +52,12 @@ export default function ChangePhoto() {
 
     const onImageLoad = (e) => {
         const { width, height } = e.currentTarget;
-        const crop = centerCrop(
+        const c = centerCrop(
             makeAspectCrop({ unit: "%", width: 80 }, 1, width, height),
             width,
             height
         );
-        setCrop(crop);
+        setCrop(c);
     };
 
     const getCroppedBase64 = useCallback(() => {
@@ -69,7 +68,6 @@ export default function ChangePhoto() {
         canvas.width = completedCrop.width;
         canvas.height = completedCrop.height;
         const ctx = canvas.getContext("2d");
-
         ctx.drawImage(
             imgRef.current,
             completedCrop.x * scaleX,
@@ -81,7 +79,6 @@ export default function ChangePhoto() {
             completedCrop.width,
             completedCrop.height
         );
-
         return canvas.toDataURL("image/png");
     }, [completedCrop]);
 
@@ -89,7 +86,7 @@ export default function ChangePhoto() {
         const base64 = getCroppedBase64();
         if (base64) {
             setCroppedImage(base64);
-            localStorage.setItem("userAvatar", base64);
+            saveUserAvatar(base64);
             setIsEditing(false);
         }
     };
@@ -98,16 +95,14 @@ export default function ChangePhoto() {
         setIsEditing(false);
         setSrc(null);
         setHasChanged(false);
-        // small delay so UI can update
-        setTimeout(() => {
-            window.location.reload();
-        }, 300);
+        setTimeout(() => window.dispatchEvent(new Event("storage")), 200);
     };
 
     const handleDelete = () => {
         setCroppedImage(null);
-        localStorage.removeItem("userAvatar");
+        saveUserAvatar(null);
         setHasChanged(false);
+        window.dispatchEvent(new Event("storage"));
     };
 
     return (
@@ -137,7 +132,11 @@ export default function ChangePhoto() {
                             />
                         </ReactCrop>
                     ) : croppedImage ? (
-                        <img src={croppedImage} alt="User avatar" className="photo-avatar" />
+                        <img
+                            src={croppedImage}
+                            alt="User avatar"
+                            className="photo-avatar"
+                        />
                     ) : (
                         <p className="photo-placeholder">
                             Upload or paste an image (Ctrl + V) to start editing.

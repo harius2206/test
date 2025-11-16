@@ -1,3 +1,4 @@
+// src/pages/Forms/AuthPage/LoginPage.js
 import React, { useState, useContext, useEffect } from "react";
 import "./loginPage.css";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
@@ -21,7 +22,7 @@ export default function LoginPage() {
     const [modal, setModal] = useState({ open: false, type: "error", message: "" });
     const [showPassword, setShowPassword] = useState(false);
 
-    // --- OAuth логіка (GitHub + Google) ---
+    // --- OAuth logic (GitHub + Google) ---
     useEffect(() => {
         const code = searchParams.get("code");
         if (!code) return;
@@ -59,6 +60,32 @@ export default function LoginPage() {
         })();
     }, [searchParams, setSearchParams, navigate, setUser]);
 
+    // --- Email verification logic (key from verification link) ---
+    useEffect(() => {
+        const key = searchParams.get("key");
+        if (!key) return;
+
+        (async () => {
+            try {
+                await verifyEmail(key);
+                setModal({
+                    open: true,
+                    type: "success",
+                    message: "Your account has been successfully verified! You can now log in.",
+                });
+            } catch (err) {
+                console.error("Email verification failed:", err);
+                setModal({
+                    open: true,
+                    type: "error",
+                    message: "Account verification failed. Please try again later.",
+                });
+            } finally {
+                setSearchParams({});
+            }
+        })();
+    }, [searchParams, setSearchParams]);
+
     const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
     const handleLogin = async () => {
@@ -73,6 +100,7 @@ export default function LoginPage() {
         } catch (err) {
             console.error("Login error:", err);
             const apiErrors = err?.data || err?.response?.data || {};
+
             if (apiErrors.non_field_errors?.[0]) {
                 setModal({
                     open: true,

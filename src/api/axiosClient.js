@@ -2,7 +2,7 @@ import axios from "axios";
 import { getAccessToken } from "../utils/storage";
 
 const axiosClient = axios.create({
-    baseURL: process.env.REACT_APP_API_URL || "https://bc7b50f1b458.ngrok-free.app/",
+    baseURL: process.env.REACT_APP_API_URL || "https://ee00968a8650.ngrok-free.app/",
     headers: { "Content-Type": "application/json" },
 });
 
