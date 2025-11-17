@@ -5,17 +5,13 @@ import { getUserData, saveUserData } from "../../utils/storage";
 import "./profile.css";
 
 export default function Safety() {
-    const stored = getUserData();
-    const [email, setEmail] = useState(stored?.email || "");
+    const storedInitial = getUserData();
+    const [email, setEmail] = useState(storedInitial?.email || "");
     const [password, setPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [apiKey, setApiKey] = useState(stored?.deeplKey || "");
+    const [apiKey, setApiKey] = useState(storedInitial?.deeplKey || "");
     const [cooldown, setCooldown] = useState(0);
-
-    const handleSend = () => {
-        if (cooldown === 0) setCooldown(30);
-    };
 
     useEffect(() => {
         if (cooldown > 0) {
@@ -24,16 +20,33 @@ export default function Safety() {
         }
     }, [cooldown]);
 
+    // Sync fields with localStorage changes
+    useEffect(() => {
+        const onStorage = () => {
+            const stored = getUserData();
+            setEmail(stored?.email || "");
+            setApiKey(stored?.deeplKey || "");
+        };
+        window.addEventListener("storage", onStorage);
+        return () => window.removeEventListener("storage", onStorage);
+    }, []);
+
+    const handleSend = () => {
+        if (cooldown === 0) setCooldown(30);
+    };
+
     const handleSaveEmail = (val) => {
         setEmail(val);
-        const updated = { ...stored, email: val };
+        const updated = { ...getUserData(), email: val };
         saveUserData(updated);
+        window.dispatchEvent(new Event("storage"));
     };
 
     const handleSaveApiKey = (val) => {
         setApiKey(val);
-        const updated = { ...stored, deeplKey: val };
+        const updated = { ...getUserData(), deeplKey: val };
         saveUserData(updated);
+        window.dispatchEvent(new Event("storage"));
     };
 
     const apiKeyStatus = apiKey ? "active key" : "no key";

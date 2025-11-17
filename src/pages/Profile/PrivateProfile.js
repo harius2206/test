@@ -17,6 +17,21 @@ export default function PrivateProfile() {
         if (ctxUser) setProfile((prev) => ({ ...prev, ...ctxUser }));
     }, [ctxUser]);
 
+    // Sync with localStorage changes
+    useEffect(() => {
+        const onStorage = () => {
+            const stored = getUserData();
+            setProfile(stored || ctxUser || {
+                username: "",
+                first_name: "",
+                last_name: "",
+                description: "",
+            });
+        };
+        window.addEventListener("storage", onStorage);
+        return () => window.removeEventListener("storage", onStorage);
+    }, [ctxUser]);
+
     const handleSaveField = (key, value) => {
         const updated = { ...profile, [key]: value };
         setProfile(updated);

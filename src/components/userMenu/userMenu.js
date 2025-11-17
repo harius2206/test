@@ -1,3 +1,4 @@
+// File: src/components/userMenu/userMenu.js
 import { useState, useContext, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./userMenu.css";
@@ -63,6 +64,7 @@ export default function UserMenu() {
                     <UserAvatar
                         key={avatarVersion}
                         name={user?.username || "Guest"}
+                        src={user?.avatar || getUserData()?.avatar || undefined}
                         size={40}
                         fontSize={20}
                     />
@@ -84,6 +86,7 @@ export default function UserMenu() {
                             <UserAvatar
                                 key={avatarVersion}
                                 name={user?.username || "Guest"}
+                                src={user?.avatar || getUserData()?.avatar || undefined}
                                 size={48}
                                 fontSize={24}
                             />

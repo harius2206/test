@@ -21,6 +21,16 @@ export default function ChangePhoto() {
         if (saved) setCroppedImage(saved);
     }, []);
 
+    // Keep in sync with localStorage changes from other places
+    useEffect(() => {
+        const onStorage = () => {
+            const saved = getUserAvatar();
+            setCroppedImage(saved);
+        };
+        window.addEventListener("storage", onStorage);
+        return () => window.removeEventListener("storage", onStorage);
+    }, []);
+
     const onSelectFile = (e) => {
         if (e.target.files && e.target.files.length > 0) {
             const file = e.target.files[0];
@@ -95,6 +105,7 @@ export default function ChangePhoto() {
         setIsEditing(false);
         setSrc(null);
         setHasChanged(false);
+        // notify other components
         setTimeout(() => window.dispatchEvent(new Event("storage")), 200);
     };
 

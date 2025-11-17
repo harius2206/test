@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import ThemeProvider from "./context/ThemeContext";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
@@ -7,6 +8,7 @@ import Footer from "./components/footer/footer";
 import SidePanel from "./components/sidePanel/sidePanel";
 import { AuthProvider } from "./context/AuthContext";
 import { ErrorProvider } from "./context/ErrorContext";
+
 function AppLayout() {
     const location = useLocation();
     const hideSide =
@@ -33,6 +35,19 @@ function AppLayout() {
 }
 
 export default function App() {
+    useEffect(() => {
+        try {
+            const all = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                all[key] = localStorage.getItem(key);
+            }
+            console.log("localStorage:", all);
+        } catch (e) {
+            console.warn("Could not read localStorage:", e);
+        }
+    }, []);
+
     return (
         <Router>
             <ThemeProvider>

@@ -9,7 +9,8 @@ import { AuthContext } from "../../../context/AuthContext";
 import ModalMessage from "../../../components/ModalMessage/ModalMessage";
 import { parseApiErrors } from "../../../utils/parseApiErrors";
 import { verifyEmail, githubLogin, googleLogin } from "../../../api/authApi";
-import { setTokens, saveUserData } from "../../../utils/storage";
+import { setTokens } from "../../../utils/storage";
+import { fetchCurrentUser } from "../../../api/profileApi";
 import { ReactComponent as EyeOpen } from "../../../images/eyeOpened.svg";
 import { ReactComponent as EyeClosed } from "../../../images/eyeClosed.svg";
 
@@ -22,7 +23,9 @@ export default function LoginPage() {
     const [modal, setModal] = useState({ open: false, type: "error", message: "" });
     const [showPassword, setShowPassword] = useState(false);
 
-    // --- OAuth logic (GitHub + Google) ---
+    /* ===========================
+       OAuth Callback Logic
+    ============================ */
     useEffect(() => {
         const code = searchParams.get("code");
         if (!code) return;
@@ -32,18 +35,23 @@ export default function LoginPage() {
 
         (async () => {
             try {
+                // 1. Exchange code → tokens
                 const res = isGitHub
                     ? await githubLogin(code)
-                    : isGoogle
-                        ? await googleLogin(code)
-                        : null;
+                    : await googleLogin(code);
 
-                if (!res) return;
+                const { access, refresh } = res.data;
 
-                const { access, refresh, user } = res.data;
+                // 2. Зберігаємо токени
                 setTokens(access, refresh);
-                saveUserData(user);
-                setUser(user);
+
+                // 3. тягнемо деталі профілю
+                const userResp = await fetchCurrentUser();
+                const fullUser = userResp.data;
+
+                // 4. зберігаємо у контекст
+                setUser(fullUser);
+
                 navigate("/", { replace: true });
             } catch (err) {
                 console.error("OAuth login failed:", err);
@@ -52,15 +60,18 @@ export default function LoginPage() {
                     type: "error",
                     message: isGoogle
                         ? "Google authorization failed. Please try again."
-                        : "GitHub authorization failed. Please try again.",
+                        : "GitHub authorization failed. Please try again."
                 });
             } finally {
                 setSearchParams({});
             }
         })();
-    }, [searchParams, setSearchParams, navigate, setUser]);
+    }, [searchParams, navigate, setUser, setSearchParams]);
 
-    // --- Email verification logic (key from verification link) ---
+
+    /* ===========================
+       Email verification
+    ============================ */
     useEffect(() => {
         const key = searchParams.get("key");
         if (!key) return;
@@ -71,14 +82,13 @@ export default function LoginPage() {
                 setModal({
                     open: true,
                     type: "success",
-                    message: "Your account has been successfully verified! You can now log in.",
+                    message: "Your account has been successfully verified!"
                 });
             } catch (err) {
-                console.error("Email verification failed:", err);
                 setModal({
                     open: true,
                     type: "error",
-                    message: "Account verification failed. Please try again later.",
+                    message: "Account verification failed. Please try again."
                 });
             } finally {
                 setSearchParams({});
@@ -86,16 +96,27 @@ export default function LoginPage() {
         })();
     }, [searchParams, setSearchParams]);
 
-    const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
+    const handleChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    };
+
+
+    /* ===========================
+       Regular Login
+    ============================ */
     const handleLogin = async () => {
         if (!form.username.trim() || !form.password.trim()) {
-            setModal({ open: true, type: "error", message: "Please enter your username and password." });
+            setModal({
+                open: true,
+                type: "error",
+                message: "Please enter your username and password."
+            });
             return;
         }
 
         try {
-            await login(form);
+            await login(form); // <-- ТУТ ВЖЕ ВСЕ РОБИТЬСЯ АВТОМАТИЧНО
             navigate("/", { replace: true });
         } catch (err) {
             console.error("Login error:", err);
@@ -105,44 +126,45 @@ export default function LoginPage() {
                 setModal({
                     open: true,
                     type: "error",
-                    message: "Incorrect username or password.",
+                    message: "Incorrect username or password."
                 });
             } else {
                 const parsed = parseApiErrors(apiErrors);
                 const message = Array.isArray(parsed) ? parsed.join(" ") : parsed;
+
                 setModal({
                     open: true,
                     type: "error",
-                    message: message || "An unexpected error occurred. Please try again.",
+                    message: message || "An unexpected error occurred. Please try again."
                 });
             }
         }
     };
 
-    // GitHub OAuth
+
+    /* ===========================
+       OAuth Buttons
+    ============================ */
     const handleGitHubLogin = () => {
         const clientId = "Ov23lih0hmDrxiIyvXiN";
         const redirectUri = "http://localhost:3000/github/callback";
         const scope = "read:user user:email";
-        const allowSignup = true;
-        const prompt = "consent";
 
         window.location.href =
-            `https://github.com/login/oauth/authorize?` +
-            `client_id=${clientId}` +
+            `https://github.com/login/oauth/authorize?client_id=${clientId}` +
             `&redirect_uri=${encodeURIComponent(redirectUri)}` +
             `&scope=${encodeURIComponent(scope)}` +
-            `&allow_signup=${allowSignup}` +
-            `&prompt=${prompt}`;
+            `&allow_signup=true&prompt=consent`;
     };
+
     const handleGoogleLogin = () => {
         const clientId = "86692327760-lm1rijlk59sbq9hg2jm9o858a6b8ohhn.apps.googleusercontent.com";
         const redirectUri = "http://localhost:3000/google/callback/";
-        const scope = "openid profile email";
-        const responseType = "code";
-        const prompt = "select_account";
 
-        window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=${responseType}&scope=${scope}&prompt=${prompt}`;
+        window.location.href =
+            `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}` +
+            `&redirect_uri=${redirectUri}` +
+            `&response_type=code&scope=openid profile email&prompt=select_account`;
     };
 
     return (
@@ -169,8 +191,6 @@ export default function LoginPage() {
                 <span
                     className="password-toggle-icon"
                     onClick={() => setShowPassword((s) => !s)}
-                    role="button"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                     {showPassword ? <EyeOpen /> : <EyeClosed />}
                 </span>
@@ -185,7 +205,6 @@ export default function LoginPage() {
             <Button
                 onClick={handleLogin}
                 variant="static"
-                color="var(--bg-button)"
                 width="340px"
                 height="40px"
             >
@@ -197,19 +216,11 @@ export default function LoginPage() {
             </div>
 
             <div className="login-socials">
-                <button
-                    className="login-social-btn"
-                    aria-label="Sign in with GitHub"
-                    onClick={handleGitHubLogin}
-                >
+                <button className="login-social-btn" onClick={handleGitHubLogin}>
                     <img src={githubIcon} alt="GitHub" />
                 </button>
 
-                <button
-                    className="login-social-btn"
-                    aria-label="Sign in with Google"
-                    onClick={handleGoogleLogin}
-                >
+                <button className="login-social-btn" onClick={handleGoogleLogin}>
                     <img src={googleIcon} alt="Google" />
                 </button>
             </div>

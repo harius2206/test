@@ -1,39 +1,72 @@
-import React, { useMemo } from "react";
-import "./avatar.css";
+// javascript
+import React, { useState, useEffect } from "react";
+import { getUserAvatar, getUserData } from "../../utils/storage";
 
-export default function UserAvatar({ name, avatar, size = 32, fontSize = 16 }) {
-    const bgColor = useMemo(() => {
-        const colors = [
-            "#ef4444", "#f97316", "#facc15",
-            "#22c55e", "#06b6d4", "#3b82f6",
-            "#6366f1", "#8b5cf6", "#d946ef",
-            "#ec4899", "#78716c"
-        ];
-        return colors[Math.floor(Math.random() * colors.length)];
-    }, [name]);
+export default function UserAvatar({
+                                       src,
+                                       avatar,
+                                       name = "",
+                                       size = 40,
+                                       fontSize,
+                                       className = "",
+                                       style = {},
+                                       alt,
+                                   }) {
+    const imageSrc = src || avatar || getUserAvatar() || getUserData()?.avatar || undefined;
 
-    // перевіряємо локальне збережене зображення
-    const storedAvatar = localStorage.getItem("userAvatar");
-    const finalAvatar = storedAvatar || avatar;
+    const [imgError, setImgError] = useState(false);
+
+    useEffect(() => {
+        setImgError(false);
+    }, [imageSrc]);
+
+    const initials = name
+        ? name
+            .trim()
+            .split(/\s+/)
+            .map((p) => p[0])
+            .slice(0, 2)
+            .join("")
+            .toUpperCase()
+        : "";
+
+    const computedFontSize = fontSize || Math.max(12, Math.floor(size * 0.4));
+
+    const containerStyle = {
+        width: size,
+        height: size,
+        borderRadius: "50%",
+        backgroundColor: "#666",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#fff",
+        fontWeight: 700,
+        fontSize: `${computedFontSize}px`,
+        userSelect: "none",
+        overflow: "hidden",
+        ...style,
+    };
+
+    const imgStyle = {
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        display: "block",
+    };
 
     return (
-        <div
-            className="user-avatar"
-            style={{
-                width: size,
-                height: size,
-                backgroundColor: finalAvatar ? "transparent" : bgColor,
-            }}
-        >
-            {finalAvatar ? (
-                <img src={finalAvatar} alt={name} className="user-avatar-img" />
+        <div className={`user-avatar ${className}`} style={containerStyle} aria-label={alt || name}>
+            {imageSrc && !imgError ? (
+                <img
+                    key={imageSrc}
+                    src={imageSrc}
+                    alt={alt || name || "avatar"}
+                    style={imgStyle}
+                    onError={() => setImgError(true)}
+                />
             ) : (
-                <span
-                    className="user-avatar-text"
-                    style={{ fontSize: fontSize }}
-                >
-                    {name?.[0]?.toUpperCase() || "?"}
-                </span>
+                <span>{initials}</span>
             )}
         </div>
     );

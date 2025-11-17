@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseURL = process.env.REACT_APP_API_URL || "https://ee00968a8650.ngrok-free.app/";
+const baseURL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000/";
 
 const axiosNoAuth = axios.create({
     baseURL,
