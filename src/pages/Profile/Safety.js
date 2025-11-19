@@ -1,11 +1,17 @@
+// JavaScript
 import { useState, useEffect } from "react";
 import Button from "../../components/button/button";
 import EditableField from "../../components/editableField/editableField";
 import { getUserData, saveUserData } from "../../utils/storage";
 import "./profile.css";
+import { changePassword } from "../../api/authApi";
+import { useError } from "../../context/ErrorContext";
+import { requestEmailChange } from "../../api/authApi";
 
 export default function Safety() {
     const storedInitial = getUserData();
+    const { showMessage, showError } = useError();
+
     const [email, setEmail] = useState(storedInitial?.email || "");
     const [password, setPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
@@ -31,16 +37,21 @@ export default function Safety() {
         return () => window.removeEventListener("storage", onStorage);
     }, []);
 
-    const handleSend = () => {
-        if (cooldown === 0) setCooldown(30);
+    const handleSend = async () => {
+        if (!email) {
+            showError("Email cannot be empty.");
+            return;
+        }
+
+        try {
+            await requestEmailChange(email);
+            showMessage("Verification email sent! Check your inbox.", "success");
+            setCooldown(30);
+        } catch (err) {
+            showError(err?.response?.data || "Failed to send verification email.");
+        }
     };
 
-    const handleSaveEmail = (val) => {
-        setEmail(val);
-        const updated = { ...getUserData(), email: val };
-        saveUserData(updated);
-        window.dispatchEvent(new Event("storage"));
-    };
 
     const handleSaveApiKey = (val) => {
         setApiKey(val);
@@ -63,7 +74,7 @@ export default function Safety() {
                         type="text"
                         value={email}
                         autosave
-                        onSave={handleSaveEmail}
+                        onSave={setEmail}
                     />
                 </label>
 
@@ -108,13 +119,36 @@ export default function Safety() {
                         color="var(--accent)"
                         width="170px"
                         height="46px"
-                        onClick={() =>
-                            console.log("Change password:", {
-                                password,
-                                newPassword,
-                                confirmPassword,
-                            })
-                        }
+                        onClick={async () => {
+                            document.activeElement.blur(); // ⬅️ важливо
+
+                            if (!password || !newPassword || !confirmPassword) {
+                                showError("All fields must be filled.");
+                                return;
+                            }
+
+                            if (newPassword !== confirmPassword) {
+                                showError("Passwords do not match.");
+                                return;
+                            }
+
+                            try {
+                                await changePassword({
+                                    old_password: password,
+                                    new_password1: newPassword,
+                                    new_password2: confirmPassword,
+                                });
+
+                                showMessage("Password changed successfully!", "success");
+
+                                setPassword("");
+                                setNewPassword("");
+                                setConfirmPassword("");
+                            } catch (err) {
+                                showError(err, "Failed to change password.");
+                            }
+                        }}
+
                     >
                         Change password
                     </Button>
@@ -142,7 +176,10 @@ export default function Safety() {
                         color="var(--accent)"
                         width="170px"
                         height="46px"
-                        onClick={() => console.log("Save key:", apiKey)}
+                        onClick={() => {
+                            handleSaveApiKey(apiKey);
+                            showMessage("DeepL key saved.", "success");
+                        }}
                     >
                         Save key
                     </Button>
@@ -152,7 +189,10 @@ export default function Safety() {
                         color="var(--danger)"
                         width="170px"
                         height="46px"
-                        onClick={() => handleSaveApiKey("")}
+                        onClick={() => {
+                            handleSaveApiKey("");
+                            showMessage("DeepL key deleted.", "success");
+                        }}
                     >
                         Delete DeepL key
                     </Button>

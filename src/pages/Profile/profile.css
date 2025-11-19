@@ -241,56 +241,35 @@
     align-items: center;
     justify-content: center;
 }
-.photo-preview-box {
-    border: 1px solid var(--border-light);
-    background: var(--bg-secondary);
-    border-radius: 8px;
-    width: 100%;
-    max-width: 380px;
-    min-height: 220px;
+.change-photo-wrapper {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: center; /* center contents horizontally */
     justify-content: center;
-    overflow: hidden;
+    gap: 16px;
+    width: 100%;
+}
+
+/* New class used by ChangePhoto.js */
+.photo-buttons {
+    display: flex;
+    flex-direction: row; /* ensure row layout, not column */
+    gap: 12px;
+    justify-content: center; /* center buttons horizontally */
+    align-items: center;
+    flex-wrap: nowrap; /* keep them in one row; change to wrap if needed on very small screens */
     margin-top: 8px;
-    text-align: center;
 }
 
-.photo-preview-img {
-    max-height: 350px;
-    width: 100%;
-    object-fit: contain;
-}
-
-.photo-avatar {
-    width: 130px;
-    height: 130px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.photo-placeholder {
-    color: var(--text-muted);
-    font-size: 14px;
-    padding: 10px;
-}
-
-.photo-buttons-row {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin-top: 18px;
-}
-
-.photo-upload-label {
-    display: inline-flex;
-    cursor: pointer;
-}
-
-.photo-upload-input {
-    display: none;
+/* Allow wrapping on very small screens to avoid overflow */
+@media (max-width: 420px) {
+    .photo-buttons {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .photo-buttons button {
+        flex: 0 1 auto; /* allow buttons to shrink on tiny screens */
+    }
 }
 
 /* Responsive layout */

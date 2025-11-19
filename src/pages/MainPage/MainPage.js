@@ -1,10 +1,12 @@
-import React from "react";
+import React, {useEffect, useRef} from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/autoplay";
+import { useNavigate } from "react-router-dom";
 
+import { verifyNewEmail } from "../../api/authApi";
 import { ReactComponent as ArrowLeft } from "../../images/arrowLeft.svg";
 import { ReactComponent as ArrowRight } from "../../images/arrowRight.svg";
 import { ReactComponent as StarIcon } from "../../images/star.svg";
@@ -17,13 +19,17 @@ import fr from "../../images/flags/fr.svg";
 import de from "../../images/flags/de.svg";
 import jp from "../../images/flags/jp.svg";
 
+import { useError } from "../../context/ErrorContext";
+
 import "./mainPage.css";
+import {getUserData, savePendingEmail, saveUserData} from "../../utils/storage";
 
 export default function MainPage() {
-    // 🔹 “Останні переглянуті” (поки порожньо)
     const latest = [];
+    const { showMessage, showError } = useError();
+    const navigate = useNavigate();
 
-    // 🔹 Демонстраційні дані для модулів і авторів
+
     const modules = Array.from({ length: 10 }).map((_, i) => ({
         id: i + 1,
         name: `Module ${i + 1}`,
@@ -42,6 +48,50 @@ export default function MainPage() {
     }));
 
     const flags = [ua, us, fr, de, jp];
+
+    useEffect(() => {
+        if (window.__emailVerifyDone) return;
+
+        const params = new URLSearchParams(window.location.search);
+        const key = params.get("key");
+        if (!key) return;
+
+        window.__emailVerifyDone = true;
+
+        (async () => {
+            try {
+                const res = await verifyNewEmail(key);
+
+                const email =
+                    res?.data?.email ||
+                    res?.email ||
+                    null;
+
+                console.log("Email from verifyNewEmail:", email, "raw response:", res);
+
+                if (email) {
+                    savePendingEmail(email);
+
+                    const user = getUserData();
+                    if (user) {
+                        const updatedUser = { ...user, email };
+                        saveUserData(updatedUser);
+                    }
+                }
+
+                showMessage("Email successfully verified!", "success");
+
+                setTimeout(() => {
+                    navigate("/");
+                }, 50);
+            } catch (err) {
+                console.error("verifyNewEmail failed:", err);
+                showError("Email verification failed.");
+            }
+        })();
+    }, [navigate, showMessage, showError]);
+
+
 
     return (
         <div className="mp-wrapper">

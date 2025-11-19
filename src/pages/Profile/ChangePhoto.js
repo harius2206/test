@@ -1,197 +1,223 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
-import ReactCrop, { makeAspectCrop, centerCrop } from "react-image-crop";
-import "react-image-crop/dist/ReactCrop.css";
-import Button from "../../components/button/button";
-import { getUserAvatar, saveUserAvatar } from "../../utils/storage";
 import "./profile.css";
+import { useState, useEffect, useRef } from "react";
+import { updateUser } from "../../api/authApi";
+import { getUserData, saveUserData } from "../../utils/storage";
+import { useAuth } from "../../context/AuthContext";
+import Button from "../../components/button/button";
+import UserAvatar from "../../components/avatar/avatar";
 
 export default function ChangePhoto() {
-    const [src, setSrc] = useState(null);
-    const [crop, setCrop] = useState();
-    const [completedCrop, setCompletedCrop] = useState(null);
-    const [croppedImage, setCroppedImage] = useState(getUserAvatar());
-    const [isEditing, setIsEditing] = useState(false);
-    const [hasChanged, setHasChanged] = useState(false);
-
-    const imgRef = useRef(null);
     const fileInputRef = useRef(null);
 
-    useEffect(() => {
-        const saved = getUserAvatar();
-        if (saved) setCroppedImage(saved);
-    }, []);
+    const { user: ctxUser, setUser } = useAuth();
+    const [profile, setProfile] = useState(() => getUserData() || ctxUser || {});
 
-    // Keep in sync with localStorage changes from other places
+    const [preview, setPreview] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [imgBroken, setImgBroken] = useState(false);
+
+    const [refreshKey, setRefreshKey] = useState(0);
+
     useEffect(() => {
-        const onStorage = () => {
-            const saved = getUserAvatar();
-            setCroppedImage(saved);
+        if (ctxUser) {
+            setProfile((prev) => ({ ...prev, ...ctxUser }));
+        }
+    }, [ctxUser]);
+
+    useEffect(() => {
+        return () => {
+            if (preview && preview.startsWith && preview.startsWith("blob:")) {
+                URL.revokeObjectURL(preview);
+            }
         };
-        window.addEventListener("storage", onStorage);
-        return () => window.removeEventListener("storage", onStorage);
-    }, []);
-
-    const onSelectFile = (e) => {
-        if (e.target.files && e.target.files.length > 0) {
-            const file = e.target.files[0];
-            setSrc(URL.createObjectURL(file));
-            setIsEditing(true);
-            setCrop(undefined);
-            setHasChanged(true);
-        }
-    };
-
-    const handleOpenFileDialog = () => fileInputRef.current?.click();
-
-    const onPaste = useCallback((e) => {
-        const item = Array.from(e.clipboardData.items).find((x) =>
-            x.type.includes("image")
-        );
-        if (item) {
-            const file = item.getAsFile();
-            setSrc(URL.createObjectURL(file));
-            setIsEditing(true);
-            setHasChanged(true);
-        }
-    }, []);
+    }, [preview]);
 
     useEffect(() => {
-        window.addEventListener("paste", onPaste);
-        return () => window.removeEventListener("paste", onPaste);
-    }, [onPaste]);
+        setImgBroken(false);
+    }, [preview, profile.avatar]);
 
-    const onImageLoad = (e) => {
-        const { width, height } = e.currentTarget;
-        const c = centerCrop(
-            makeAspectCrop({ unit: "%", width: 80 }, 1, width, height),
-            width,
-            height
-        );
-        setCrop(c);
+    const handleSelectPhoto = () => {
+        fileInputRef.current?.click();
     };
 
-    const getCroppedBase64 = useCallback(() => {
-        if (!completedCrop || !imgRef.current) return null;
-        const canvas = document.createElement("canvas");
-        const scaleX = imgRef.current.naturalWidth / imgRef.current.width;
-        const scaleY = imgRef.current.naturalHeight / imgRef.current.height;
-        canvas.width = completedCrop.width;
-        canvas.height = completedCrop.height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(
-            imgRef.current,
-            completedCrop.x * scaleX,
-            completedCrop.y * scaleY,
-            completedCrop.width * scaleX,
-            completedCrop.height * scaleY,
-            0,
-            0,
-            completedCrop.width,
-            completedCrop.height
-        );
-        return canvas.toDataURL("image/png");
-    }, [completedCrop]);
+    const handleChangeFile = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
 
-    const handleCropConfirm = () => {
-        const base64 = getCroppedBase64();
-        if (base64) {
-            setCroppedImage(base64);
-            saveUserAvatar(base64);
-            setIsEditing(false);
+        if (preview && preview.startsWith && preview.startsWith("blob:")) {
+            URL.revokeObjectURL(preview);
         }
+
+        const url = URL.createObjectURL(file);
+        setPreview(url);
     };
 
-    const handleSave = () => {
-        setIsEditing(false);
-        setSrc(null);
-        setHasChanged(false);
-        // notify other components
-        setTimeout(() => window.dispatchEvent(new Event("storage")), 200);
+    const withTs = (url) => {
+        if (!url) return url;
+        const sep = url.includes("?") ? "&" : "?";
+        return `${url}${sep}ts=${Date.now()}`;
+    };
+
+    const handleUpload = async () => {
+        const file = fileInputRef.current?.files?.[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("avatar", file);
+
+        setLoading(true);
+
+        try {
+            const res = await updateUser(formData);
+            const updatedUser = res?.data || {};
+
+            const serverAvatar = updatedUser.avatar ?? updatedUser.avatar_url ?? null;
+
+            const normalized = {
+                ...getUserData(),
+                ...updatedUser,
+            };
+
+            if (serverAvatar !== null) {
+                normalized.avatar = withTs(serverAvatar);
+            } else {
+                normalized.avatar = null;
+            }
+
+            saveUserData(normalized);
+            setUser?.(normalized);
+            setProfile(normalized);
+
+            if (preview && preview.startsWith && preview.startsWith("blob:")) {
+                URL.revokeObjectURL(preview);
+            }
+            setPreview(null);
+            if (fileInputRef.current) fileInputRef.current.value = null;
+
+            setRefreshKey((k) => k + 1);
+
+            window.dispatchEvent(new Event("storage"));
+        } catch (err) {
+            console.error("Avatar upload failed:", err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleDelete = () => {
-        setCroppedImage(null);
-        saveUserAvatar(null);
-        setHasChanged(false);
+        const normalized = { ...getUserData(), ...profile, avatar: null };
+        saveUserData(normalized);
+        setUser?.(normalized);
+        setProfile(normalized);
+
+        if (preview && preview.startsWith && preview.startsWith("blob:")) {
+            URL.revokeObjectURL(preview);
+        }
+        setPreview(null);
+        if (fileInputRef.current) fileInputRef.current.value = null;
+
+        setRefreshKey((k) => k + 1);
+
         window.dispatchEvent(new Event("storage"));
     };
 
-    return (
-        <div className="profile-section-wrapper">
-            <div className="profile-section-header">
-                <h1 className="profile-title">Change Photo</h1>
-                <h2 className="profile-tile-description">
-                    You can change your profile picture here.
-                </h2>
-            </div>
+    const hasImageSource = !!(preview || profile.avatar);
+    const shouldShowImage = hasImageSource && !imgBroken;
+    const imgSrc = preview ? preview : profile.avatar ? profile.avatar : null;
 
-            <div className="photo-preview-container">
-                <div className="photo-preview-box">
-                    {isEditing && src ? (
-                        <ReactCrop
-                            crop={crop}
-                            onChange={(c) => setCrop(c)}
-                            onComplete={(c) => setCompletedCrop(c)}
-                            aspect={1}
-                        >
-                            <img
-                                ref={imgRef}
-                                src={src}
-                                alt="Crop preview"
-                                onLoad={onImageLoad}
-                                className="photo-preview-img"
-                            />
-                        </ReactCrop>
-                    ) : croppedImage ? (
+    const avatarUrl =
+        imgSrc || null;
+
+    const avatarBoxStyle = {
+        width: 250,
+        height: 250,
+        borderRadius: 8,
+        overflow: "hidden",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#f3f3f3",
+        border: "1px solid var(--border-light, #ddd)",
+        marginBottom: 16,
+    };
+
+    const avatarImgStyle = {
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        display: "block",
+    };
+
+    return (
+        <div className="profile-content">
+            <h1 className="profile-title">Change photo</h1>
+            <h2 className="profile-tile-description">Upload a new avatar</h2>
+
+            <div className="change-photo-wrapper">
+                <div style={avatarBoxStyle} className="avatar-box">
+                    {shouldShowImage ? (
                         <img
-                            src={croppedImage}
-                            alt="User avatar"
-                            className="photo-avatar"
+                            key={refreshKey}
+                            src={avatarUrl}
+                            alt="avatar"
+                            style={avatarImgStyle}
+                            onError={(e) => {
+                                setImgBroken(true);
+                                const img = e.currentTarget;
+                                img.onerror = null;
+                                img.src = "/placeholder-avatar.png";
+                                img.style.display = "block";
+                            }}
                         />
                     ) : (
-                        <p className="photo-placeholder">
-                            Upload or paste an image (Ctrl + V) to start editing.
-                        </p>
+                        <>none</>
+                    )}
+                </div>
+
+                <input
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    onChange={handleChangeFile}
+                    style={{ display: "none" }}
+                />
+
+                <div className="photo-buttons">
+                    <Button
+                        variant="hover"
+                        width={130}
+                        height={40}
+                        onClick={handleSelectPhoto}
+                        disabled={loading}
+                    >
+                        Choose photo
+                    </Button>
+
+                    {preview && (
+                        <Button
+                            variant="static"
+                            width={130}
+                            height={40}
+                            onClick={handleUpload}
+                            disabled={loading}
+                        >
+                            {loading ? "Uploading..." : "Save"}
+                        </Button>
+                    )}
+
+                    {!preview && profile.avatar && (
+                        <Button
+                            variant="toggle"
+                            width={130}
+                            height={40}
+                            onClick={handleDelete}
+                            disabled={loading}
+                        >
+                            Delete
+                        </Button>
                     )}
                 </div>
             </div>
-
-            <div className="photo-buttons-row">
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={onSelectFile}
-                    className="photo-upload-input"
-                />
-
-                <Button variant="hover" width={130} height={40} onClick={handleOpenFileDialog}>
-                    {croppedImage ? "Change" : "Upload"}
-                </Button>
-
-                {hasChanged && !isEditing && (
-                    <Button variant="static" width={130} height={40} onClick={handleSave}>
-                        Save
-                    </Button>
-                )}
-
-                {croppedImage && !isEditing && (
-                    <Button variant="toggle" width={130} height={40} onClick={handleDelete}>
-                        Delete
-                    </Button>
-                )}
-            </div>
-
-            {isEditing && (
-                <div className="photo-buttons-row">
-                    <Button variant="static" width={130} height={40} onClick={handleCropConfirm}>
-                        Crop
-                    </Button>
-                    <Button variant="toggle" width={130} height={40} onClick={() => setIsEditing(false)}>
-                        Cancel
-                    </Button>
-                </div>
-            )}
         </div>
     );
 }

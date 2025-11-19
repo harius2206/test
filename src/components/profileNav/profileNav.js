@@ -1,10 +1,11 @@
 // javascript
 import { NavLink, useNavigate } from "react-router-dom";
 import "./profileNav.css";
-import { useEffect, useState } from "react";
-import { getUserData, getUserAvatar, clearAuthData } from "../../utils/storage";
+import { useEffect, useRef, useState, useLayoutEffect } from "react";
+import { getUserData, getUserAvatar } from "../../utils/storage";
 import { useAuth } from "../../context/AuthContext";
 import UserAvatar from "../avatar/avatar";
+import { clearAllExceptTheme } from "../../utils/storage";
 
 export default function ProfileNav() {
     const { logout, setUser } = useAuth();
@@ -12,6 +13,10 @@ export default function ProfileNav() {
 
     const [avatar, setAvatar] = useState(() => getUserAvatar() || getUserData()?.avatar || null);
     const [profile, setProfile] = useState(() => getUserData() || { username: "Guest", date_joined: null });
+
+    const [cutName, setCutName] = useState("");
+    const nameRef = useRef(null);
+    const retryRef = useRef(0);
 
     useEffect(() => {
         const onStorage = () => {
@@ -24,13 +29,82 @@ export default function ProfileNav() {
         return () => window.removeEventListener("storage", onStorage);
     }, []);
 
+    /* === FIT USERNAME TO WIDTH === */
+    const fitName = () => {
+        const el = nameRef.current;
+        if (!el || !profile?.username) return;
+
+        const containerWidth = el.offsetWidth;
+        if (containerWidth === 0 && retryRef.current < 5) {
+            retryRef.current += 1;
+            requestAnimationFrame(fitName);
+            return;
+        }
+        retryRef.current = 0;
+
+        const availableWidth = containerWidth - 20;
+        if (availableWidth <= 0) {
+            setCutName("…");
+            return;
+        }
+
+        const tester = document.createElement("span");
+        tester.style.visibility = "hidden";
+        tester.style.whiteSpace = "nowrap";
+        tester.style.position = "absolute";
+        tester.style.fontSize = window.getComputedStyle(el).fontSize;
+        tester.style.fontFamily = window.getComputedStyle(el).fontFamily;
+        tester.style.fontWeight = window.getComputedStyle(el).fontWeight;
+        document.body.appendChild(tester);
+
+        const text = profile.username;
+
+        let trimmedLength = Math.max(1, text.length - 8);
+        let trimmed = text.slice(0, trimmedLength);
+
+        tester.textContent = trimmed + "…";
+        while (trimmedLength < text.length) {
+            const nextLength = trimmedLength + 1;
+            const nextText = text.slice(0, nextLength) + "…";
+            tester.textContent = nextText;
+
+            if (tester.offsetWidth > availableWidth) {
+                break;
+            }
+            trimmedLength = nextLength;
+            trimmed = text.slice(0, trimmedLength);
+        }
+
+        const finalText = trimmedLength >= text.length ? text : trimmed + "…";
+
+        setCutName(finalText);
+        document.body.removeChild(tester);
+    };
+
+    // Use useLayoutEffect to measure after DOM updates but before paint
+    useLayoutEffect(() => {
+        fitName();
+        // also try again on next animation frame to be safe (fonts/layout)
+        requestAnimationFrame(fitName);
+    }, [profile]);
+
+    useEffect(() => {
+        const onResize = () => {
+            fitName();
+        };
+        window.addEventListener("resize", onResize);
+        return () => window.removeEventListener("resize", onResize);
+    }, [profile]);
+
+    /* === LOGOUT === */
     const handleLogout = () => {
         logout?.();
-        clearAuthData();
+        clearAllExceptTheme();
         setUser?.(null);
         navigate("/");
     };
 
+    /* === DATE FORMAT === */
     const joinedRaw = profile?.date_joined ?? profile?.created_at ?? null;
     const joined =
         joinedRaw && !isNaN(new Date(joinedRaw).getTime())
@@ -47,7 +121,10 @@ export default function ProfileNav() {
                     fontSize={56}
                 />
 
-                <h3 className="profile-name">{profile?.username || "Guest"}</h3>
+                <h3 className="profile-name" ref={nameRef}>
+                    {cutName || profile?.username || "Guest"}
+                </h3>
+
                 <p className="profile-date">created: {joined}</p>
             </div>
 

@@ -48,7 +48,15 @@ export const clearAuthData = () => {
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem(AVATAR_KEY);
 };
-
+export const clearAllExceptTheme = () => {
+    try {
+        const theme = localStorage.getItem("theme");
+        localStorage.clear();
+        if (theme !== null) localStorage.setItem("theme", theme);
+    } catch (e) {
+        console.error("Failed to clear storage:", e);
+    }
+};
 /* ===== AVATAR ===== */
 export const saveUserAvatar = (base64) => {
     if (base64) localStorage.setItem(AVATAR_KEY, base64);
@@ -56,3 +64,17 @@ export const saveUserAvatar = (base64) => {
 };
 
 export const getUserAvatar = () => localStorage.getItem(AVATAR_KEY);
+
+
+
+const PENDING_EMAIL_KEY = "pendingEmail";
+
+export const savePendingEmail = (email) => {
+    try {
+        if (email) localStorage.setItem(PENDING_EMAIL_KEY, email);
+        else localStorage.removeItem(PENDING_EMAIL_KEY);
+    } catch (e) {
+        console.error("Failed to save pending email:", e);
+    }
+};
+

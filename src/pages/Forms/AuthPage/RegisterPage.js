@@ -8,6 +8,7 @@ import googleIcon from "../../../images/google.svg";
 import { useError } from "../../../context/ErrorContext";
 import { ReactComponent as EyeOpen } from "../../../images/eyeOpened.svg";
 import { ReactComponent as EyeClosed } from "../../../images/eyeClosed.svg";
+import ModalMessage from "../../../components/ModalMessage/ModalMessage";
 
 const PASSWORD_HINT = {
     too_common: "Password must not be too common.",
@@ -35,6 +36,11 @@ export default function RegisterPage() {
     const [info, setInfo] = useState(null);
     const [showPasswords, setShowPasswords] = useState(false);
 
+    const [modalError, setModalError] = useState({
+        open: false,
+        message: ""
+    });
+
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const key = params.get("key");
@@ -56,8 +62,12 @@ export default function RegisterPage() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+
         setFormData({ ...formData, [name]: value });
-        if (fieldErrors[name]) setFieldErrors((prev) => ({ ...prev, [name]: "" }));
+
+        if (fieldErrors[name]) {
+            setFieldErrors((prev) => ({ ...prev, [name]: "" }));
+        }
     };
 
     const normalizePasswordError = (errorText) => {
@@ -73,6 +83,14 @@ export default function RegisterPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setFieldErrors({});
+
+        if (formData.username.length > 20) {
+            setModalError({
+                open: true,
+                message: "Username must be 20 characters or less."
+            });
+            return;
+        }
 
         if (formData.password1 !== formData.password2) {
             setFieldErrors({ password2: "Passwords don’t match" });
@@ -128,7 +146,6 @@ export default function RegisterPage() {
         }
     };
 
-    // GitHub OAuth (same behavior as LoginPage)
     const handleGitHubLogin = () => {
         const clientId = "Ov23lih0hmDrxiIyvXiN";
         const redirectUri = "http://localhost:3000/github/callback";
@@ -145,7 +162,6 @@ export default function RegisterPage() {
             `&prompt=${prompt}`;
     };
 
-    // Google OAuth (same behavior as LoginPage)
     const handleGoogleLogin = () => {
         const clientId = "86692327760-lm1rijlk59sbq9hg2jm9o858a6b8ohhn.apps.googleusercontent.com";
         const redirectUri = "http://localhost:3000/google/callback/";
@@ -153,7 +169,8 @@ export default function RegisterPage() {
         const responseType = "code";
         const prompt = "select_account";
 
-        window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${encodeURIComponent(scope)}&prompt=${prompt}`;
+        window.location.href =
+            `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${encodeURIComponent(scope)}&prompt=${prompt}`;
     };
 
     return (
@@ -288,6 +305,13 @@ export default function RegisterPage() {
                     Sign in
                 </span>
             </p>
+
+            <ModalMessage
+                open={modalError.open}
+                type="error"
+                message={modalError.message}
+                onClose={() => setModalError({ open: false, message: "" })}
+            />
         </div>
     );
 }

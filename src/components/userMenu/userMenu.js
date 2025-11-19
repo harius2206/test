@@ -1,5 +1,5 @@
-// File: src/components/userMenu/userMenu.js
-import { useState, useContext, useEffect } from "react";
+// javascript
+import { useState, useContext, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./userMenu.css";
 import { ReactComponent as GlobeIcon } from "../../images/language.svg";
@@ -9,6 +9,7 @@ import SearchField from "../searchField/searchField";
 import UserAvatar from "../avatar/avatar";
 import { useAuth } from "../../context/AuthContext";
 import { getUserData, saveUserData } from "../../utils/storage";
+import { clearAllExceptTheme } from "../../utils/storage";
 
 export default function UserMenu() {
     const [open, setOpen] = useState(false);
@@ -31,7 +32,8 @@ export default function UserMenu() {
     /* ==== UPDATE USER WHEN MENU OPENS ==== */
     const toggleMenu = () => {
         const storedUser = getUserData();
-        if (storedUser) setUser(storedUser);
+        // Ensure context is cleared when there's no stored user (e.g. after logout)
+        setUser(storedUser || null);
         setOpen((p) => !p);
     };
 
@@ -47,15 +49,68 @@ export default function UserMenu() {
     }, [setUser]);
 
     const handleLogout = () => {
-        logout();
-        setOpen(false);
+        logout?.();
+        clearAllExceptTheme();
+        setUser?.(null);
+        window.dispatchEvent(new Event("storage"));
         navigate("/");
+        setTimeout(() => {
+            window.location.reload();
+        }, 0);
     };
+
+
 
     const handleNavigate = (path) => {
         navigate(path);
         setOpen(false);
     };
+
+
+    const [cutName, setCutName] = useState("");
+    const nameRef = useRef(null);
+
+    const fitName = () => {
+        const el = nameRef.current;
+        if (!el || !user?.username) return;
+
+        const containerWidth = el.offsetWidth;
+        const tester = document.createElement("span");
+
+        tester.style.visibility = "hidden";
+        tester.style.whiteSpace = "nowrap";
+        tester.style.fontSize = window.getComputedStyle(el).fontSize;
+        tester.style.fontFamily = window.getComputedStyle(el).fontFamily;
+
+        document.body.appendChild(tester);
+
+        let text = user.username;
+        tester.textContent = text;
+
+        if (tester.offsetWidth <= containerWidth) {
+            setCutName(text);
+            document.body.removeChild(tester);
+            return;
+        }
+
+        let trimmed = text;
+        while (tester.offsetWidth > containerWidth && trimmed.length > 0) {
+            trimmed = trimmed.slice(0, -1);
+            tester.textContent = trimmed + "…";
+        }
+
+        setCutName(trimmed + "…");
+        document.body.removeChild(tester);
+    };
+
+    useEffect(() => {
+        if (open) fitName();
+    }, [open, user]);
+
+    useEffect(() => {
+        window.addEventListener("resize", fitName);
+        return () => window.removeEventListener("resize", fitName);
+    }, []);
 
     return (
         <ClickOutsideWrapper onClickOutside={() => setOpen(false)}>
@@ -91,7 +146,9 @@ export default function UserMenu() {
                                 fontSize={24}
                             />
                             <div>
-                                <div className="um-name">{user?.username || "Guest"}</div>
+                                <div className="um-name" ref={nameRef}>
+                                    {cutName || user?.username || "Guest"}
+                                </div>
                                 <div className="um-email">{user?.email || "not logged in"}</div>
                             </div>
                         </div>
@@ -143,8 +200,8 @@ export default function UserMenu() {
                                     <div className="um-link um-row">
                                         <span>Language</span>
                                         <span className="um-lang">
-                      English <GlobeIcon className="um-lang-icon" />
-                    </span>
+                                            English <GlobeIcon className="um-lang-icon" />
+                                        </span>
                                     </div>
 
                                     <div className="um-theme-selector">
@@ -210,8 +267,8 @@ export default function UserMenu() {
                                     <div className="um-link um-row">
                                         <span>Language</span>
                                         <span className="um-lang">
-                      English <GlobeIcon className="um-lang-icon" />
-                    </span>
+                                            English <GlobeIcon className="um-lang-icon" />
+                                        </span>
                                     </div>
 
                                     <div className="um-theme-selector">

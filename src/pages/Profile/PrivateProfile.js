@@ -1,11 +1,17 @@
+// javascript
+// File: `src/pages/Profile/PrivateProfile.js`
 import "./profile.css";
 import { useState, useEffect } from "react";
 import EditableField from "../../components/editableField/editableField";
 import { getUserData, saveUserData } from "../../utils/storage";
 import { useAuth } from "../../context/AuthContext";
+import { updateUser } from "../../api/authApi";
+import { useError } from "../../context/ErrorContext";
 
 export default function PrivateProfile() {
     const { user: ctxUser, setUser } = useAuth();
+    const { showMessage, showApiErrors } = useError();
+
     const [profile, setProfile] = useState(() => getUserData() || ctxUser || {
         username: "",
         first_name: "",
@@ -17,7 +23,6 @@ export default function PrivateProfile() {
         if (ctxUser) setProfile((prev) => ({ ...prev, ...ctxUser }));
     }, [ctxUser]);
 
-    // Sync with localStorage changes
     useEffect(() => {
         const onStorage = () => {
             const stored = getUserData();
@@ -32,12 +37,57 @@ export default function PrivateProfile() {
         return () => window.removeEventListener("storage", onStorage);
     }, [ctxUser]);
 
-    const handleSaveField = (key, value) => {
-        const updated = { ...profile, [key]: value };
-        setProfile(updated);
-        saveUserData(updated);
-        setUser?.(updated);
-        window.dispatchEvent(new Event("storage"));
+    const handleSaveField = async (key, value) => {
+        const payloadKey = key === "description" ? "bio" : key;
+        const payload = { [payloadKey]: value };
+
+        const updatedLocal = { ...profile, [key]: value };
+        setProfile(updatedLocal);
+
+        try {
+            const res = await updateUser(payload);
+            const updatedUserFromServer = res.data || updatedLocal;
+
+            const normalized = {
+                ...getUserData(),
+                ...updatedUserFromServer,
+            };
+
+            if (normalized.bio !== undefined) {
+                normalized.description = normalized.bio;
+                delete normalized.bio;
+            }
+
+            saveUserData(normalized);
+            setUser?.(normalized);
+            setProfile((prev) => ({ ...prev, ...normalized }));
+            window.dispatchEvent(new Event("storage"));
+
+            showMessage("Profile updated successfully.", "success");
+        } catch (err) {
+            // revert local optimistic update
+            const stored = getUserData();
+            setProfile(stored || ctxUser || {
+                username: "",
+                first_name: "",
+                last_name: "",
+                description: "",
+            });
+
+            console.error("Failed to update user:", err);
+
+            // Use global error helper to show API errors
+            showApiErrors(err);
+        }
+    };
+
+    const handleTrySave = (key, value) => {
+        if (key === "username" && value.length > 20) {
+            showMessage("Username must be 20 characters or less.", "error");
+            return;
+        }
+
+        handleSaveField(key, value);
     };
 
     return (
@@ -45,14 +95,14 @@ export default function PrivateProfile() {
             <h1 className="profile-title">Private profile</h1>
             <h2 className="profile-tile-description">Add some information about you</h2>
 
-            <form className="profile-form">
+            <form className="profile-form" onSubmit={(e) => e.preventDefault()}>
                 <label>
                     username
                     <EditableField
                         value={profile.username}
                         autosave
                         showEditIconWhenAutosave
-                        onSave={(val) => handleSaveField("username", val)}
+                        onSave={(val) => handleTrySave("username", val)}
                     />
                 </label>
 
@@ -62,7 +112,7 @@ export default function PrivateProfile() {
                         value={profile.first_name}
                         autosave
                         showEditIconWhenAutosave
-                        onSave={(val) => handleSaveField("first_name", val)}
+                        onSave={(val) => handleTrySave("first_name", val)}
                     />
                 </label>
 
@@ -72,7 +122,7 @@ export default function PrivateProfile() {
                         value={profile.last_name}
                         autosave
                         showEditIconWhenAutosave
-                        onSave={(val) => handleSaveField("last_name", val)}
+                        onSave={(val) => handleTrySave("last_name", val)}
                     />
                 </label>
 
@@ -83,7 +133,7 @@ export default function PrivateProfile() {
                         value={profile.description}
                         autosave
                         showEditIconWhenAutosave
-                        onSave={(val) => handleSaveField("description", val)}
+                        onSave={(val) => handleTrySave("description", val)}
                     />
                 </label>
             </form>
