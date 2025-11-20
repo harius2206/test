@@ -78,3 +78,10 @@ export const savePendingEmail = (email) => {
     }
 };
 
+export const getPendingEmail = () => {
+    try {
+        return localStorage.getItem(PENDING_EMAIL_KEY) || "";
+    } catch {
+        return "";
+    }
+};

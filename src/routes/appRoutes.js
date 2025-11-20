@@ -1,3 +1,4 @@
+// src/routes/appRoutes.js
 import Profile from "../pages/Profile/Profile";
 import MainPage from "../pages/MainPage/MainPage";
 import LibraryPage from "../pages/Library/Library";
@@ -16,20 +17,22 @@ import GoogleCallback from "../pages/Forms/AuthPage/GoogleCallBack";
 const appRoutes = [
     { path: "/", component: MainPage },
     { path: "/library/*", component: LibraryPage },
-    { path: "/profile/public-library", component: PublicProfileLibrary },
-    { path: "/profile/*", component: Profile },
-    { path: "/library/create-module", component: CreateModule, exact: true },
+
+    { path: "/profile/public-library", component: PublicProfileLibrary, protected: true },
+    { path: "/profile/*", component: Profile, protected: true },
+
+    { path: "/library/create-module", component: CreateModule, exact: true, protected: true },
+    { path: "/saves", component: Saves, protected: true },
+
     { path: "/library/module-view", component: ModuleView, exact: true },
     { path: "/cardscheck", component: CardsCheck, exact: true },
     { path: "/cardstest", component: CardsTest, exact: true },
-    { path: "/saves", component: Saves },
+
     { path: "/login", component: LoginPage },
     { path: "/register", component: RegisterPage },
     { path: "/reset-password", component: PasswordReset },
     { path: "/github/callback", component: GitHubCallback },
     { path: "/google/callback", component: GoogleCallback },
-
-
 ];
 
 export default appRoutes;

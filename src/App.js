@@ -8,6 +8,7 @@ import Footer from "./components/footer/footer";
 import SidePanel from "./components/sidePanel/sidePanel";
 import { AuthProvider } from "./context/AuthContext";
 import { ErrorProvider } from "./context/ErrorContext";
+import AuthGuard from "./components/Auth/AuthGuard";
 
 function AppLayout() {
     const location = useLocation();
@@ -16,6 +17,7 @@ function AppLayout() {
         location.pathname.startsWith("/login") ||
         location.pathname.startsWith("/register") ||
         location.pathname.startsWith("/reset-password");
+
     return (
         <div className="page-wrapper">
             <Header />
@@ -23,9 +25,15 @@ function AppLayout() {
                 {!hideSide && <SidePanel isLeftAligned={true} />}
                 <div className="main-content">
                     <Routes>
-                        {appRoutes.map(({ path, component: Component }) => (
-                            <Route key={path} path={path} element={<Component />} />
-                        ))}
+                        {appRoutes.map(({ path, component: Component, protected: isProtected }) => {
+                            const element = isProtected
+                                ? <AuthGuard component={Component} />
+                                : <Component />;
+
+                            return (
+                                <Route key={path} path={path} element={element} />
+                            );
+                        })}
                     </Routes>
                 </div>
             </main>

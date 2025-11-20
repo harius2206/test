@@ -33,6 +33,14 @@ export const fetchCurrentUser = () => {
     return axiosClient.get("/api/v1/auth/user/");
 };
 
+export const requestPasswordReset = (email) => {
+    return axiosNoAuth.post("/api/v1/auth/password/reset/", { email });
+};
+
+export const confirmPasswordReset = (payload) => {
+    return axiosNoAuth.post("/api/v1/auth/password/reset/confirm/", payload);
+};
+
 /**
  * updateUser:
  * - If payload is FormData (contains file), send as multipart/form-data.

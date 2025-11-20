@@ -7,6 +7,7 @@ import "./profile.css";
 import { changePassword } from "../../api/authApi";
 import { useError } from "../../context/ErrorContext";
 import { requestEmailChange } from "../../api/authApi";
+import {Link} from "react-router-dom";
 
 export default function Safety() {
     const storedInitial = getUserData();
@@ -120,7 +121,7 @@ export default function Safety() {
                         width="170px"
                         height="46px"
                         onClick={async () => {
-                            document.activeElement.blur(); // ⬅️ важливо
+                            document.activeElement.blur();
 
                             if (!password || !newPassword || !confirmPassword) {
                                 showError("All fields must be filled.");
@@ -153,9 +154,11 @@ export default function Safety() {
                         Change password
                     </Button>
 
-                    <Button variant="toggle" color="var(--accent)" width="170px" height="46px">
-                        Forgot password
-                    </Button>
+                    <Link to="/reset-password">
+                        <Button variant="toggle" color="var(--accent)" width="170px" height="46px">
+                            Forgot password
+                        </Button>
+                    </Link>
                 </div>
 
                 <hr />
