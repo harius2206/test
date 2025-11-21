@@ -1,5 +1,10 @@
 import axiosClient from "./axiosClient";
 import endpoints from "./endpoints";
 
-export const getUsers = () => axiosClient.get(endpoints.users.list);
-export const getUserDetail = (id) => axiosClient.get(endpoints.users.detail(id));
+export const getUserDetails = (id) => {
+    return axiosClient.get(endpoints.users.detail(id));
+};
+
+export const getUsersList = (params) => {
+    return axiosClient.get(endpoints.users.list, { params });
+};

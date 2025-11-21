@@ -11,7 +11,7 @@ import { ReactComponent as ArrowLeft } from "../../images/arrowLeft.svg";
 import { ReactComponent as ArrowRight } from "../../images/arrowRight.svg";
 import { ReactComponent as StarIcon } from "../../images/star.svg";
 import UserAvatar from "../../components/avatar/avatar";
-import DiagonalFlagRect from "../../components/diagonalFlagRect";
+import DiagonalFlagRect from "../../components/diagonalFlagRect43";
 
 import ua from "../../images/flags/ua.svg";
 import us from "../../images/flags/us.svg";

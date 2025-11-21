@@ -8,6 +8,16 @@ const endpoints = {
         list: "/api/v1/users/",
         detail: (id) => `/api/v1/users/${id}/`,
     },
+    modules: {
+        list: "/api/v1/modules/",
+        detail: (id) => `/api/v1/modules/${id}/`,
+        rate: (id) => `/api/v1/modules/${id}/rate/`,
+    },
+    languages: "/api/v1/languages/",
+    topics: {
+        list: "/api/v1/topics/",
+        detail: (id) => `/api/v1/topics/${id}/`,
+    },
 };
 
 export default endpoints;

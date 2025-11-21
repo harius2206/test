@@ -68,7 +68,7 @@
     align-items: center;
 }
 
-/* -------------------- LANGUAGE ROW -------------------- */
+/* -------------------- LANGUAGE ROW (Global Swap) -------------------- */
 .global-lang-row {
     width: 100%;
     margin-bottom: 16px;
@@ -80,7 +80,18 @@
 }
 
 .global-lang-row .swap-btn {
-    display: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+.global-lang-row .swap-btn:hover {
+    background-color: var(--clr-border);
 }
 
 .lang-dropdown {
@@ -132,75 +143,6 @@
     background: var(--clr-primary-light);
 }
 
-/* -------------------- TAGS -------------------- */
-.tags-block {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 12px;
-    gap: 16px;
-    flex-wrap: wrap;
-}
-
-.existing-tags {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    flex: 1;
-    align-items: center;
-}
-
-.tag-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--clr-primary);
-    color: #fff;
-    padding: 0 12px;
-    border-radius: 999px;
-    font-weight: 600;
-    line-height: 32px;
-    height: 32px;
-}
-
-.tag-remove-btn {
-    display: none;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px;
-    color: rgba(255,255,255,0.9);
-}
-
-.tag-pill:hover .tag-remove-btn {
-    display: flex;
-}
-
-.tag-input {
-    height: 32px;                   /* changed: match tag-pill */
-    line-height: 32px;
-    padding: 0 10px;                /* vertical padding removed to center text */
-    border-radius: 14px;
-    border: 1px solid var(--clr-border-light);
-    background: var(--clr-card-bg);
-    color: var(--clr-text);
-    min-width: 90px;
-    box-sizing: border-box;
-}
-
-.tag-add-btn {
-    height: 32px;                   /* changed: match tag-pill */
-    padding: 0 12px;                /* horizontal padding only */
-    border: none;
-    border-radius: 14px;
-    background: var(--clr-primary);
-    color: #fff;
-    cursor: pointer;
-    display: inline-flex;           /* center icon/text vertically */
-    align-items: center;
-    justify-content: center;
-}
-
 /* -------------------- MODULE INPUTS -------------------- */
 .module-inputs {
     display: flex;
@@ -240,8 +182,8 @@
     display: flex;
     gap: 12px;
     align-items: flex-start;
-    background: var(--clr-card-error);
-    border: 1px solid var(--clr-card-error-border);
+    background: var(--clr-card-bg);
+    border: 1px solid var(--clr-border-light);
     border-radius: 8px;
     padding: 16px;
     width: 100%;
@@ -249,8 +191,7 @@
     box-sizing: border-box;
     position: relative;
     margin: 0 auto;
-    padding-right: 84px;
-    color: var(--clr-card-error-text); /* ensure readable text on red bg */
+    padding-right: 64px; /* Space for delete button */
 }
 
 .card-index-col {
@@ -263,6 +204,7 @@
     align-self: flex-start;
     margin-top: 16px;
     height: 36px;
+    color: var(--clr-muted);
 }
 
 .card-center-col {
@@ -272,45 +214,41 @@
     min-width: 0;
 }
 
+/* HEADER OF CARD: LANG - LANG (ВИПРАВЛЕНО: Flexbox замість Grid) */
 .card-lang-top {
-    display: flex;
+    display: flex; /* Використовуємо Flexbox */
+    justify-content: space-between; /* Розводимо по краях */
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
     margin-bottom: 12px;
-    position: relative;
-    padding: 0 8px;
     width: 100%;
     height: 36px;
 }
 
-.card-lang-top span {
+.card-lang-top .lang-left {
     font-size: 13px;
-    font-weight: 500;
-    color: var(--clr-text);
+    font-weight: 600;
+    color: var(--clr-muted);
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.card-lang-top .swap-btn {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    border: none;
-    background: transparent;
-    padding: 6px;
-    height: 36px;
-    width: 36px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
+.card-lang-top .lang-right {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--clr-muted);
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    /* ВИДАЛЕНО: margin-left: auto; оскільки space-between впорається */
 }
 
-.swap-btn svg,
-.icon-top-btn svg {
-    width: 20px;
-    height: 20px;
-    transition: filter 0.3s ease;
+/* SWAP BTN ON CARD (Навіть якщо приховано, залишаємо стилі для чистоти) */
+.card-swap-btn {
+    /* Приховано, оскільки Swap має бути лише глобальним */
+    display: none !important;
 }
 
 
@@ -349,16 +287,18 @@
 
 .card-input:focus {
     border-color: var(--clr-primary);
+    outline: none;
 }
 
 .field-label {
     font-size: 12px;
     color: var(--clr-muted);
     margin-left: 4px;
-    height: 36px;
+    height: 20px;
     display: flex;
     align-items: center;
 }
+
 /* -------------------- DEEPL LINK -------------------- */
 .deepl-link {
     grid-column: 2 / 3;
@@ -388,14 +328,15 @@
     width: 20px;
     height: 20px;
     fill: var(--clr-muted);
-    vertical-align: middle;
 }
 
-/* -------------------- ACTIONS -------------------- */
+/* -------------------- DELETE BUTTON (Trash Icon) -------------------- */
 .card-actions-col {
+    position: absolute;
+    right: 16px;
+    top: 16px;
     display: flex;
-    gap: 6px;
-    align-items: center;
+    justify-content: flex-end;
     z-index: 30;
 }
 
@@ -403,36 +344,38 @@
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 6px;
-    height: 36px;
-    width: 36px;
+    padding: 8px;
+    width: 32px;
+    height: 32px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: opacity 0.2s ease;
+    border-radius: 6px;
+    color: var(--clr-muted);
+    transition: all 0.2s ease;
 }
 
-.icon-top-btn:hover {
-    opacity: 0.8;
+.icon-top-btn:hover:not(:disabled) {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
 }
 
-.card-index-text {
-    font-weight: 700;
-    color: var(--clr-text);
-    font-size: 14px;
+/* FIX: Кнопка візуально не міняється, коли disabled */
+.icon-top-btn:disabled {
+    opacity: 1;
+    cursor: default;
+    pointer-events: none;
 }
 
-/* -------------------- NEW CARD + BOTTOM BUTTONS -------------------- */
+.icon-top-btn svg {
+    fill: currentColor;
+}
+
+/* -------------------- ACTIONS ROW -------------------- */
 .card-actions {
     display: flex;
     justify-content: center;
     margin-top: 24px;
-}
-
-.new-card-row {
-    display: flex;
-    justify-content: center;
-    margin: 12px 0;
 }
 
 .bottom-actions {
@@ -463,17 +406,9 @@
         align-items: center;
         justify-content: center;
     }
-
-    .card-actions-col {
-        position: absolute;
-        right: 16px;
-        top: 16px;
-        justify-content: flex-end;
-        margin: 0;
-    }
 }
 
-/* -------------------- RESPONSIVE (≤720px) -------------------- */
+/* -------------------- RESPONSIVE -------------------- */
 @media (max-width: 720px) {
     .global-lang-row {
         flex-wrap: wrap;
@@ -489,118 +424,34 @@
         padding-left: 16px;
         padding-right: 12px;
         flex-direction: row;
+        flex-wrap: wrap;
     }
 
     .card-index-col {
         position: static;
-        margin-top: 16px;
-        width: 36px;
-        height: 36px;
+        width: 30px;
+        margin-top: 0;
         align-self: flex-start;
-    }
-
-    .card-lang-top {
-        padding: 0 6px;
-        height: 36px;
     }
 
     .card-actions-col {
         position: static;
-        justify-content: flex-end;
         margin-left: auto;
-        padding-left: 0;
     }
 
-    .icon-top-btn {
-        height: 34px;
-        width: 34px;
+    .card-center-col {
+        width: 100%;
+        margin-top: 12px;
+        order: 3;
     }
 
-    .card-fields {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto auto;
-    }
-
-    .card-fields > .field-with-label:nth-child(1),
-    .card-fields > .field-with-label:nth-child(2),
-    .card-fields > .deepl-link {
-        grid-column: 1 / 2;
-        grid-row: auto;
-        justify-self: stretch;
-        align-self: center;
-    }
-
-    .deepl-link {
-        justify-content: flex-start;
+    .card-lang-top {
+        /* В мобільному вирівнювання також має бути space-between */
+        justify-content: space-between;
     }
 }
 
-/* -------------------- FOCUS + MISC -------------------- */
-button:focus,
-.btn:focus,
-.icon-top-btn:focus,
-.swap-btn:focus {
+/* Focus styles */
+button:focus, .btn:focus, .module-input:focus {
     outline: none;
-    box-shadow: none;
-}
-
-/* Smooth theme transition */
-*, *::before, *::after {
-    transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
-}
-
-/* dark-theme specific icon coloring for reverse / trash (make them white-ish) */
-[data-theme="dark"] .swap-btn svg,
-[data-theme="dark"] .icon-top-btn svg,
-[data-theme="dark"] .icon-trash svg,
-[data-theme="dark"] .icon-reverse svg {
-    color: var(--clr-text);
-    fill: currentColor !important;
-    stroke: currentColor !important;
-    filter: none !important;
-}
-
-
-
-.icon-trash {
-    width: 18px;
-    height: 18px;
-}
-.icon-trash svg path {
-    stroke: currentColor !important;
-    fill: transparent !important;
-    stroke-width: 1.5;
-}
-
-/* Remove border and background from reverse button (icon-only) */
-.icon-reverse,
-.icon-reverse:focus,
-.icon-reverse:active,
-[data-theme="dark"] .icon-reverse {
-    background: transparent !important;
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-}
-.icon-reverse svg path {
-    stroke: currentColor !important;
-    fill: none !important;
-    stroke-width: 1.5;
-}
-
-.tag-input + .tag-add-btn,
-.tag-input {
-    margin-right: 8px;
-}
-
-/* slightly tighten add button left-side spacing so it visually aligns with tag pills */
-.tag-add-btn {
-    padding-left: 10px;
-    padding-right: 12px;
-}
-
-/* dark-theme specific coloring (keeps trash and reverse white in dark mode) */
-[data-theme="dark"] .icon-trash,
-[data-theme="dark"] .icon-reverse {
-    color: var(--clr-text);
 }

@@ -1,8 +1,8 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
-import ModuleForm from "./ModuleForm";
+import ModuleForm from "../pages/Library/CreateModule/ModuleForm";
 
-export default function EditModule() {
+ function EditModule() {
     const { state } = useLocation();
     const moduleData = state?.module || {
         id: 123,
