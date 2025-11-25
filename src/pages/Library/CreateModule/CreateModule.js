@@ -70,9 +70,8 @@ export default function CreateModule() {
         const payload = {
             name: formData.name,
             description: formData.description,
-            topic: 1, // TODO: Replace with real topic ID logic if available
+            topic: formData.topic?.id || null,
             tags: formData.tags,
-            // ModuleForm повертає об'єкти мов, беремо їх ID
             lang_from: formData.globalLangLeft?.id || 1,
             lang_to: formData.globalLangRight?.id || 2,
             cards: formData.cards.map(c => ({

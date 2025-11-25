@@ -23,7 +23,6 @@ export default function ModuleCard({
                                        onDelete,
                                        deleteLabel = "Delete",
                                        onPermissions,
-                                       // onClick - прибираємо з пропсів, щоб задати жорстку логіку тут
                                    }) {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -36,6 +35,8 @@ export default function ModuleCard({
     const authorName = module.user?.username || module.author || "User";
     const authorAvatar = module.user?.avatar || module.avatar;
     const termsCount = module.cards_count !== undefined ? module.cards_count : (module.terms || 0);
+
+    // Отримуємо назву теми (якщо це об'єкт або рядок)
     const topicName = typeof module.topic === 'object' && module.topic !== null
         ? module.topic.name
         : module.topic;
@@ -53,12 +54,11 @@ export default function ModuleCard({
 
     // 2. Клік по Edit в меню -> Режим редагування
     const handleEditClick = (e) => {
-        // Передаємо ID і сам об'єкт (для швидкого показу назви, поки вантажаться картки)
         navigate("/library/create-module", {
             state: {
                 mode: "edit",
-                moduleId: module.id, // Передаємо явно ID
-                moduleData: module   // Передаємо попередні дані
+                moduleId: module.id,
+                moduleData: module
             }
         });
     };
@@ -116,12 +116,12 @@ export default function ModuleCard({
                 <div className="module-name-row hover-wrapper">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
                         <span className="module-name-text" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {topicName ? topicName + " - " + module.name : module.name}
+                            {topicName ? `${module.name} - ${topicName}` : module.name}
                         </span>
 
                         {(flag1 || flag2) && (
                             <div style={{ flexShrink: 0 }}>
-                                <DiagonalFlagRect43 flag1={flag1} flag2={flag2} width={36} height={24} />
+                                <DiagonalFlagRect43 flag1={flag1} flag2={flag2} width={16} height={12} />
                             </div>
                         )}
                     </div>
@@ -136,7 +136,7 @@ export default function ModuleCard({
                     items={[
                         {
                             label: "Edit",
-                            onClick: handleEditClick, // Використовуємо нашу функцію
+                            onClick: handleEditClick,
                             icon: <EditIcon width={16} height={16} />
                         },
                         {

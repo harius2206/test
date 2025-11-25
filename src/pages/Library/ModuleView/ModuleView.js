@@ -5,7 +5,7 @@ import DropdownMenu from "../../../components/dropDownMenu/dropDownMenu";
 import UserAvatar from "../../../components/avatar/avatar";
 import Rating from "@mui/material/Rating";
 import FlipCard from "../../../components/flipCard/flipCard";
-// ФІКС ІМПОРТУ: Використовуємо стандартизовану назву компонента DiagonalFlag43
+// Припускаємо, що файл diagonalFlagRect43.js експортує компонент DiagonalFlag43
 import DiagonalFlag43 from "../../../components/diagonalFlagRect43";
 import { useAuth } from "../../../context/AuthContext";
 import { getModuleById, deleteModule, rateModule } from "../../../api/modulesApi";
@@ -26,9 +26,14 @@ import { ReactComponent as SaveIcon } from "../../../images/save.svg";
 
 import "./moduleView.css";
 
-const getLangName = (lang) => {
-    if (!lang) return "";
-    return typeof lang === 'object' ? lang.name : lang;
+// Хелпер для виправлення URL картинок (прапорів)
+const getFlagUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith("http") || url.startsWith("data:")) return url;
+    const baseUrl = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
+    const cleanBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+    const cleanUrl = url.startsWith("/") ? url : `/${url}`;
+    return `${cleanBase}${cleanUrl}`;
 };
 
 export default function ModuleView() {
@@ -40,13 +45,10 @@ export default function ModuleView() {
     const moduleId = searchParams.get("id");
     const initialModule = location.state?.module;
 
-    // --- Стан даних ---
     const [module, setModule] = useState(initialModule || null);
     const [loading, setLoading] = useState(!initialModule || !initialModule.cards);
     const [error, setError] = useState(null);
 
-    // --- Стан UI ---
-    const [activeTab, setActiveTab] = useState(null);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [flipped, setFlipped] = useState(false);
     const [learned, setLearned] = useState(new Set());
@@ -56,7 +58,6 @@ export default function ModuleView() {
     const autoplayInterval = 3000;
     const [isFullscreen, setIsFullscreen] = useState(false);
 
-    // --- Fetch Data ---
     useEffect(() => {
         if (!moduleId) {
             if (!initialModule) navigate("/library");
@@ -81,8 +82,8 @@ export default function ModuleView() {
                     topicName: typeof data.topic === 'object' ? data.topic?.name : data.topic,
 
                     // Flags
-                    flagFrom: data.lang_from?.flag,
-                    flagTo: data.lang_to?.flag,
+                    flagFrom: getFlagUrl(data.lang_from?.flag),
+                    flagTo: getFlagUrl(data.lang_to?.flag),
 
                     // Rating
                     rating: data.user_rate ? parseFloat(data.user_rate) : 0
@@ -101,13 +102,11 @@ export default function ModuleView() {
         fetchModule();
     }, [moduleId, navigate, initialModule]);
 
-    // --- Derived State ---
     const cards = module?.cards || [];
     const hasPrev = currentIndex > 0;
     const hasNext = currentIndex < cards.length - 1;
     const isOwnModule = user?.username === module?.author;
 
-    // --- Actions & Handlers ---
     const handleDelete = async () => {
         if (!window.confirm("Are you sure you want to delete this module?")) return;
         try {
@@ -120,25 +119,26 @@ export default function ModuleView() {
     };
 
     const handleRatingChange = async (event, newValue) => {
+        // Якщо це власник або значення null - блокуємо
         if (isOwnModule || newValue === null) return;
 
-        setRating(newValue);
+        setRating(newValue); // Оптимістичне оновлення UI
 
         try {
             await rateModule(module.id, newValue);
         } catch (err) {
             console.error("Rating failed", err);
             alert("Failed to submit rating.");
+            // Тут можна відкотити setRating(oldValue)
         }
     };
 
     const menuItems = [
         {
             label: "Edit",
-            onClick: () =>
-                navigate("/library/create-module", {
-                    state: { mode: "edit", moduleId: module.id, moduleData: module },
-                }),
+            onClick: () => navigate("/library/create-module", {
+                state: { mode: "edit", moduleId: module.id, moduleData: module },
+            }),
             icon: <EditIcon width={16} height={16} />,
         },
         {
@@ -158,6 +158,7 @@ export default function ModuleView() {
     const restartDeck = () => { setCurrentIndex(0); setFlipped(false); };
     const flipCard = () => setFlipped((v) => !v);
     const toggleFullscreen = () => setIsFullscreen((v) => !v);
+
     const toggleCardLearned = (cardId, e) => {
         if (e) e.stopPropagation();
         setLearned((prev) => {
@@ -167,7 +168,6 @@ export default function ModuleView() {
         });
     };
 
-    // --- Effects ---
     useEffect(() => {
         document.body.style.overflow = isFullscreen ? "hidden" : "";
         return () => (document.body.style.overflow = "");
@@ -187,8 +187,6 @@ export default function ModuleView() {
     }, [autoplay, cards.length]);
 
 
-    // --- Render ---
-
     if (loading) return <div className="mv-loading">Loading module...</div>;
     if (error) return <div className="mv-error">{error}</div>;
     if (!module) return null;
@@ -196,13 +194,13 @@ export default function ModuleView() {
     return (
         <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
             <main className="mv-module-view">
-                {/* Header */}
                 <div className="mv-module-header-row">
                     <div className="mv-module-left-row">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                            <h1 className="mv-module-title">{module.name}</h1>
+                            <h1 className="mv-module-title">
+                                {module.topicName ? `${module.name} - ${module.topicName}` : module.name}
+                            </h1>
 
-                            {/* Прапори (ТЕПЕР ФІКСОВАНО) */}
                             {(module.flagFrom || module.flagTo) && (
                                 <DiagonalFlag43
                                     flag1={module.flagFrom}
@@ -214,12 +212,12 @@ export default function ModuleView() {
                         </div>
 
                         <div className="mv-module-rating">
-                            {/* Компонент рейтингу */}
+                            {/* ФІКС: precision={0.5} дозволяє дробові зірки */}
                             <Rating
                                 name="module-rating"
                                 value={rating}
-                                precision={1}
-                                readOnly={isOwnModule}
+                                precision={0.5}
+                                readOnly={isOwnModule} // Власник не може оцінити
                                 onChange={handleRatingChange}
                                 icon={<StarSvg className="mv-star-icon mv-active" />}
                                 emptyIcon={<StarSvg className="mv-star-icon" />}
@@ -238,31 +236,15 @@ export default function ModuleView() {
                     </div>
                 </div>
 
-                <div className="mv-view_tags-row">
-                    {module.topicName && <span className="tag topic-tag">{module.topicName}</span>}
+                <div className="mv_view-tags-row">
                     {(module.tags || []).map((t, i) => (
                         <span key={i} className="tag">{t}</span>
                     ))}
                 </div>
 
-                {/* Tabs navigation */}
                 <div className="mv-mv-tabs">
-                    <Button
-                        variant="toggle"
-                        onClick={() => navigate(`/cardscheck?id=${module.id}`, { state: { module } })}
-                        width="100%"
-                        height={42}
-                    >
-                        Cards
-                    </Button>
-                    <Button
-                        variant="toggle"
-                        onClick={() => navigate(`/cardstest?id=${module.id}`, { state: { module } })}
-                        width="100%"
-                        height={42}
-                    >
-                        Test
-                    </Button>
+                    <Button variant="toggle" onClick={() => navigate(`/cardscheck?id=${module.id}`, { state: { module } })} width="100%" height={42}>Cards</Button>
+                    <Button variant="toggle" onClick={() => navigate(`/cardstest?id=${module.id}`, { state: { module } })} width="100%" height={42}>Test</Button>
                 </div>
 
                 <div className={`mv-flashcard-area ${isFullscreen ? "mv-fullscreen" : ""}`}>
@@ -273,10 +255,7 @@ export default function ModuleView() {
                                     <>
                                         {cards[currentIndex]?.term || "—"}
                                         <div className="card-actions-overlay">
-                                            <button
-                                                className={`mv-card-book ${learned.has(cards[currentIndex]?.id) ? "mv-active" : ""}`}
-                                                onClick={(e) => toggleCardLearned(cards[currentIndex]?.id, e)}
-                                            >
+                                            <button className={`mv-card-book ${learned.has(cards[currentIndex]?.id) ? "mv-active" : ""}`} onClick={(e) => toggleCardLearned(cards[currentIndex]?.id, e)}>
                                                 <BookSvg className={`book-icon ${learned.has(cards[currentIndex]?.id) ? "mv-active" : ""}`} />
                                             </button>
                                         </div>
@@ -286,10 +265,7 @@ export default function ModuleView() {
                                     <>
                                         {cards[currentIndex]?.definition || "—"}
                                         <div className="card-actions-overlay">
-                                            <button
-                                                className={`mv-card-book ${learned.has(cards[currentIndex]?.id) ? "mv-active" : ""}`}
-                                                onClick={(e) => toggleCardLearned(cards[currentIndex]?.id, e)}
-                                            >
+                                            <button className={`mv-card-book ${learned.has(cards[currentIndex]?.id) ? "mv-active" : ""}`} onClick={(e) => toggleCardLearned(cards[currentIndex]?.id, e)}>
                                                 <BookSvg className={`book-icon ${learned.has(cards[currentIndex]?.id) ? "mv-active" : ""}`} />
                                             </button>
                                         </div>
@@ -306,35 +282,20 @@ export default function ModuleView() {
                     {cards.length > 0 && (
                         <div className="mv-controls-row">
                             <div className="mv-card-controls">
-                                <button className={`mv-nav-btn ${hasPrev ? "mv-enabled" : ""}`} onClick={hasPrev ? prevCard : undefined}>
-                                    <PrevIcon />
-                                </button>
+                                <button className={`mv-nav-btn ${hasPrev ? "mv-enabled" : ""}`} onClick={hasPrev ? prevCard : undefined}><PrevIcon /></button>
                                 <div className="mv-counter">{currentIndex + 1} / {cards.length}</div>
-                                <button className={`mv-nav-btn ${hasNext ? "mv-enabled" : ""}`} onClick={hasNext ? nextCard : undefined}>
-                                    <NextIcon />
-                                </button>
+                                <button className={`mv-nav-btn ${hasNext ? "mv-enabled" : ""}`} onClick={hasNext ? nextCard : undefined}><NextIcon /></button>
                             </div>
 
                             <div className="mv-icon-controls">
-                                <button className="mv-icon-btn" onClick={restartDeck} title="Restart">
-                                    <RestartIcon />
-                                </button>
-                                <button className="mv-icon-btn" onClick={() => setAutoplay(v => !v)} title="Play/Pause">
-                                    {autoplay ? <PauseIcon /> : <PlayIcon />}
-                                </button>
-                                <button
-                                    className="mv-icon-btn"
-                                    title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
-                                    onClick={toggleFullscreen}
-                                >
-                                    <FullscreenIcon />
-                                </button>
+                                <button className="mv-icon-btn" onClick={restartDeck} title="Restart"><RestartIcon /></button>
+                                <button className="mv-icon-btn" onClick={() => setAutoplay(v => !v)} title="Play/Pause">{autoplay ? <PauseIcon /> : <PlayIcon />}</button>
+                                <button className="mv-icon-btn" title={isFullscreen ? "Exit fullscreen" : "Fullscreen"} onClick={toggleFullscreen}><FullscreenIcon /></button>
                             </div>
                         </div>
                     )}
                 </div>
 
-                {/* Author Info - Hide if user is author */}
                 {!isOwnModule && (
                     <div className="mv-author-band">
                         <div className="mv-module-view__author-info-row">
@@ -362,17 +323,11 @@ export default function ModuleView() {
                     ) : (
                         cards.filter((c) => learned.has(c.id)).map((c) => (
                             <div key={c.id} className="mv-row">
-                                <div className="mv-row-half mv-row-left">
-                                    {c.term}
-                                </div>
+                                <div className="mv-row-half mv-row-left">{c.term}</div>
                                 <div className="mv-row-divider" />
                                 <div className="mv-row-right">
                                     <span className="mv-row-definition">{c.definition}</span>
-                                    <button
-                                        className="mv-row-book-btn mv-active"
-                                        onClick={() => toggleCardLearned(c.id)}
-                                        title="Unmark learned"
-                                    >
+                                    <button className="mv-row-book-btn mv-active" onClick={() => toggleCardLearned(c.id)} title="Unmark learned">
                                         <BookSvg className="book-icon mv-active" />
                                     </button>
                                 </div>
@@ -386,17 +341,11 @@ export default function ModuleView() {
                     ) : (
                         cards.filter((c) => !learned.has(c.id)).map((c) => (
                             <div key={c.id} className="mv-row">
-                                <div className="mv-row-half mv-row-left">
-                                    {c.term}
-                                </div>
+                                <div className="mv-row-half mv-row-left">{c.term}</div>
                                 <div className="mv-row-divider" />
                                 <div className="mv-row-right">
                                     <span className="mv-row-definition">{c.definition}</span>
-                                    <button
-                                        className="mv-row-book-btn"
-                                        onClick={() => toggleCardLearned(c.id)}
-                                        title="Mark learned"
-                                    >
+                                    <button className="mv-row-book-btn" onClick={() => toggleCardLearned(c.id)} title="Mark learned">
                                         <BookSvg className="book-icon" />
                                     </button>
                                 </div>

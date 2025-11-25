@@ -189,7 +189,7 @@ export default function ModuleForm({
                         </div>
                     </ClickOutsideWrapper>
 
-                    {/* ГЛОБАЛЬНА КНОПКА СВАПУ МОВ */}
+                    {/* ГЛОБАЛЬНА КНОПКА СВАПУ МОВ (ТЕПЕР ВОНА ОСНОВНА) */}
                     <button className="swap-btn" onClick={handleSwapLanguages}>
                         <SwapArrows width={20} height={20} />
                     </button>
@@ -211,6 +211,9 @@ export default function ModuleForm({
                     </ClickOutsideWrapper>
                 </div>
 
+                {/* tags-block залишений тут, якщо він потрібен, хоча його немає у введеному JSX */}
+                {/* <div className="tags-block">...</div> */}
+
                 {/* --- Inputs --- */}
                 <div className="module-inputs">
                     <input className="module-input" placeholder="Name" value={name} onChange={e => setName(e.target.value)} />
@@ -231,7 +234,7 @@ export default function ModuleForm({
                                 </div>
 
                                 {openTopicDropdown && (
-                                    <div className="dropdown" style={{ width: '100%', top: '100%' }}>
+                                    <div className="dropdown" style={{ width: '100%', top: '100%', maxHeight: '200px', overflowY: 'auto' }}>
                                         {topicsList.length > 0 ? (
                                             topicsList.map(topic => (
                                                 <div key={topic.id} className="dropdown-item" onClick={() => { setSelectedTopic(topic); setOpenTopicDropdown(false); }}>
@@ -259,9 +262,9 @@ export default function ModuleForm({
 
                                 {/* Шапка картки (Мови) */}
                                 <div className="card-lang-top">
+                                    {/* FIX: Використовуємо flexbox і space-between для вирівнювання */}
                                     <span className="lang-left">{selectedLangLeft?.name}</span>
-                                    {/* Кнопка Swap прибрана звідси */}
-                                    <span className="lang-right" style={{marginLeft: 'auto'}}>{selectedLangRight?.name}</span>
+                                    <span className="lang-right">{selectedLangRight?.name}</span>
                                 </div>
 
                                 <div className="card-separator" />

@@ -1,43 +1,55 @@
-import React from "react";
+const DiagonalFlagRect = ({ flag1, flag2, width = 60, height = 40 }) => {
+    // Спільні стилі для обох зображень, щоб уникнути дублювання
+    const commonImgStyle = {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        border: 'none',
+        outline: 'none',
+        display: 'block',
+        transform: 'scale(1.01)',
+    };
 
-const DiagonalFlag43 = ({ flag1, flag2, width = 40, height = 30 }) => {
-    // Я змінив дефолтні розміри на менші (40x30), щоб вони нормально виглядали в картці,
-    // але ти можеш передавати свої через пропси.
     return (
-        <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ minWidth: width }}>
-            <defs>
-                <clipPath id={`clip1-${width}-${height}`}>
-                    <polygon points={`0,0 ${width},0 0,${height}`} />
-                </clipPath>
-                <clipPath id={`clip2-${width}-${height}`}>
-                    <polygon points={`${width},0 ${width},${height} 0,${height}`} />
-                </clipPath>
-            </defs>
-
-            {/* Fallback: сірий фон, якщо картинки немає */}
-            <rect width={width} height={height} fill="#eee" />
-
+        <div
+            style={{
+                position: 'relative',
+                width: width,
+                height: height,
+                overflow: 'hidden',
+                backgroundColor: 'transparent',
+            }}
+        >
+            {/* Верхній лівий трикутник (Прапор 1) */}
             {flag1 && (
-                <image
-                    href={flag1}
-                    width={width}
-                    height={height}
-                    clipPath={`url(#clip1-${width}-${height})`}
-                    preserveAspectRatio="xMidYMid slice"
+                <img
+                    src={flag1}
+                    alt="Flag 1"
+                    style={{
+                        ...commonImgStyle,
+                        clipPath: 'polygon(0 0, 100% 0, 0 100%)',
+                        zIndex: 1, // Забезпечуємо правильне накладання
+                    }}
                 />
             )}
 
+            {/* Нижній правий трикутник (Прапор 2) */}
             {flag2 && (
-                <image
-                    href={flag2}
-                    width={width}
-                    height={height}
-                    clipPath={`url(#clip2-${width}-${height})`}
-                    preserveAspectRatio="xMidYMid slice"
+                <img
+                    src={flag2}
+                    alt="Flag 2"
+                    style={{
+                        ...commonImgStyle,
+                        clipPath: 'polygon(100% 0, 100% 100%, 0 100%)',
+                        zIndex: 0,
+                    }}
                 />
             )}
-        </svg>
+        </div>
     );
 };
 
-export default DiagonalFlag43;
+export default DiagonalFlagRect;
