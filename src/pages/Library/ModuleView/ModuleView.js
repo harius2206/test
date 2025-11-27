@@ -5,10 +5,10 @@ import DropdownMenu from "../../../components/dropDownMenu/dropDownMenu";
 import UserAvatar from "../../../components/avatar/avatar";
 import Rating from "@mui/material/Rating";
 import FlipCard from "../../../components/flipCard/flipCard";
-// Припускаємо, що файл diagonalFlagRect43.js експортує компонент DiagonalFlag43
 import DiagonalFlag43 from "../../../components/diagonalFlagRect43";
 import { useAuth } from "../../../context/AuthContext";
-import { getModuleById, deleteModule, rateModule } from "../../../api/modulesApi";
+// Імпортуємо updateCardLearnStatus
+import { getModuleById, deleteModule, rateModule, updateCardLearnStatus } from "../../../api/modulesApi";
 
 import { ReactComponent as StarSvg } from "../../../images/star.svg";
 import { ReactComponent as DotsIcon } from "../../../images/dots.svg";
@@ -26,7 +26,12 @@ import { ReactComponent as SaveIcon } from "../../../images/save.svg";
 
 import "./moduleView.css";
 
-// Хелпер для виправлення URL картинок (прапорів)
+const getLangName = (lang) => {
+    if (!lang) return "";
+    return typeof lang === 'object' ? lang.name : lang;
+};
+
+// Хелпер для прапорів
 const getFlagUrl = (url) => {
     if (!url) return null;
     if (url.startsWith("http") || url.startsWith("data:")) return url;
@@ -45,19 +50,26 @@ export default function ModuleView() {
     const moduleId = searchParams.get("id");
     const initialModule = location.state?.module;
 
+    // --- Стан ---
     const [module, setModule] = useState(initialModule || null);
     const [loading, setLoading] = useState(!initialModule || !initialModule.cards);
     const [error, setError] = useState(null);
 
+    // --- UI ---
+    const [activeTab, setActiveTab] = useState(null);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [flipped, setFlipped] = useState(false);
+
+    // learned зберігає ID вивчених карток
     const [learned, setLearned] = useState(new Set());
+
     const [rating, setRating] = useState(0);
     const [autoplay, setAutoplay] = useState(false);
     const autoplayRef = useRef(null);
     const autoplayInterval = 3000;
     const [isFullscreen, setIsFullscreen] = useState(false);
 
+    // --- Fetch Data ---
     useEffect(() => {
         if (!moduleId) {
             if (!initialModule) navigate("/library");
@@ -70,6 +82,19 @@ export default function ModuleView() {
                 const response = await getModuleById(moduleId);
                 const data = response.data;
 
+                // 1. Ініціалізація вивчених карток
+                const learnedSet = new Set();
+                if (data.cards) {
+                    data.cards.forEach(c => {
+                        // Перевіряємо статус з бекенду
+                        if (c.learned_status === "learned") {
+                            learnedSet.add(c.id);
+                        }
+                    });
+                }
+                setLearned(learnedSet);
+
+                // 2. Адаптація модуля
                 const adaptedModule = {
                     ...data,
                     cards: data.cards ? data.cards.map(c => ({
@@ -80,12 +105,8 @@ export default function ModuleView() {
                     author: data.user?.username || "Unknown",
                     authorAvatar: data.user?.avatar,
                     topicName: typeof data.topic === 'object' ? data.topic?.name : data.topic,
-
-                    // Flags
                     flagFrom: getFlagUrl(data.lang_from?.flag),
                     flagTo: getFlagUrl(data.lang_to?.flag),
-
-                    // Rating
                     rating: data.user_rate ? parseFloat(data.user_rate) : 0
                 };
 
@@ -102,71 +123,81 @@ export default function ModuleView() {
         fetchModule();
     }, [moduleId, navigate, initialModule]);
 
+    // --- Logic ---
     const cards = module?.cards || [];
     const hasPrev = currentIndex > 0;
     const hasNext = currentIndex < cards.length - 1;
     const isOwnModule = user?.username === module?.author;
 
+    // --- Actions ---
     const handleDelete = async () => {
-        if (!window.confirm("Are you sure you want to delete this module?")) return;
+        if (!window.confirm("Delete module?")) return;
         try {
             await deleteModule(module.id);
             navigate("/library");
         } catch (err) {
-            console.error("Delete failed", err);
             alert("Failed to delete module.");
         }
     };
 
     const handleRatingChange = async (event, newValue) => {
-        // Якщо це власник або значення null - блокуємо
         if (isOwnModule || newValue === null) return;
-
-        setRating(newValue); // Оптимістичне оновлення UI
-
+        setRating(newValue);
         try {
             await rateModule(module.id, newValue);
         } catch (err) {
-            console.error("Rating failed", err);
             alert("Failed to submit rating.");
-            // Тут можна відкотити setRating(oldValue)
         }
     };
 
+    // --- Toggle Learned Status ---
+    const toggleCardLearned = async (cardId, e) => {
+        if (e) e.stopPropagation();
+
+        // Визначаємо новий статус
+        const isCurrentlyLearned = learned.has(cardId);
+        const newStatus = isCurrentlyLearned ? "in_progress" : "learned";
+
+        // Оптимістичне оновлення UI
+        setLearned((prev) => {
+            const next = new Set(prev);
+            if (isCurrentlyLearned) next.delete(cardId);
+            else next.add(cardId);
+            return next;
+        });
+
+        try {
+            // Відправка на сервер
+            await updateCardLearnStatus(module.id, cardId, newStatus);
+        } catch (err) {
+            console.error("Failed to update card status", err);
+            // Відкат змін у разі помилки
+            setLearned((prev) => {
+                const next = new Set(prev);
+                if (isCurrentlyLearned) next.add(cardId); // Повертаємо як було
+                else next.delete(cardId);
+                return next;
+            });
+        }
+    };
+
+    // ... Menu items
     const menuItems = [
         {
             label: "Edit",
-            onClick: () => navigate("/library/create-module", {
-                state: { mode: "edit", moduleId: module.id, moduleData: module },
-            }),
+            onClick: () => navigate("/library/create-module", { state: { mode: "edit", moduleId: module.id, moduleData: module } }),
             icon: <EditIcon width={16} height={16} />,
         },
-        {
-            label: "Delete",
-            onClick: handleDelete,
-            icon: <DeleteIcon width={16} height={16} />,
-        },
-        {
-            label: "Permissions",
-            onClick: () => alert("Permissions settings coming soon"),
-            icon: <ShareIcon width={16} height={16} />,
-        },
+        { label: "Delete", onClick: handleDelete, icon: <DeleteIcon width={16} height={16} /> },
+        { label: "Permissions", onClick: () => alert("Permissions settings coming soon"), icon: <ShareIcon width={16} height={16} /> },
     ];
 
+    // ... Navigation functions
     const prevCard = () => { setCurrentIndex((i) => (i > 0 ? i - 1 : cards.length - 1)); setFlipped(false); };
     const nextCard = () => { setCurrentIndex((i) => (i < cards.length - 1 ? i + 1 : 0)); setFlipped(false); };
     const restartDeck = () => { setCurrentIndex(0); setFlipped(false); };
     const flipCard = () => setFlipped((v) => !v);
     const toggleFullscreen = () => setIsFullscreen((v) => !v);
-
-    const toggleCardLearned = (cardId, e) => {
-        if (e) e.stopPropagation();
-        setLearned((prev) => {
-            const next = new Set(prev);
-            next.has(cardId) ? next.delete(cardId) : next.add(cardId);
-            return next;
-        });
-    };
 
     useEffect(() => {
         document.body.style.overflow = isFullscreen ? "hidden" : "";
@@ -186,7 +217,6 @@ export default function ModuleView() {
         return () => clearInterval(autoplayRef.current);
     }, [autoplay, cards.length]);
 
-
     if (loading) return <div className="mv-loading">Loading module...</div>;
     if (error) return <div className="mv-error">{error}</div>;
     if (!module) return null;
@@ -200,24 +230,17 @@ export default function ModuleView() {
                             <h1 className="mv-module-title">
                                 {module.topicName ? `${module.name} - ${module.topicName}` : module.name}
                             </h1>
-
                             {(module.flagFrom || module.flagTo) && (
-                                <DiagonalFlag43
-                                    flag1={module.flagFrom}
-                                    flag2={module.flagTo}
-                                    width={40}
-                                    height={28}
-                                />
+                                <DiagonalFlag43 flag1={module.flagFrom} flag2={module.flagTo} width={40} height={28} />
                             )}
                         </div>
 
                         <div className="mv-module-rating">
-                            {/* ФІКС: precision={0.5} дозволяє дробові зірки */}
                             <Rating
                                 name="module-rating"
                                 value={rating}
                                 precision={0.5}
-                                readOnly={isOwnModule} // Власник не може оцінити
+                                readOnly={isOwnModule}
                                 onChange={handleRatingChange}
                                 icon={<StarSvg className="mv-star-icon mv-active" />}
                                 emptyIcon={<StarSvg className="mv-star-icon" />}
@@ -228,18 +251,14 @@ export default function ModuleView() {
                     <div className="mv-header-controls">
                         {isOwnModule && (
                             <DropdownMenu align="left" width={200} items={menuItems}>
-                                <button className="mv-btn-icon">
-                                    <DotsIcon width={18} height={18} />
-                                </button>
+                                <button className="mv-btn-icon"><DotsIcon width={18} height={18} /></button>
                             </DropdownMenu>
                         )}
                     </div>
                 </div>
 
-                <div className="mv_view-tags-row">
-                    {(module.tags || []).map((t, i) => (
-                        <span key={i} className="tag">{t}</span>
-                    ))}
+                <div className="mv-view_tags-row">
+                    {(module.tags || []).map((t, i) => <span key={i} className="tag">{t}</span>)}
                 </div>
 
                 <div className="mv-mv-tabs">
@@ -274,9 +293,7 @@ export default function ModuleView() {
                                 flipped={flipped}
                                 onFlip={flipCard}
                             />
-                        ) : (
-                            <div className="mv-empty-cards">No cards available</div>
-                        )}
+                        ) : <div className="mv-empty-cards">No cards available</div>}
                     </div>
 
                     {cards.length > 0 && (
@@ -286,7 +303,6 @@ export default function ModuleView() {
                                 <div className="mv-counter">{currentIndex + 1} / {cards.length}</div>
                                 <button className={`mv-nav-btn ${hasNext ? "mv-enabled" : ""}`} onClick={hasNext ? nextCard : undefined}><NextIcon /></button>
                             </div>
-
                             <div className="mv-icon-controls">
                                 <button className="mv-icon-btn" onClick={restartDeck} title="Restart"><RestartIcon /></button>
                                 <button className="mv-icon-btn" onClick={() => setAutoplay(v => !v)} title="Play/Pause">{autoplay ? <PauseIcon /> : <PlayIcon />}</button>
@@ -315,12 +331,9 @@ export default function ModuleView() {
                     </div>
                 )}
 
-                {/* Cards List: Learned / Not Learned */}
                 <div className="mv-cards-lists">
                     <h3>Learned ({cards.filter(c => learned.has(c.id)).length})</h3>
-                    {cards.filter((c) => learned.has(c.id)).length === 0 ? (
-                        <div className="mv-row mv-empty-message">No learned cards yet</div>
-                    ) : (
+                    {cards.filter((c) => learned.has(c.id)).length === 0 ? <div className="mv-row mv-empty-message">No learned cards yet</div> :
                         cards.filter((c) => learned.has(c.id)).map((c) => (
                             <div key={c.id} className="mv-row">
                                 <div className="mv-row-half mv-row-left">{c.term}</div>
@@ -333,12 +346,10 @@ export default function ModuleView() {
                                 </div>
                             </div>
                         ))
-                    )}
+                    }
 
                     <h3>Not learned ({cards.filter(c => !learned.has(c.id)).length})</h3>
-                    {cards.filter((c) => !learned.has(c.id)).length === 0 ? (
-                        <div className="mv-row mv-empty-message">All cards learned!</div>
-                    ) : (
+                    {cards.filter((c) => !learned.has(c.id)).length === 0 ? <div className="mv-row mv-empty-message">All cards learned!</div> :
                         cards.filter((c) => !learned.has(c.id)).map((c) => (
                             <div key={c.id} className="mv-row">
                                 <div className="mv-row-half mv-row-left">{c.term}</div>
@@ -351,7 +362,7 @@ export default function ModuleView() {
                                 </div>
                             </div>
                         ))
-                    )}
+                    }
                 </div>
             </main>
         </div>

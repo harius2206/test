@@ -1,48 +1,29 @@
 import axiosClient from "./axiosClient";
 import endpoints from "./endpoints";
 
-/**
- * Отримати список модулів з фільтрацією
- * params: { page, page_size, ordering, name, topic, cards_count__gt, etc. }
- */
-export const getModules = (params) => {
-    return axiosClient.get(endpoints.modules.list, { params });
+// ... існуючі методи ...
+export const getModules = (params) => axiosClient.get(endpoints.modules.list, { params });
+export const getModuleById = (id) => axiosClient.get(endpoints.modules.detail(id));
+export const createModule = (data) => axiosClient.post(endpoints.modules.list, data);
+export const updateModule = (id, data) => axiosClient.patch(endpoints.modules.detail(id), data);
+export const deleteModule = (id) => axiosClient.delete(endpoints.modules.detail(id));
+
+export const getLanguages = () => axiosClient.get(endpoints.languages);
+export const getTopics = () => axiosClient.get(endpoints.topics.list);
+export const rateModule = (id, rating) => axiosClient.post(endpoints.modules.rate(id), { rating });
+
+export const getModuleCards = (moduleId, params) => {
+    return axiosClient.get(endpoints.modules.cards.list(moduleId), { params });
 };
 
-
-export const getModuleById = (id) => {
-    return axiosClient.get(endpoints.modules.detail(id));
+export const updateCard = (moduleId, cardId, data) => {
+    return axiosClient.patch(endpoints.modules.cards.detail(moduleId, cardId), data);
 };
 
-/**
- * Створити новий модуль
- * data: { name, description, topic, lang_from, lang_to, cards: [...] }
- */
-export const createModule = (data) => {
-    return axiosClient.post(endpoints.modules.list, data);
+export const updateCardLearnStatus = (moduleId, cardId, status) => {
+    return axiosClient.post(endpoints.modules.cards.learn(moduleId, cardId), { learned: status });
 };
 
-/**
- * Оновити існуючий модуль
- * data: { name, description, cards: [...] }
- */
-export const updateModule = (id, data) => {
-    return axiosClient.patch(endpoints.modules.detail(id), data);
-};
-
-
-export const deleteModule = (id) => {
-    return axiosClient.delete(endpoints.modules.detail(id));
-};
-
-export const getLanguages = () => {
-    return axiosClient.get(endpoints.languages);
-};
-
-export const rateModule = (id, rating) => {
-    return axiosClient.post(endpoints.modules.rate(id), { rating });
-};
-
-export const getTopics = () => {
-    return axiosClient.get(endpoints.topics.list);
+export const createCard = (moduleId, data) => {
+    return axiosClient.post(endpoints.modules.cards.list(moduleId), data);
 };

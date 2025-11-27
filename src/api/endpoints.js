@@ -12,6 +12,11 @@ const endpoints = {
         list: "/api/v1/modules/",
         detail: (id) => `/api/v1/modules/${id}/`,
         rate: (id) => `/api/v1/modules/${id}/rate/`,
+        cards: {
+            list: (module_pk) => `/api/v1/modules/${module_pk}/cards/`,
+            detail: (module_pk, id) => `/api/v1/modules/${module_pk}/cards/${id}/`,
+            learn: (module_pk, id) => `/api/v1/modules/${module_pk}/cards/${id}/learns/`,
+        }
     },
     languages: "/api/v1/languages/",
     topics: {
