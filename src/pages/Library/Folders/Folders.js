@@ -1,5 +1,9 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
+import { getUserDetails } from "../../../api/usersApi";
+import { createFolder, deleteFolder, updateFolder, toggleFolderVisibility } from "../../../api/foldersApi";
+
 import EditableField from "../../../components/editableField/editableField";
 import ColoredIcon from "../../../components/coloredIcon";
 import SortMenu from "../../../components/sortMenu/sortMenu";
@@ -16,60 +20,12 @@ import { ReactComponent as UntickIcon } from "../../../images/unTick.svg";
 
 export default function Folders({ addFolder, setAddFolder, source = "library" }) {
     const navigate = useNavigate();
+    const { user } = useAuth();
 
-    const [folders, setFolders] = useState([
-        {
-            id: 1,
-            name: "Polisz",
-            color: "#ef4444",
-            modules: 15,
-            pinned: false,
-            private: false,
-            modulesList: [
-                { id: 1, name: "Polisz", terms: 150, author: "admin", rating: 4.2, tags: ["mgr1", "litery", "slowa"] },
-                { id: 2, name: "Aolisz 2.0", terms: 360, author: "adam", rating: 3.4, tags: ["mgr2", "litery", "slowa", "exam"] }
-            ]
-        },
-        {
-            id: 2,
-            name: "Angielski",
-            color: "#3b82f6",
-            modules: 0,
-            pinned: false,
-            private: false,
-            modulesList: []
-        }
-    ]);
-
-    const savedFolders = [
-        {
-            id: 101,
-            name: "Saved: Biology",
-            color: "#22c55e",
-            modules: 3,
-            pinned: true,
-            private: false,
-            modulesList: [
-                { id: 1, name: "Cells", terms: 40, author: "admin", rating: 4.7, tags: ["science", "bio"] }
-            ]
-        },
-        {
-            id: 102,
-            name: "Saved: Geography",
-            color: "#06b6d4",
-            modules: 5,
-            pinned: false,
-            private: false,
-            modulesList: []
-        }
-    ];
-
-    const data = source === "saves" ? savedFolders : folders;
-
-    const [colorMenuOpen, setColorMenuOpen] = useState(null);
+    const [folders, setFolders] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [renamingId, setRenamingId] = useState(null);
     const [renameValue, setRenameValue] = useState("");
-    const colorMenuRef = useRef(null);
 
     const colors = [
         "#ef4444", "#f97316", "#facc15", "#22c55e",
@@ -77,27 +33,116 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
         "#d946ef", "#ec4899", "#78716c", "#000000"
     ];
 
-    const handleDeleteFolder = (id) => {
+    // --- Завантаження даних ---
+    const loadFolders = useCallback(async () => {
+        if (!user || !user.id) {
+            setLoading(false);
+            return;
+        }
+
+        if (source === "saves") {
+            setFolders([]);
+            setLoading(false);
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const response = await getUserDetails(user.id);
+            const userFolders = response.data.folders || [];
+
+            const mappedFolders = userFolders.map(f => ({
+                ...f,
+                modules: f.modules_count || 0,
+                pinned: f.pinned,
+                private: f.visible === "private" || f.private === true
+            }));
+
+            setFolders(mappedFolders);
+        } catch (error) {
+            console.error("Failed to load folders", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [user, source]);
+
+    useEffect(() => {
+        loadFolders();
+    }, [loadFolders]);
+
+    // --- Create ---
+    const handleCreateFolder = async (newValues) => {
+        try {
+            const payload = {
+                name: newValues.name,
+                color: newValues.color || "#6366f1",
+            };
+            const response = await createFolder(payload);
+            const created = response.data;
+
+            setFolders(prev => [{
+                ...created,
+                modules: 0,
+                pinned: false,
+                private: false
+            }, ...prev]);
+
+            setAddFolder(false);
+        } catch (error) {
+            console.error("Create folder failed", error);
+            alert("Failed to create folder");
+        }
+    };
+
+    // --- Delete ---
+    const handleDeleteFolder = async (id) => {
         if (!window.confirm("Delete this folder?")) return;
         if (source === "saves") return;
-        setFolders(prev => prev.filter(f => f.id !== id));
+
+        try {
+            await deleteFolder(id);
+            setFolders(prev => prev.filter(f => f.id !== id));
+        } catch (error) {
+            console.error("Delete folder failed", error);
+            alert("Failed to delete folder");
+        }
+    };
+
+    // --- Update ---
+    const handleUpdate = async (id, data, uiOptimisticUpdate) => {
+        setFolders(prev => prev.map(f => f.id === id ? { ...f, ...uiOptimisticUpdate } : f));
+
+        try {
+            if (data.visible !== undefined) {
+                await toggleFolderVisibility(id, data.visible);
+            } else {
+                await updateFolder(id, data);
+            }
+        } catch (error) {
+            console.error("Update folder failed", error);
+            loadFolders();
+        }
     };
 
     const handleSort = (type) => {
-        const setter = source === "saves" ? () => {} : setFolders;
-        if (type === "date") setter(prev => [...prev].sort((a, b) => b.id - a.id));
-        if (type === "name") setter(prev => [...prev].sort((a, b) => a.name.localeCompare(b.name)));
+        setFolders(prev => {
+            const sorted = [...prev];
+            if (type === "date") sorted.sort((a, b) => b.id - a.id);
+            if (type === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
+            return sorted;
+        });
     };
 
+    // --- Rename ---
     const startRenaming = (folder) => {
-        if (source === "saves") return; // у сейвах не редагуємо
+        if (source === "saves") return;
         setRenamingId(folder.id);
         setRenameValue(folder.name);
     };
 
-    const saveRename = (id) => {
+    const saveRename = async (id) => {
         if (!renameValue.trim()) return cancelRename();
-        setFolders(prev => prev.map(f => (f.id === id ? { ...f, name: renameValue.trim() } : f)));
+        await handleUpdate(id, { name: renameValue.trim() }, { name: renameValue.trim() });
         cancelRename();
     };
 
@@ -106,15 +151,10 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
         setRenameValue("");
     };
 
-    useEffect(() => {
-        const handleClickOutside = (e) => {
-            if (colorMenuRef.current && !colorMenuRef.current.contains(e.target)) {
-                setColorMenuOpen(null);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+    // [FIX] Центрування напису завантаження
+    if (loading) {
+        return <div style={{ padding: 20, textAlign: "center", width: "100%" }}>Loading folders...</div>;
+    }
 
     return (
         <div className="folders-page">
@@ -132,23 +172,17 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
                         defaultValues={{ color: "#6366f1" }}
                         active={addFolder}
                         onClose={() => setAddFolder(false)}
-                        onCreate={(newValues) => {
-                            const newFolder = {
-                                id: Date.now(),
-                                name: newValues.name,
-                                color: newValues.color || "#6366f1",
-                                modules: 0,
-                                pinned: false,
-                                private: false,
-                                modulesList: []
-                            };
-                            setFolders(prev => [newFolder, ...prev]);
-                            setAddFolder(false);
-                        }}
+                        onCreate={handleCreateFolder}
                     />
                 )}
 
-                {data.map(folder => (
+                {folders.length === 0 && !addFolder && (
+                    <div style={{ padding: 20, color: "gray", textAlign: "center", width: "100%" }}>
+                        {source === "saves" ? "No saved folders." : "You haven't created any folders yet."}
+                    </div>
+                )}
+
+                {folders.map(folder => (
                     <div
                         className="module-card"
                         key={folder.id}
@@ -166,7 +200,7 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
                             <div className="module-name-row" style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                 <ColoredIcon icon={FolderIcon} color={folder.color} size={20} />
                                 {renamingId === folder.id ? (
-                                    <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }} onClick={e => e.stopPropagation()}>
                                         <EditableField
                                             value={renameValue}
                                             onSave={setRenameValue}
@@ -192,14 +226,16 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
                                 items={[
                                     {
                                         label: folder.pinned ? "Unpin" : "Pin",
-                                        onClick: () =>
-                                            setFolders(prev => prev.map(f => f.id === folder.id ? { ...f, pinned: !f.pinned } : f)),
+                                        onClick: () => handleUpdate(folder.id, { pinned: !folder.pinned }, { pinned: !folder.pinned }),
                                         icon: <ColoredIcon icon={folder.pinned ? TickIcon : UntickIcon} size={16} />
                                     },
                                     {
                                         label: folder.private ? "Unprivate" : "Private",
-                                        onClick: () =>
-                                            setFolders(prev => prev.map(f => f.id === folder.id ? { ...f, private: !f.private } : f)),
+                                        onClick: () => {
+                                            const newPrivacy = !folder.private;
+                                            const visibleStatus = newPrivacy ? "private" : "public";
+                                            handleUpdate(folder.id, { visible: visibleStatus }, { private: newPrivacy });
+                                        },
                                         icon: <ColoredIcon icon={folder.private ? TickIcon : UntickIcon} size={16} />
                                     },
                                     {
@@ -214,7 +250,7 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
                                     },
                                     {
                                         label: "Export",
-                                        onClick: () => {},
+                                        onClick: () => console.log("Export implementation pending"),
                                         icon: <ColoredIcon icon={ExportIcon} size={16} />
                                     }
                                 ]}

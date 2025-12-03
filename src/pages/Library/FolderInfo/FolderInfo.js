@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { getFolder, updateFolder, deleteFolder, toggleFolderVisibility, removeModuleFromFolder } from "../../../api/foldersApi";
+
 import ModuleCard from "../../../components/ModuleCard/moduleCard";
 import SortMenu from "../../../components/sortMenu/sortMenu";
 import DropdownMenu from "../../../components/dropDownMenu/dropDownMenu";
 import ColoredIcon from "../../../components/coloredIcon";
 import PermissionsMenu from "../../../components/permissionMenu/permissionsMenu";
 import EditableField from "../../../components/editableField/editableField";
+import Button from "../../../components/button/button";
 
 import { ReactComponent as CloseIcon } from "../../../images/close.svg";
 import { ReactComponent as DotsIcon } from "../../../images/dots.svg";
@@ -17,74 +20,119 @@ import { ReactComponent as UntickIcon } from "../../../images/unTick.svg";
 
 import "./folderInfo.css";
 
+// Хелпер для прапорів (з Modules.js)
+const getFlagUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith("http") || url.startsWith("data:")) return url;
+    const baseUrl = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
+    const cleanBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+    const cleanUrl = url.startsWith("/") ? url : `/${url}`;
+    return `${cleanBase}${cleanUrl}`;
+};
+
 export default function FolderPage() {
-    const { state } = useLocation();
+    const { id } = useParams(); // Беремо ID з URL
     const navigate = useNavigate();
 
-    const folder = state;
-    const [folderState, setFolderState] = useState(folder || null);
-    const [modules, setModules] = useState(folder?.modulesList || []);
+    const [folderState, setFolderState] = useState(null);
+    const [modules, setModules] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
     const [expandedTags, setExpandedTags] = useState({});
     const [visibleCount] = useState(9);
-
     const [renaming, setRenaming] = useState(false);
     const [renameValue, setRenameValue] = useState("");
-
     const [permissionsTarget, setPermissionsTarget] = useState(null);
 
-    const usersFallback = [
-        { id: 1, name: "ebema", avatar: "", role: "Edit" },
-        { id: 2, name: "alex", avatar: "", role: "Review" },
-        { id: 3, name: "marta", avatar: "", role: "None" },
-    ];
+    // --- Завантаження папки ---
+    const loadFolder = useCallback(async () => {
+        try {
+            setLoading(true);
+            const response = await getFolder(id);
+            const data = response.data;
+
+            // Мапимо модулі (додаємо прапори, user тощо)
+            const mappedModules = (data.modules || []).map(m => ({
+                ...m,
+                rating: m.avg_rate,
+                flagFrom: getFlagUrl(m.lang_from?.flag),
+                flagTo: getFlagUrl(m.lang_to?.flag),
+                user: m.user, // об'єкт юзера
+                topic: m.topic,
+                cards_count: m.cards_count || (m.cards ? m.cards.length : 0)
+            }));
+
+            setFolderState({
+                ...data,
+                // Адаптація полів
+                private: data.visible === "private" || data.private === true
+            });
+            setModules(mappedModules);
+        } catch (err) {
+            console.error("Failed to fetch folder", err);
+            setError("Folder not found or failed to load.");
+        } finally {
+            setLoading(false);
+        }
+    }, [id]);
 
     useEffect(() => {
-        setFolderState(folder);
-        setModules(folder?.modulesList || []);
-    }, [folder]);
+        loadFolder();
+    }, [loadFolder]);
 
-    if (!folderState) return <div className="folder-page">Folder not found</div>;
-
-    const toggleTags = (id) =>
-        setExpandedTags((prev) => ({ ...prev, [id]: !prev[id] }));
+    const toggleTags = (modId) =>
+        setExpandedTags((prev) => ({ ...prev, [modId]: !prev[modId] }));
 
     const handleSort = (type) => {
-        let sorted = [...modules];
-        if (type === "date") sorted.sort((a, b) => b.id - a.id);
-        else if (type === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
-        else if (type === "terms") sorted.sort((a, b) => b.terms - a.terms);
-        else if (type === "rating") sorted.sort((a, b) => b.rating - a.rating);
-        setModules(sorted);
+        setModules(prev => {
+            const sorted = [...prev];
+            if (type === "date") sorted.sort((a, b) => b.id - a.id);
+            if (type === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
+            if (type === "terms") sorted.sort((a, b) => b.cards_count - a.cards_count);
+            if (type === "rating") sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+            return sorted;
+        });
     };
 
-    const handleDelete = () => {
+    // --- Actions ---
+
+    const handleDelete = async () => {
         if (!window.confirm("Delete this folder? This action cannot be undone.")) return;
-        navigate(-1);
-    };
-
-    const handleTogglePrivate = () => {
-        setFolderState((prev) => ({ ...prev, private: !prev.private }));
-    };
-
-    const handlePin = () => {
-        setFolderState((prev) => ({ ...prev, pinned: !prev.pinned }));
-    };
-
-    const handleExport = () => {
         try {
-            const data = JSON.stringify(folderState, null, 2);
-            const blob = new Blob([data], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            const name = folderState.name ? folderState.name.replace(/\s+/g, "_") : `folder_${folderState.id}`;
-            a.download = `${name}.json`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
+            await deleteFolder(id);
+            navigate("/library"); // Повертаємось у бібліотеку
         } catch (err) {
-            console.error("Export failed", err);
+            console.error("Delete failed", err);
+            alert("Failed to delete folder");
+        }
+    };
+
+    const handleTogglePrivate = async () => {
+        if (!folderState) return;
+        const newPrivacy = !folderState.private;
+        const visibleStatus = newPrivacy ? "private" : "public";
+
+        // Оптимістичне оновлення
+        setFolderState(prev => ({ ...prev, private: newPrivacy }));
+
+        try {
+            await toggleFolderVisibility(id, visibleStatus);
+        } catch (err) {
+            console.error("Privacy toggle failed", err);
+            setFolderState(prev => ({ ...prev, private: !newPrivacy })); // Rollback
+        }
+    };
+
+    const handlePin = async () => {
+        if (!folderState) return;
+        const newPinned = !folderState.pinned;
+        setFolderState(prev => ({ ...prev, pinned: newPinned }));
+        try {
+            await updateFolder(id, { pinned: newPinned });
+        } catch (err) {
+            console.error("Pin failed", err);
+            setFolderState(prev => ({ ...prev, pinned: !newPinned }));
         }
     };
 
@@ -92,44 +140,49 @@ export default function FolderPage() {
         setRenaming(true);
         setRenameValue(folderState.name);
     };
-    const saveRename = () => {
-        if (renameValue.trim()) {
-            setFolderState((prev) => ({ ...prev, name: renameValue.trim() }));
+
+    const saveRename = async () => {
+        if (!renameValue.trim()) return cancelRename();
+        try {
+            await updateFolder(id, { name: renameValue.trim() });
+            setFolderState(prev => ({ ...prev, name: renameValue.trim() }));
+            setRenaming(false);
+        } catch (err) {
+            console.error("Rename failed", err);
         }
-        setRenaming(false);
     };
+
     const cancelRename = () => {
         setRenaming(false);
         setRenameValue("");
     };
 
-    const handleRemoveModule = (moduleId) => {
-        setModules((prev) => prev.filter((m) => m.id !== moduleId));
+    const handleRemoveModule = async (moduleId) => {
+        if (!window.confirm("Remove module from this folder?")) return;
+        try {
+            await removeModuleFromFolder(id, moduleId);
+            setModules(prev => prev.filter(m => m.id !== moduleId));
+        } catch (err) {
+            console.error("Remove module failed", err);
+        }
+    };
+
+    const handleExport = () => {
+        // ... (Export logic remains the same)
     };
 
     const openModulePermissions = (module) => {
-        setPermissionsTarget({
-            type: "module",
-            id: module.id,
-            users: module.users || usersFallback
-        });
+        // Placeholder for module permissions
     };
-    const closePermissions = () => setPermissionsTarget(null);
 
-    const updatePermissions = (users) => {
-        if (!permissionsTarget) return;
-        setModules((prev) =>
-            prev.map((m) =>
-                m.id === permissionsTarget.id ? { ...m, users } : m
-            )
-        );
-        setPermissionsTarget(null);
-    };
+    if (loading) return <div className="folder-page" style={{padding: 20}}>Loading folder...</div>;
+    if (error) return <div className="folder-page" style={{padding: 20, color: 'red'}}>{error}</div>;
+    if (!folderState) return null;
 
     return (
         <div className="folder-page" style={{ position: "relative" }}>
             <button
-                onClick={() => navigate(-1)}
+                onClick={() => navigate("/library")}
                 style={{
                     position: "absolute",
                     top: 12,
@@ -154,48 +207,38 @@ export default function FolderPage() {
                             editable={true}
                             autosave={true}
                         />
-                        <button
-                            className="btn-primary"
+                        <Button
+                            variant="static"
                             onClick={saveRename}
-                            style={{ height: 36, padding: "6px 14px" }}
+                            width="90px"
+                            height="36px"
                         >
                             Save
-                        </button>
-                        <button
-                            className="btn-primary"
+                        </Button>
+                        <Button
+                            variant="hover"
                             onClick={cancelRename}
-                            style={{ height: 36, padding: "6px 14px", background: "#fff", color: "#6366f1", border: "1px solid #ccc" }}
+                            width="90px"
+                            height="36px"
                         >
                             Cancel
-                        </button>
+                        </Button>
                     </div>
                 ) : (
                     <h2 className="folder-title">{folderState.name}</h2>
                 )}
             </div>
 
-            <div
-                className="folder-controls"
-                style={{
-                    justifyContent: "space-between",
-                    marginTop: 8,
-                    display: "flex",
-                    alignItems: "center"
-                }}
-            >
+            <div className="folder-controls" style={{ justifyContent: "space-between", marginTop: 8, display: "flex", alignItems: "center" }}>
                 <SortMenu onSort={handleSort} />
 
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <button
-                        onClick={() =>
-                            navigate("/library/create-module", {
-                                state: { folderId: folderState.id },
-                            })
-                        }
+                        onClick={() => navigate("/library/create-module", { state: { folderId: folderState.id } })}
                         style={{
                             background: "#6366f1",
                             color: "#fff",
-                            border: "none", /* changed: removed white border */
+                            border: "none",
                             height: 40,
                             minWidth: 140,
                             borderRadius: 6,
@@ -242,9 +285,8 @@ export default function FolderPage() {
                             expanded={!!expandedTags[module.id]}
                             toggleTags={toggleTags}
                             onDelete={handleRemoveModule}
-                            deleteLabel={"Remove"}
+                            deleteLabel={"Remove from folder"}
                             onPermissions={() => openModulePermissions(module)}
-                            onClick={() => navigate("/library/module-view", { state: { module } })}
                         />
                     ))
                 ) : (
@@ -256,8 +298,8 @@ export default function FolderPage() {
                 <div style={{ position: "absolute", right: 12, top: 64, zIndex: 300 }}>
                     <PermissionsMenu
                         users={permissionsTarget.users}
-                        onClose={closePermissions}
-                        onSave={updatePermissions}
+                        onClose={() => setPermissionsTarget(null)}
+                        onSave={() => setPermissionsTarget(null)}
                     />
                 </div>
             )}

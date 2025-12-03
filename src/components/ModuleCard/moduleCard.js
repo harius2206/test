@@ -12,6 +12,7 @@ import { ReactComponent as DeleteIcon } from "../../images/delete.svg";
 import { ReactComponent as ShareIcon } from "../../images/share.svg";
 import { ReactComponent as MoreIcon } from "../../images/dotsHorizontal.svg";
 import { ReactComponent as CloseIcon } from "../../images/close.svg";
+import { ReactComponent as FolderIcon } from "../../images/folder.svg";
 
 import "./moduleCard.css";
 
@@ -23,6 +24,7 @@ export default function ModuleCard({
                                        onDelete,
                                        deleteLabel = "Delete",
                                        onPermissions,
+                                       onAddToFolder // Новий проп
                                    }) {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -36,7 +38,6 @@ export default function ModuleCard({
     const authorAvatar = module.user?.avatar || module.avatar;
     const termsCount = module.cards_count !== undefined ? module.cards_count : (module.terms || 0);
 
-    // Отримуємо назву теми (якщо це об'єкт або рядок)
     const topicName = typeof module.topic === 'object' && module.topic !== null
         ? module.topic.name
         : module.topic;
@@ -47,12 +48,10 @@ export default function ModuleCard({
 
     // === ОБРОБНИКИ ===
 
-    // 1. Клік по самій картці -> Режим перегляду
     const handleCardClick = () => {
         navigate(`/library/module-view?id=${module.id}`);
     };
 
-    // 2. Клік по Edit в меню -> Режим редагування
     const handleEditClick = (e) => {
         navigate("/library/create-module", {
             state: {
@@ -62,6 +61,45 @@ export default function ModuleCard({
             }
         });
     };
+
+    // Формуємо пункти меню
+    const menuItems = [];
+
+    // Редагування доступне тільки власнику
+    if (isOwnModule) {
+        menuItems.push({
+            label: "Edit",
+            onClick: handleEditClick,
+            icon: <EditIcon width={16} height={16} />
+        });
+    }
+
+    // "Add to folder" - доступно, якщо передано обробник (зазвичай для своїх модулів або збережених)
+    if (onAddToFolder) {
+        menuItems.push({
+            label: "Add to folder",
+            onClick: (evt, trigger) => onAddToFolder(module, evt, trigger),
+            icon: <FolderIcon width={16} height={16} /> // Можна використати FolderIcon або іншу іконку
+        });
+    }
+
+    // Видалення
+    if (onDelete) {
+        menuItems.push({
+            label: deleteLabel,
+            onClick: () => onDelete(module.id),
+            icon: <DeleteIcon width={16} height={16} />
+        });
+    }
+
+    // Права доступу (Permissions)
+    if (onPermissions && isOwnModule) {
+        menuItems.push({
+            label: "Permissions",
+            onClick: (evt, trigger) => onPermissions(module, evt, trigger),
+            icon: <ShareIcon width={16} height={16} />
+        });
+    }
 
     return (
         <div className="module-card" onClick={handleCardClick} style={{ cursor: "pointer" }}>
@@ -133,23 +171,7 @@ export default function ModuleCard({
                 <DropdownMenu
                     align="left"
                     width={180}
-                    items={[
-                        {
-                            label: "Edit",
-                            onClick: handleEditClick,
-                            icon: <EditIcon width={16} height={16} />
-                        },
-                        {
-                            label: deleteLabel,
-                            onClick: () => onDelete?.(module.id),
-                            icon: <DeleteIcon width={16} height={16} />
-                        },
-                        {
-                            label: "Permissions",
-                            onClick: (evt, trigger) => onPermissions?.(module, evt, trigger),
-                            icon: <ShareIcon width={16} height={16} />
-                        }
-                    ]}
+                    items={menuItems}
                 >
                     <button className="btn-icon" aria-label="Module menu">
                         <DotsIcon width={16} height={16} />

@@ -18,6 +18,13 @@ const endpoints = {
             learn: (module_pk, id) => `/api/v1/modules/${module_pk}/cards/${id}/learns/`,
         }
     },
+    folders: {
+        list: "/api/v1/folders/",
+        detail: (id) => `/api/v1/folders/${id}/`,
+        visibles: (id) => `/api/v1/folders/${id}/visibles/`, // PATCH { visible: "public" | "private" }
+        saves: (id) => `/api/v1/folders/${id}/saves/`,       // POST/DELETE
+        modules: (id, moduleId) => `/api/v1/folders/${id}/modules/${moduleId}/` // POST/DELETE
+    },
     languages: "/api/v1/languages/",
     topics: {
         list: "/api/v1/topics/",
