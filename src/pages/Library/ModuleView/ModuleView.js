@@ -7,9 +7,15 @@ import Rating from "@mui/material/Rating";
 import FlipCard from "../../../components/flipCard/flipCard";
 import DiagonalFlag43 from "../../../components/diagonalFlagRect43";
 import { useAuth } from "../../../context/AuthContext";
-// Імпортуємо updateCardLearnStatus
-import { getModuleById, deleteModule, rateModule, updateCardLearnStatus } from "../../../api/modulesApi";
+// Імпорт компонентів
+import PermissionsMenu from "../../../components/permissionMenu/permissionsMenu";
+// Імпорт API
+import {
+    getModuleById, deleteModule, rateModule, updateCardLearnStatus,
+    addModulePermission, removeModulePermission
+} from "../../../api/modulesApi";
 
+// Іконки
 import { ReactComponent as StarSvg } from "../../../images/star.svg";
 import { ReactComponent as DotsIcon } from "../../../images/dots.svg";
 import { ReactComponent as EditIcon } from "../../../images/editImg.svg";
@@ -22,16 +28,9 @@ import { ReactComponent as PrevIcon } from "../../../images/arrowLeft.svg";
 import { ReactComponent as NextIcon } from "../../../images/arrowRight.svg";
 import { ReactComponent as RestartIcon } from "../../../images/restart.svg";
 import { ReactComponent as BookSvg } from "../../../images/book.svg";
-import { ReactComponent as SaveIcon } from "../../../images/save.svg";
 
 import "./moduleView.css";
 
-const getLangName = (lang) => {
-    if (!lang) return "";
-    return typeof lang === 'object' ? lang.name : lang;
-};
-
-// Хелпер для прапорів
 const getFlagUrl = (url) => {
     if (!url) return null;
     if (url.startsWith("http") || url.startsWith("data:")) return url;
@@ -50,26 +49,22 @@ export default function ModuleView() {
     const moduleId = searchParams.get("id");
     const initialModule = location.state?.module;
 
-    // --- Стан ---
     const [module, setModule] = useState(initialModule || null);
     const [loading, setLoading] = useState(!initialModule || !initialModule.cards);
     const [error, setError] = useState(null);
 
-    // --- UI ---
-    const [activeTab, setActiveTab] = useState(null);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [flipped, setFlipped] = useState(false);
-
-    // learned зберігає ID вивчених карток
     const [learned, setLearned] = useState(new Set());
-
     const [rating, setRating] = useState(0);
     const [autoplay, setAutoplay] = useState(false);
     const autoplayRef = useRef(null);
     const autoplayInterval = 3000;
     const [isFullscreen, setIsFullscreen] = useState(false);
 
-    // --- Fetch Data ---
+    // Стейт для модалки пермішенів
+    const [showPermissions, setShowPermissions] = useState(false);
+
     useEffect(() => {
         if (!moduleId) {
             if (!initialModule) navigate("/library");
@@ -82,19 +77,14 @@ export default function ModuleView() {
                 const response = await getModuleById(moduleId);
                 const data = response.data;
 
-                // 1. Ініціалізація вивчених карток
                 const learnedSet = new Set();
                 if (data.cards) {
                     data.cards.forEach(c => {
-                        // Перевіряємо статус з бекенду
-                        if (c.learned_status === "learned") {
-                            learnedSet.add(c.id);
-                        }
+                        if (c.learned_status === "learned") learnedSet.add(c.id);
                     });
                 }
                 setLearned(learnedSet);
 
-                // 2. Адаптація модуля
                 const adaptedModule = {
                     ...data,
                     cards: data.cards ? data.cards.map(c => ({
@@ -107,14 +97,16 @@ export default function ModuleView() {
                     topicName: typeof data.topic === 'object' ? data.topic?.name : data.topic,
                     flagFrom: getFlagUrl(data.lang_from?.flag),
                     flagTo: getFlagUrl(data.lang_to?.flag),
-                    rating: data.user_rate ? parseFloat(data.user_rate) : 0
+                    rating: data.user_rate ? parseFloat(data.user_rate) : 0,
+                    // Додаємо список collaborators
+                    collaborators: data.collaborators || []
                 };
 
                 setModule(adaptedModule);
                 setRating(Math.round(adaptedModule.rating * 10) / 10);
             } catch (err) {
                 console.error("Failed to load module", err);
-                setError("Failed to load module. It might have been deleted.");
+                setError("Failed to load module.");
             } finally {
                 setLoading(false);
             }
@@ -123,7 +115,6 @@ export default function ModuleView() {
         fetchModule();
     }, [moduleId, navigate, initialModule]);
 
-    // --- Logic ---
     const cards = module?.cards || [];
     const hasPrev = currentIndex > 0;
     const hasNext = currentIndex < cards.length - 1;
@@ -135,30 +126,20 @@ export default function ModuleView() {
         try {
             await deleteModule(module.id);
             navigate("/library");
-        } catch (err) {
-            alert("Failed to delete module.");
-        }
+        } catch (err) { alert("Failed to delete module."); }
     };
 
     const handleRatingChange = async (event, newValue) => {
         if (isOwnModule || newValue === null) return;
         setRating(newValue);
-        try {
-            await rateModule(module.id, newValue);
-        } catch (err) {
-            alert("Failed to submit rating.");
-        }
+        try { await rateModule(module.id, newValue); } catch (err) { alert("Failed to submit rating."); }
     };
 
-    // --- Toggle Learned Status ---
     const toggleCardLearned = async (cardId, e) => {
         if (e) e.stopPropagation();
-
-        // Визначаємо новий статус
         const isCurrentlyLearned = learned.has(cardId);
         const newStatus = isCurrentlyLearned ? "in_progress" : "learned";
 
-        // Оптимістичне оновлення UI
         setLearned((prev) => {
             const next = new Set(prev);
             if (isCurrentlyLearned) next.delete(cardId);
@@ -167,32 +148,65 @@ export default function ModuleView() {
         });
 
         try {
-            // Відправка на сервер
             await updateCardLearnStatus(module.id, cardId, newStatus);
         } catch (err) {
-            console.error("Failed to update card status", err);
-            // Відкат змін у разі помилки
             setLearned((prev) => {
                 const next = new Set(prev);
-                if (isCurrentlyLearned) next.add(cardId); // Повертаємо як було
+                if (isCurrentlyLearned) next.add(cardId);
                 else next.delete(cardId);
                 return next;
             });
         }
     };
 
-    // ... Menu items
+    // --- Permissions Handlers ---
+    const handleAddPermission = async (userObj) => {
+        try {
+            await addModulePermission(module.id, userObj.id);
+            // Оновлюємо стейт модуля
+            setModule(prev => ({
+                ...prev,
+                collaborators: [...(prev.collaborators || []), userObj]
+            }));
+        } catch (err) {
+            console.error(err);
+            alert("Failed to add user permission");
+        }
+    };
+
+    const handleRemovePermission = async (userId) => {
+        try {
+            await removeModulePermission(module.id, userId);
+            // Оновлюємо стейт модуля
+            setModule(prev => ({
+                ...prev,
+                collaborators: (prev.collaborators || []).filter(u => u.id !== userId)
+            }));
+        } catch (err) {
+            console.error(err);
+            alert("Failed to remove permission");
+        }
+    };
+
+    // Меню трьох крапок
     const menuItems = [
         {
             label: "Edit",
             onClick: () => navigate("/library/create-module", { state: { mode: "edit", moduleId: module.id, moduleData: module } }),
             icon: <EditIcon width={16} height={16} />,
         },
-        { label: "Delete", onClick: handleDelete, icon: <DeleteIcon width={16} height={16} /> },
-        { label: "Permissions", onClick: () => alert("Permissions settings coming soon"), icon: <ShareIcon width={16} height={16} /> },
+        {
+            label: "Permissions",
+            onClick: () => setShowPermissions(true), // Відкриваємо меню
+            icon: <ShareIcon width={16} height={16} />
+        },
+        {
+            label: "Delete",
+            onClick: handleDelete,
+            icon: <DeleteIcon width={16} height={16} />
+        },
     ];
 
-    // ... Navigation functions
     const prevCard = () => { setCurrentIndex((i) => (i > 0 ? i - 1 : cards.length - 1)); setFlipped(false); };
     const nextCard = () => { setCurrentIndex((i) => (i < cards.length - 1 ? i + 1 : 0)); setFlipped(false); };
     const restartDeck = () => { setCurrentIndex(0); setFlipped(false); };
@@ -222,10 +236,16 @@ export default function ModuleView() {
     if (!module) return null;
 
     return (
-        <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+        <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", position: "relative" }}>
             <main className="mv-module-view">
-                <div className="mv-module-header-row">
-                    <div className="mv-module-left-row">
+
+                {/* [FIXED HEADER]
+                    Ліва частина: Заголовок, Прапори, Рейтинг.
+                    Права частина: Меню трьох крапок.
+                */}
+                <div className="mv-module-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+
+                    <div className="mv-module-left-row" style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                             <h1 className="mv-module-title">
                                 {module.topicName ? `${module.name} - ${module.topicName}` : module.name}
@@ -235,6 +255,7 @@ export default function ModuleView() {
                             )}
                         </div>
 
+                        {/* Рейтинг перенесено сюди, щоб він був біля назви */}
                         <div className="mv-module-rating">
                             <Rating
                                 name="module-rating"
@@ -248,10 +269,13 @@ export default function ModuleView() {
                         </div>
                     </div>
 
+                    {/* Права частина: Тільки меню */}
                     <div className="mv-header-controls">
                         {isOwnModule && (
-                            <DropdownMenu align="left" width={200} items={menuItems}>
-                                <button className="mv-btn-icon"><DotsIcon width={18} height={18} /></button>
+                            <DropdownMenu align="right" width={180} items={menuItems}>
+                                <button className="mv-btn-icon" style={{ cursor: 'pointer', background: 'none', border: 'none' }}>
+                                    <DotsIcon width={24} height={24} />
+                                </button>
                             </DropdownMenu>
                         )}
                     </div>
@@ -365,6 +389,25 @@ export default function ModuleView() {
                     }
                 </div>
             </main>
+
+            {/* Модальне вікно дозволів по центру екрану */}
+            {showPermissions && (
+                <div style={{
+                    position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: "rgba(0,0,0,0.5)", zIndex: 1000,
+                    display: "flex", justifyContent: "center", alignItems: "center"
+                }} onClick={() => setShowPermissions(false)}>
+                    {/* Зупиняємо спливання кліку, щоб не закрити модалку при кліку всередині неї */}
+                    <div onClick={e => e.stopPropagation()}>
+                        <PermissionsMenu
+                            users={module.collaborators || []}
+                            onAddUser={handleAddPermission}
+                            onRemoveUser={handleRemovePermission}
+                            onClose={() => setShowPermissions(false)}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

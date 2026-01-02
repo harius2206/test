@@ -11,19 +11,32 @@ const endpoints = {
     modules: {
         list: "/api/v1/modules/",
         detail: (id) => `/api/v1/modules/${id}/`,
-        rate: (id) => `/api/v1/modules/${id}/rate/`,
+
+        // --- Нові ендпоінти, які ми додавали ---
+        perms: (id) => `/api/v1/modules/${id}/perms/`,
+        permsDetail: (id, userId) => `/api/v1/modules/${id}/perms/users/${userId}/`,
+
+        visibles: (id) => `/api/v1/modules/${id}/visibles/`,
+        pins: (id) => `/api/v1/modules/${id}/pins/`,
+        saves: (id) => `/api/v1/modules/${id}/saves/`,
+        rates: (id) => `/api/v1/modules/${id}/rates/`,
+
+        tags: (id) => `/api/v1/modules/${id}/tags/`,
+        tagsDetail: (id, tagName) => `/api/v1/modules/${id}/tags/${tagName}/`,
+
+        // Картки
         cards: {
-            list: (module_pk) => `/api/v1/modules/${module_pk}/cards/`,
-            detail: (module_pk, id) => `/api/v1/modules/${module_pk}/cards/${id}/`,
-            learn: (module_pk, id) => `/api/v1/modules/${module_pk}/cards/${id}/learns/`,
+            list: (moduleId) => `/api/v1/modules/${moduleId}/cards/`,
+            detail: (moduleId, cardId) => `/api/v1/modules/${moduleId}/cards/${cardId}/`,
+            learn: (moduleId, cardId) => `/api/v1/modules/${moduleId}/cards/${cardId}/learns/`,
         }
     },
     folders: {
         list: "/api/v1/folders/",
         detail: (id) => `/api/v1/folders/${id}/`,
-        visibles: (id) => `/api/v1/folders/${id}/visibles/`, // PATCH { visible: "public" | "private" }
-        saves: (id) => `/api/v1/folders/${id}/saves/`,       // POST/DELETE
-        modules: (id, moduleId) => `/api/v1/folders/${id}/modules/${moduleId}/` // POST/DELETE
+        visibles: (id) => `/api/v1/folders/${id}/visibles/`,
+        saves: (id) => `/api/v1/folders/${id}/saves/`,
+        modules: (id, moduleId) => `/api/v1/folders/${id}/modules/${moduleId}/`
     },
     languages: "/api/v1/languages/",
     topics: {

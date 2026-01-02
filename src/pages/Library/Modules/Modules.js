@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUserDetails } from "../../../api/usersApi";
-import { deleteModule } from "../../../api/modulesApi";
+// 1. Імпорт API дозволів
+import { deleteModule, addModulePermission, removeModulePermission } from "../../../api/modulesApi";
 import { addModuleToFolder } from "../../../api/foldersApi";
 import { useAuth } from "../../../context/AuthContext";
 
@@ -13,7 +14,6 @@ import ModalMessage from "../../../components/ModalMessage/ModalMessage";
 
 import { ReactComponent as FolderIcon } from "../../../images/folder.svg";
 
-// Хелпер для виправлення URL картинок (прапорів)
 const getFlagUrl = (url) => {
     if (!url) return null;
     if (url.startsWith("http") || url.startsWith("data:")) return url;
@@ -35,39 +35,23 @@ export default function Modules({ source = "library" }) {
 
     const [expandedTags, setExpandedTags] = useState({});
     const [visibleCount, setVisibleCount] = useState(3);
+
+    // Стан для дозволів
     const [permissionsTarget, setPermissionsTarget] = useState(null);
+
     const [sortType, setSortType] = useState("date");
-
     const [addToFolderTarget, setAddToFolderTarget] = useState(null);
+    const [modalInfo, setModalInfo] = useState({ open: false, type: "info", title: "", message: "" });
 
-    const [modalInfo, setModalInfo] = useState({
-        open: false,
-        type: "info",
-        title: "",
-        message: ""
-    });
+    const handleCloseModal = () => setModalInfo((prev) => ({ ...prev, open: false }));
 
-    const handleCloseModal = () => {
-        setModalInfo((prev) => ({ ...prev, open: false }));
-    };
-
-    // --- Завантаження даних ---
     const loadData = useCallback(async () => {
-        if (!user || !user.id) {
-            setLoading(false);
-            return;
-        }
-
-        if (source === "saves") {
-            setModules([]);
-            setLoading(false);
-            return;
-        }
+        if (!user || !user.id) { setLoading(false); return; }
+        if (source === "saves") { setModules([]); setLoading(false); return; }
 
         try {
             setLoading(true);
             const response = await getUserDetails(user.id);
-
             const userModules = response.data.modules || [];
             const mappedModules = userModules.map(m => ({
                 ...m,
@@ -76,13 +60,11 @@ export default function Modules({ source = "library" }) {
                 flagTo: getFlagUrl(m.lang_to?.flag),
                 user: { username: user.username, avatar: user.avatar },
                 topic: m.topic,
-                cards_count: m.cards ? m.cards.length : (m.cards_count || 0)
+                cards_count: m.cards ? m.cards.length : (m.cards_count || 0),
+                collaborators: m.collaborators || [] // Забезпечуємо наявність поля
             }));
             setModules(mappedModules);
-
-            const userFolders = response.data.folders || [];
-            setFolders(userFolders);
-
+            setFolders(response.data.folders || []);
             setError(null);
         } catch (err) {
             console.error("Failed to load library", err);
@@ -92,75 +74,110 @@ export default function Modules({ source = "library" }) {
         }
     }, [user, source]);
 
-    useEffect(() => {
-        loadData();
-    }, [loadData]);
+    useEffect(() => { loadData(); }, [loadData]);
 
-    // --- ResizeObserver (оновлено) ---
-    // Додано залежність [loading], щоб observer підключався після рендеру контенту
+    // ResizeObserver
     useEffect(() => {
-        if (loading) return; // Якщо ще вантажиться, реф не готовий
-
+        if (loading) return;
         const element = containerRef.current;
         if (!element) return;
-
         const computeVisible = () => {
             const width = element.offsetWidth;
             const count = Math.max(3, Math.floor(width / 80) - 5);
             setVisibleCount(count);
         };
-
         computeVisible();
         const observer = new ResizeObserver(computeVisible);
         observer.observe(element);
-
         return () => observer.disconnect();
     }, [loading]);
 
-    // --- Сортування ---
     const handleSort = (type) => {
         setSortType(type);
         setModules(prev => {
             const sorted = [...prev];
-            if (type === "name") {
-                sorted.sort((a, b) => a.name.localeCompare(b.name));
-            } else {
-                sorted.sort((a, b) => b.id - a.id);
-            }
+            if (type === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
+            else sorted.sort((a, b) => b.id - a.id);
             return sorted;
         });
     };
 
-    // --- Видалення ---
     const handleDelete = async (id) => {
         if (!window.confirm("Delete this module?")) return;
         try {
             await deleteModule(id);
             setModules(prev => prev.filter(m => m.id !== id));
         } catch (err) {
-            console.error("Delete failed", err);
-            setModalInfo({
-                open: true,
-                type: "error",
-                title: "Error",
-                message: "Failed to delete module. Please try again."
-            });
+            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to delete module." });
         }
     };
 
-    const toggleTags = (id) =>
-        setExpandedTags(prev => ({ ...prev, [id]: !prev[id] }));
+    const toggleTags = (id) => setExpandedTags(prev => ({ ...prev, [id]: !prev[id] }));
 
+    // 2. Логіка відкриття меню дозволів
     const openModulePermissions = (module, evt, trigger) => {
         let anchor = null;
         if (trigger && trigger.getBoundingClientRect) {
             const rect = trigger.getBoundingClientRect();
             anchor = { left: rect.left, top: rect.bottom };
         }
-        setPermissionsTarget({ moduleId: module.id, users: [], anchor });
+        // Передаємо користувачів з модуля
+        setPermissionsTarget({
+            moduleId: module.id,
+            users: module.collaborators || [],
+            anchor
+        });
     };
 
-    // --- Додавання до папки ---
+    // 3. Обробники додавання/видалення прав
+    const handleAddUser = async (userObj) => {
+        if (!permissionsTarget) return;
+        try {
+            await addModulePermission(permissionsTarget.moduleId, userObj.id);
+
+            // Оновлюємо список модулів
+            setModules(prev => prev.map(m => {
+                if (m.id === permissionsTarget.moduleId) {
+                    return { ...m, collaborators: [...(m.collaborators || []), userObj] };
+                }
+                return m;
+            }));
+
+            // Оновлюємо активну ціль
+            setPermissionsTarget(prev => ({
+                ...prev,
+                users: [...prev.users, userObj]
+            }));
+
+        } catch (err) {
+            console.error("Failed to add permission", err);
+            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to add user." });
+        }
+    };
+
+    const handleRemoveUser = async (userId) => {
+        if (!permissionsTarget) return;
+        try {
+            await removeModulePermission(permissionsTarget.moduleId, userId);
+
+            setModules(prev => prev.map(m => {
+                if (m.id === permissionsTarget.moduleId) {
+                    return { ...m, collaborators: (m.collaborators || []).filter(u => u.id !== userId) };
+                }
+                return m;
+            }));
+
+            setPermissionsTarget(prev => ({
+                ...prev,
+                users: prev.users.filter(u => u.id !== userId)
+            }));
+
+        } catch (err) {
+            console.error("Failed to remove permission", err);
+            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to remove user." });
+        }
+    };
+
     const openAddToFolderMenu = (module, evt, trigger) => {
         let anchor = null;
         if (trigger && trigger.getBoundingClientRect) {
@@ -173,32 +190,17 @@ export default function Modules({ source = "library" }) {
     const handleAddToFolder = async (folder) => {
         if (!addToFolderTarget) return;
         const { module } = addToFolderTarget;
-
         try {
             await addModuleToFolder(folder.id, module.id);
-            setModalInfo({
-                open: true,
-                type: "success",
-                title: "Added",
-                message: `Added "${module.name}" to folder "${folder.name}"`
-            });
+            setModalInfo({ open: true, type: "success", title: "Added", message: `Added "${module.name}" to folder "${folder.name}"` });
         } catch (err) {
-            console.error("Add to folder failed", err);
-            setModalInfo({
-                open: true,
-                type: "error",
-                title: "Error",
-                message: "Could not add to folder. It might already be there."
-            });
+            setModalInfo({ open: true, type: "error", title: "Error", message: "Could not add to folder." });
         } finally {
             setAddToFolderTarget(null);
         }
     };
 
-    // [FIX] Early return при завантаженні (як у Folders.js)
-    if (loading) {
-        return <div style={{ padding: 20, textAlign: "center" }}>Loading library...</div>;
-    }
+    if (loading) return <div style={{ padding: 20, textAlign: "center" }}>Loading library...</div>;
 
     return (
         <div className="modules-page" ref={containerRef} style={{ position: "relative", minHeight: "200px" }}>
@@ -209,9 +211,7 @@ export default function Modules({ source = "library" }) {
             {error ? (
                 <div style={{ padding: 20, color: "red", textAlign: "center" }}>{error}</div>
             ) : modules.length === 0 ? (
-                <div style={{ padding: 40, textAlign: "center", color: "gray" }}>
-                    You don't have any modules yet.
-                </div>
+                <div style={{ padding: 40, textAlign: "center", color: "gray" }}>You don't have any modules yet.</div>
             ) : (
                 <div className="module-list">
                     {modules.map((module) => (
@@ -236,54 +236,35 @@ export default function Modules({ source = "library" }) {
                     top: permissionsTarget.anchor?.top,
                     zIndex: 300
                 }}>
-                    <PermissionsMenu onClose={() => setPermissionsTarget(null)} />
+                    {/* 4. Передача пропсів в PermissionsMenu */}
+                    <PermissionsMenu
+                        users={permissionsTarget.users}
+                        onAddUser={handleAddUser}
+                        onRemoveUser={handleRemoveUser}
+                        onClose={() => setPermissionsTarget(null)}
+                    />
                 </div>
             )}
 
             {addToFolderTarget && (
                 <>
-                    <div
-                        style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 301 }}
-                        onClick={() => setAddToFolderTarget(null)}
-                    />
-                    <div
-                        className="dropdown-menu"
-                        style={{
-                            position: "fixed",
-                            left: addToFolderTarget.anchor?.left || "50%",
-                            top: addToFolderTarget.anchor?.top || "50%",
-                            zIndex: 302,
-                            background: "white",
-                            borderRadius: "12px",
-                            boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
-                            padding: "8px 0",
-                            minWidth: "200px",
-                            maxHeight: "300px",
-                            overflowY: "auto"
-                        }}
-                    >
+                    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 301 }} onClick={() => setAddToFolderTarget(null)} />
+                    <div className="dropdown-menu" style={{
+                        position: "fixed", left: addToFolderTarget.anchor?.left || "50%", top: addToFolderTarget.anchor?.top || "50%",
+                        zIndex: 302, background: "white", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+                        padding: "8px 0", minWidth: "200px", maxHeight: "300px", overflowY: "auto"
+                    }}>
                         <div style={{ padding: "8px 16px", fontWeight: "bold", borderBottom: "1px solid #eee", fontSize: "14px", color: "#666" }}>
                             Add "{addToFolderTarget.module.name}" to:
                         </div>
                         {folders.length === 0 ? (
-                            <div style={{ padding: "12px", textAlign: "center", color: "gray", fontSize: "13px" }}>
-                                No folders found.
-                            </div>
+                            <div style={{ padding: "12px", textAlign: "center", color: "gray", fontSize: "13px" }}>No folders found.</div>
                         ) : (
                             folders.map(folder => (
-                                <div
-                                    key={folder.id}
-                                    onClick={() => handleAddToFolder(folder)}
-                                    style={{
-                                        padding: "10px 16px",
-                                        cursor: "pointer",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: "10px",
-                                        transition: "background 0.2s"
-                                    }}
-                                    onMouseEnter={(e) => e.currentTarget.style.background = "#f5f5f7"}
-                                    onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                                <div key={folder.id} onClick={() => handleAddToFolder(folder)}
+                                     style={{ padding: "10px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", transition: "background 0.2s" }}
+                                     onMouseEnter={(e) => e.currentTarget.style.background = "#f5f5f7"}
+                                     onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
                                 >
                                     <ColoredIcon icon={FolderIcon} color={folder.color || "#6366f1"} size={18} />
                                     <span style={{ fontSize: "14px", color: "#333" }}>{folder.name}</span>

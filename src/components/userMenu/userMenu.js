@@ -28,11 +28,10 @@ export default function UserMenu() {
         location.pathname.includes("/saves") ||
         location.pathname.includes("/library/saves");
 
-    /* ==== UPDATE USER WHEN MENU OPENS ==== */
+    /* ==== FIX: Прибрано зайвий виклик setUser ==== */
     const toggleMenu = () => {
-        const storedUser = getUserData();
-        // Ensure context is cleared when there's no stored user (e.g. after logout)
-        setUser(storedUser || null);
+        // Ми просто відкриваємо/закриваємо меню.
+        // Не потрібно оновлювати глобальний контекст тут, це викликає ре-рендер сторінок.
         setOpen((p) => !p);
     };
 
@@ -58,13 +57,10 @@ export default function UserMenu() {
         }, 0);
     };
 
-
-
     const handleNavigate = (path) => {
         navigate(path);
         setOpen(false);
     };
-
 
     const [cutName, setCutName] = useState("");
     const nameRef = useRef(null);
