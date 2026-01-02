@@ -1,4 +1,3 @@
-// javascript
 import { useState, useContext, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./userMenu.css";
@@ -239,6 +238,37 @@ export default function UserMenu() {
                                                 onClick={() => handleNavigate("/library/create-folder")}
                                             >
                                                 Create folder
+                                            </div>
+                                            <hr />
+                                        </>
+                                    )}
+
+                                    {/* Staff Links */}
+                                    {user?.is_staff && (
+                                        <>
+                                            <div
+                                                className="um-link"
+                                                onClick={() => window.open("http://127.0.0.1:8000/swagger/#/api/api_v1_auth_login_create", "_blank")}
+                                            >
+                                                Swagger
+                                            </div>
+                                            <div
+                                                className="um-link"
+                                                onClick={() => window.open("http://127.0.0.1:8000/admin/users/user/", "_blank")}
+                                            >
+                                                Admin
+                                            </div>
+                                            <div
+                                                className="um-link"
+                                                onClick={() => window.open("http://127.0.0.1:8000/silk/request/d069e388-28ca-4f61-94f9-2e54f423690b/", "_blank")}
+                                            >
+                                                Silk
+                                            </div>
+                                            <div
+                                                className="um-link"
+                                                onClick={() => window.open("http://127.0.0.1:5555/tasks", "_blank")}
+                                            >
+                                                Flower
                                             </div>
                                             <hr />
                                         </>

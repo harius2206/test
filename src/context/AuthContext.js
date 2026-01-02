@@ -10,7 +10,11 @@ import {
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
+    // 1. Синхронна ініціалізація user (як ми робили раніше)
+    const [user, setUser] = useState(() => getUserData());
+
+    // 2. Додаємо стан "глобального завантаження"
+    const [loading, setLoading] = useState(true);
 
     /* ==== LOGIN ==== */
     const login = async (credentials) => {
@@ -50,10 +54,18 @@ export const AuthProvider = ({ children }) => {
         window.dispatchEvent(new Event("storage"));
     };
 
-    /* ==== LOAD ON START ==== */
+    /* ==== INITIALIZATION ==== */
     useEffect(() => {
-        const storedUser = getUserData();
-        if (storedUser) setUser(storedUser);
+        // Тут можна додати перевірку валідності токена на бекенді, якщо потрібно.
+        // Наразі ми просто даємо React час змонтувати все і вимикаємо лоадер.
+        // Це прибере ефект "почергової появи" компонентів.
+        const init = () => {
+            const storedUser = getUserData();
+            if (storedUser) setUser(storedUser);
+            setLoading(false); // Додаток готовий до показу
+        };
+
+        init();
 
         const onStorage = () => {
             const updated = getUserData();
@@ -63,6 +75,22 @@ export const AuthProvider = ({ children }) => {
         window.addEventListener("storage", onStorage);
         return () => window.removeEventListener("storage", onStorage);
     }, []);
+
+    // Якщо додаток ще ініціалізується — показуємо спінер або просто порожній екран
+    if (loading) {
+        return (
+            <div style={{
+                height: "100vh",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "var(--bg-main)" // Використовуємо колір фону теми
+            }}>
+                {/* Можна додати красивий спінер тут */}
+                <span>Loading...</span>
+            </div>
+        );
+    }
 
     return (
         <AuthContext.Provider value={{ user, setUser, login, logout, register }}>
