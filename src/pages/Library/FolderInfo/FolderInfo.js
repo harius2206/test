@@ -1,15 +1,16 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-// 1. Додаємо імпорти для роботи з папками та пермішенами
+// API
 import {
     getFolder, updateFolder, deleteFolder, toggleFolderVisibility,
     removeModuleFromFolder, addModuleToFolder
 } from "../../../api/foldersApi";
-import { getUserDetails } from "../../../api/usersApi"; // Щоб отримати список папок для меню "Add to folder"
+import { getUserDetails } from "../../../api/usersApi";
 import { addModulePermission, removeModulePermission } from "../../../api/modulesApi";
 import { useAuth } from "../../../context/AuthContext";
 
+// Компоненти
 import ModuleCard from "../../../components/ModuleCard/moduleCard";
 import SortMenu from "../../../components/sortMenu/sortMenu";
 import DropdownMenu from "../../../components/dropDownMenu/dropDownMenu";
@@ -19,6 +20,7 @@ import EditableField from "../../../components/editableField/editableField";
 import Button from "../../../components/button/button";
 import ModalMessage from "../../../components/ModalMessage/ModalMessage";
 
+// Іконки
 import { ReactComponent as CloseIcon } from "../../../images/close.svg";
 import { ReactComponent as DotsIcon } from "../../../images/dots.svg";
 import { ReactComponent as EditIcon } from "../../../images/editImg.svg";
@@ -46,7 +48,7 @@ export default function FolderPage() {
 
     const [folderState, setFolderState] = useState(null);
     const [modules, setModules] = useState([]);
-    const [userFolders, setUserFolders] = useState([]); // Список усіх папок юзера
+    const [userFolders, setUserFolders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -66,7 +68,7 @@ export default function FolderPage() {
         try {
             setLoading(true);
 
-            // 1. Завантажуємо поточну папку
+            // 1. Завантажуємо папку
             const response = await getFolder(id);
             const data = response.data;
 
@@ -78,7 +80,7 @@ export default function FolderPage() {
                 user: m.user,
                 topic: m.topic,
                 cards_count: m.cards_count || (m.cards ? m.cards.length : 0),
-                collaborators: m.collaborators || [] // Для пермішенів
+                collaborators: m.collaborators || []
             }));
 
             setFolderState({
@@ -87,7 +89,7 @@ export default function FolderPage() {
             });
             setModules(mappedModules);
 
-            // 2. Завантажуємо список всіх папок юзера (для функціоналу "Add to folder")
+            // 2. Завантажуємо список папок користувача (для функції "Add to folder")
             if (user?.id) {
                 const userRes = await getUserDetails(user.id);
                 setUserFolders(userRes.data.folders || []);
@@ -105,8 +107,7 @@ export default function FolderPage() {
         loadData();
     }, [loadData]);
 
-    const toggleTags = (modId) =>
-        setExpandedTags((prev) => ({ ...prev, [modId]: !prev[modId] }));
+    const toggleTags = (modId) => setExpandedTags((prev) => ({ ...prev, [modId]: !prev[modId] }));
 
     const handleSort = (type) => {
         setModules(prev => {
@@ -119,14 +120,13 @@ export default function FolderPage() {
         });
     };
 
-    // --- Basic Folder Actions ---
-    const handleDelete = async () => {
+    // --- Дії з папкою ---
+    const handleDeleteFolder = async () => {
         if (!window.confirm("Delete this folder? This action cannot be undone.")) return;
         try {
             await deleteFolder(id);
             navigate("/library");
         } catch (err) {
-            console.error("Delete failed", err);
             alert("Failed to delete folder");
         }
     };
@@ -139,7 +139,6 @@ export default function FolderPage() {
         try {
             await toggleFolderVisibility(id, visibleStatus);
         } catch (err) {
-            console.error("Privacy toggle failed", err);
             setFolderState(prev => ({ ...prev, private: !newPrivacy }));
         }
     };
@@ -151,48 +150,39 @@ export default function FolderPage() {
         try {
             await updateFolder(id, { pinned: newPinned });
         } catch (err) {
-            console.error("Pin failed", err);
             setFolderState(prev => ({ ...prev, pinned: !newPinned }));
         }
     };
 
-    const startRename = () => {
-        setRenaming(true);
-        setRenameValue(folderState.name);
-    };
-
+    const startRename = () => { setRenaming(true); setRenameValue(folderState.name); };
+    const cancelRename = () => { setRenaming(false); setRenameValue(""); };
     const saveRename = async () => {
         if (!renameValue.trim()) return cancelRename();
         try {
             await updateFolder(id, { name: renameValue.trim() });
             setFolderState(prev => ({ ...prev, name: renameValue.trim() }));
             setRenaming(false);
-        } catch (err) {
-            console.error("Rename failed", err);
-        }
-    };
-
-    const cancelRename = () => {
-        setRenaming(false);
-        setRenameValue("");
+        } catch (err) { console.error("Rename failed", err); }
     };
 
     const handleExport = () => {};
 
-    // --- Module Actions in Folder ---
+    // --- Дії з модулями ---
 
-    // 1. Remove from THIS folder
+    const handleEditModule = (module) => {
+        navigate("/library/create-module", {
+            state: { mode: "edit", moduleId: module.id, moduleData: module, folderId: id }
+        });
+    };
+
     const handleRemoveModule = async (moduleId) => {
         if (!window.confirm("Remove module from this folder?")) return;
         try {
             await removeModuleFromFolder(id, moduleId);
             setModules(prev => prev.filter(m => m.id !== moduleId));
-        } catch (err) {
-            console.error("Remove module failed", err);
-        }
+        } catch (err) { console.error("Remove module failed", err); }
     };
 
-    // 2. Permissions Logic
     const openModulePermissions = (module, evt, trigger) => {
         let anchor = null;
         if (trigger && trigger.getBoundingClientRect) {
@@ -206,6 +196,7 @@ export default function FolderPage() {
         if (!permissionsTarget) return;
         try {
             await addModulePermission(permissionsTarget.moduleId, userObj.id);
+            // Оновлюємо локальний стейт (опціонально, бо PermissionsMenu тепер може сам вантажити)
             setModules(prev => prev.map(m => {
                 if (m.id === permissionsTarget.moduleId) {
                     return { ...m, collaborators: [...(m.collaborators || []), userObj] };
@@ -214,7 +205,6 @@ export default function FolderPage() {
             }));
             setPermissionsTarget(prev => ({ ...prev, users: [...prev.users, userObj] }));
         } catch (err) {
-            console.error(err);
             setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to add user." });
         }
     };
@@ -231,12 +221,10 @@ export default function FolderPage() {
             }));
             setPermissionsTarget(prev => ({ ...prev, users: prev.users.filter(u => u.id !== userId) }));
         } catch (err) {
-            console.error(err);
             setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to remove user." });
         }
     };
 
-    // 3. Add to ANOTHER folder Logic
     const openAddToFolderMenu = (module, evt, trigger) => {
         let anchor = null;
         if (trigger && trigger.getBoundingClientRect) {
@@ -248,10 +236,9 @@ export default function FolderPage() {
 
     const handleAddToFolder = async (targetFolder) => {
         if (!addToFolderTarget) return;
-        const { module } = addToFolderTarget;
         try {
-            await addModuleToFolder(targetFolder.id, module.id);
-            setModalInfo({ open: true, type: "success", title: "Added", message: `Added "${module.name}" to folder "${targetFolder.name}"` });
+            await addModuleToFolder(targetFolder.id, addToFolderTarget.module.id);
+            setModalInfo({ open: true, type: "success", title: "Added", message: `Added "${addToFolderTarget.module.name}" to folder "${targetFolder.name}"` });
         } catch (err) {
             setModalInfo({ open: true, type: "error", title: "Error", message: "Could not add to folder." });
         } finally {
@@ -259,23 +246,15 @@ export default function FolderPage() {
         }
     };
 
-    if (loading) return <div className="folder-page" style={{padding: 20}}>Loading folder...</div>;
+    if (loading) return <div className="folder-page" style={{padding: 20}}>Loading...</div>;
     if (error) return <div className="folder-page" style={{padding: 20, color: 'red'}}>{error}</div>;
     if (!folderState) return null;
 
     return (
         <div className="folder-page" style={{ position: "relative" }}>
-            <button
-                onClick={() => navigate("/library")}
-                style={{
-                    position: "absolute", top: 12, right: 12, background: "none", border: "none",
-                    cursor: "pointer", padding: 4, zIndex: 2
-                }}
-            >
-                <CloseIcon width={28} height={28} />
-            </button>
 
-            <div className="folder-header">
+            {/* Header: Назва + Хрестик закриття (в одному рядку) */}
+            <div className="folder-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 {renaming ? (
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <EditableField value={renameValue} onSave={setRenameValue} editable={true} autosave={true} />
@@ -283,8 +262,19 @@ export default function FolderPage() {
                         <Button variant="hover" onClick={cancelRename} width="90px" height="36px">Cancel</Button>
                     </div>
                 ) : (
-                    <h2 className="folder-title">{folderState.name}</h2>
+                    <h2 className="folder-title" style={{ margin: 0 }}>{folderState.name}</h2>
                 )}
+
+                <button
+                    onClick={() => navigate("/library")}
+                    style={{
+                        background: "none", border: "none", cursor: "pointer",
+                        padding: 4, display: "flex", alignItems: "center"
+                    }}
+                    title="Close"
+                >
+                    <CloseIcon width={28} height={28} />
+                </button>
             </div>
 
             <div className="folder-controls" style={{ justifyContent: "space-between", marginTop: 8, display: "flex", alignItems: "center" }}>
@@ -304,7 +294,7 @@ export default function FolderPage() {
                         align="right" width={220}
                         items={[
                             { label: "Rename", onClick: startRename, icon: <EditIcon width={16} height={16} /> },
-                            { label: "Delete", onClick: handleDelete, icon: <DeleteIcon width={16} height={16} /> },
+                            { label: "Delete", onClick: handleDeleteFolder, icon: <DeleteIcon width={16} height={16} /> },
                             { label: folderState.private ? "Unprivate" : "Private", onClick: handleTogglePrivate, icon: <ColoredIcon icon={folderState.private ? TickIcon : UntickIcon} size={16} /> },
                             { label: folderState.pinned ? "Unpin" : "Pin", onClick: handlePin, icon: <ColoredIcon icon={folderState.pinned ? TickIcon : UntickIcon} size={16} /> },
                             { label: "Export", onClick: handleExport, icon: <ShareIcon width={16} height={16} /> },
@@ -325,15 +315,13 @@ export default function FolderPage() {
                             expanded={!!expandedTags[module.id]}
                             toggleTags={toggleTags}
 
-                            // 1. Remove from folder (instead of generic Delete)
+                            // Передача функцій для меню 3х крапок
+                            onEdit={() => handleEditModule(module)}
+                            onPermissions={(e, trigger) => openModulePermissions(module, e, trigger)}
+                            onAddToFolder={(e, trigger) => openAddToFolderMenu(module, e, trigger)}
+
                             deleteLabel={"Remove from folder"}
-                            onDelete={handleRemoveModule}
-
-                            // 2. Permissions (same as Library)
-                            onPermissions={openModulePermissions}
-
-                            // 3. Add to folder (same as Library)
-                            onAddToFolder={openAddToFolderMenu}
+                            onDelete={() => handleRemoveModule(module.id)}
                         />
                     ))
                 ) : (
@@ -345,6 +333,7 @@ export default function FolderPage() {
             {permissionsTarget && (
                 <div style={{ position: "fixed", left: permissionsTarget.anchor?.left, top: permissionsTarget.anchor?.top, zIndex: 300 }}>
                     <PermissionsMenu
+                        moduleId={permissionsTarget.moduleId} // ID для запиту списку юзерів
                         users={permissionsTarget.users}
                         onAddUser={handleAddUser}
                         onRemoveUser={handleRemoveUser}

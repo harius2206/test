@@ -23,8 +23,9 @@ export default function ModuleCard({
                                        toggleTags,
                                        onDelete,
                                        deleteLabel = "Delete",
-                                       onPermissions,
-                                       onAddToFolder // Новий проп
+                                       onEdit,        // <-- ПОВЕРНУЛИ ПРОП
+                                       onPermissions, // <-- ПОВЕРНУЛИ ПРОП
+                                       onAddToFolder
                                    }) {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -33,57 +34,53 @@ export default function ModuleCard({
     const showMore = tags.length > visibleCount;
     const visibleTags = expanded ? tags : tags.slice(0, visibleCount);
 
-    // === Адаптація даних ===
     const authorName = module.user?.username || module.author || "User";
     const authorAvatar = module.user?.avatar || module.avatar;
     const termsCount = module.cards_count !== undefined ? module.cards_count : (module.terms || 0);
-
-    const topicName = typeof module.topic === 'object' && module.topic !== null
-        ? module.topic.name
-        : module.topic;
-
+    const topicName = typeof module.topic === 'object' && module.topic ? module.topic.name : module.topic;
     const isOwnModule = user?.username === authorName;
-    const flag1 = module.flagFrom;
-    const flag2 = module.flagTo;
 
-    // === ОБРОБНИКИ ===
+    const handleCardClick = () => navigate(`/library/module-view?id=${module.id}`);
 
-    const handleCardClick = () => {
-        navigate(`/library/module-view?id=${module.id}`);
-    };
-
-    const handleEditClick = (e) => {
-        navigate("/library/create-module", {
-            state: {
-                mode: "edit",
-                moduleId: module.id,
-                moduleData: module
-            }
-        });
-    };
-
-    // Формуємо пункти меню
+    // Формуємо меню
     const menuItems = [];
 
-    // Редагування доступне тільки власнику
-    if (isOwnModule) {
+    // 1. Edit: Якщо передали проп onEdit, використовуємо його. Якщо ні - перевіряємо власника.
+    if (onEdit) {
         menuItems.push({
             label: "Edit",
-            onClick: handleEditClick,
+            onClick: (e, trigger) => onEdit(module, e, trigger),
+            icon: <EditIcon width={16} height={16} />
+        });
+    } else if (isOwnModule) {
+        menuItems.push({
+            label: "Edit",
+            onClick: () => navigate("/library/create-module", { state: { mode: "edit", moduleId: module.id, moduleData: module } }),
             icon: <EditIcon width={16} height={16} />
         });
     }
 
-    // "Add to folder" - доступно, якщо передано обробник (зазвичай для своїх модулів або збережених)
+    // 2. Permissions
+    if (onPermissions) {
+        menuItems.push({
+            label: "Permissions",
+            onClick: (e, trigger) => onPermissions(module, e, trigger),
+            icon: <ShareIcon width={16} height={16} />
+        });
+    } else if (isOwnModule) {
+        // Fallback (хоча краще передавати проп)
+    }
+
+    // 3. Add to folder
     if (onAddToFolder) {
         menuItems.push({
             label: "Add to folder",
-            onClick: (evt, trigger) => onAddToFolder(module, evt, trigger),
-            icon: <FolderIcon width={16} height={16} /> // Можна використати FolderIcon або іншу іконку
+            onClick: (e, trigger) => onAddToFolder(module, e, trigger),
+            icon: <FolderIcon width={16} height={16} />
         });
     }
 
-    // Видалення
+    // 4. Delete
     if (onDelete) {
         menuItems.push({
             label: deleteLabel,
@@ -92,21 +89,11 @@ export default function ModuleCard({
         });
     }
 
-    // Права доступу (Permissions)
-    if (onPermissions && isOwnModule) {
-        menuItems.push({
-            label: "Permissions",
-            onClick: (evt, trigger) => onPermissions(module, evt, trigger),
-            icon: <ShareIcon width={16} height={16} />
-        });
-    }
-
     return (
         <div className="module-card" onClick={handleCardClick} style={{ cursor: "pointer" }}>
             <div className="module-info">
                 <div className="top-row">
                     <span className="terms-count">{termsCount} terms</span>
-
                     {!isOwnModule && (
                         <>
                             <span className="separator">|</span>
@@ -116,68 +103,44 @@ export default function ModuleCard({
                             </div>
                         </>
                     )}
-
-                    {module.rating && (
+                    {module.rating > 0 && (
                         <>
                             <span className="separator">|</span>
-                            <span className="rating">
-                                {module.rating}
-                                <StarIcon className="mc-star-icon" />
-                            </span>
+                            <span className="rating">{module.rating}<StarIcon className="mc-star-icon" /></span>
                         </>
                     )}
-
                     <div className="mc-tags-wrapper">
                         <div className="mc-tags-row">
-                            {visibleTags.map((tag, i) => (
-                                <span key={i} className="mc-tag">{tag}</span>
-                            ))}
-
+                            {visibleTags.map((tag, i) => <span key={i} className="mc-tag">{tag}</span>)}
                             {showMore && (
-                                <a
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        toggleTags && toggleTags(module.id);
-                                    }}
-                                    className="tags-dots"
-                                    style={{ cursor: "pointer" }}
-                                >
-                                    {expanded
-                                        ? <CloseIcon width={14} height={14} />
-                                        : <MoreIcon width={14} height={14} />}
+                                <a onClick={(e) => { e.stopPropagation(); toggleTags && toggleTags(module.id); }} className="tags-dots" style={{ cursor: "pointer" }}>
+                                    {expanded ? <CloseIcon width={14} height={14} /> : <MoreIcon width={14} height={14} />}
                                 </a>
                             )}
                         </div>
                     </div>
                 </div>
-
                 <div className="module-name-row hover-wrapper">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
                         <span className="module-name-text" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {topicName ? `${module.name} - ${topicName}` : module.name}
                         </span>
-
-                        {(flag1 || flag2) && (
+                        {(module.flagFrom || module.flagTo) && (
                             <div style={{ flexShrink: 0 }}>
-                                <DiagonalFlagRect43 flag1={flag1} flag2={flag2} width={16} height={12} />
+                                <DiagonalFlagRect43 flag1={module.flagFrom} flag2={module.flagTo} width={16} height={12} />
                             </div>
                         )}
                     </div>
                     <span className="hover-hint">{module.description || "No description"}</span>
                 </div>
             </div>
-
-            <div className="folder-actions" onClick={(e) => e.stopPropagation()}>
-                <DropdownMenu
-                    align="left"
-                    width={180}
-                    items={menuItems}
-                >
-                    <button className="btn-icon" aria-label="Module menu">
-                        <DotsIcon width={16} height={16} />
-                    </button>
-                </DropdownMenu>
-            </div>
+            {menuItems.length > 0 && (
+                <div className="folder-actions" onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu align="left" width={180} items={menuItems}>
+                        <button className="btn-icon"><DotsIcon width={16} height={16} /></button>
+                    </DropdownMenu>
+                </div>
+            )}
         </div>
     );
 }

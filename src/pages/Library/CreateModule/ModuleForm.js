@@ -72,7 +72,7 @@ export default function ModuleForm({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // --- 2. Populate State from initialData (after API lists are loaded) ---
+    // --- 2. Populate State from initialData ---
     useEffect(() => {
         if (initialData && Object.keys(initialData).length > 0 && languagesList.length > 0) {
             setName(initialData.name || "");
@@ -107,13 +107,11 @@ export default function ModuleForm({
     const handleCardChange = (id, field, value) => setCards(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c));
     const handleAddCard = () => setCards(prev => [...prev, { id: Date.now(), term: "", definition: "" }]);
 
-    // Хендлер видалення
     const handleRemoveCard = (e, id) => {
         e.stopPropagation();
         if (cards.length > 1) setCards(prev => prev.filter(c => c.id !== id));
     };
 
-    // ГЛОБАЛЬНИЙ СВАП МОВ
     const handleSwapLanguages = () => {
         const temp = selectedLangLeft;
         setSelectedLangLeft(selectedLangRight);
@@ -135,7 +133,6 @@ export default function ModuleForm({
             handleAddTag();
         }
     };
-
 
     const handleSubmit = () => {
         if (!name.trim()) return alert("Please enter a module name");
@@ -159,15 +156,38 @@ export default function ModuleForm({
     return (
         <div className="page-with-layout">
             <main className="create-module-page container">
-                <div className="create-top">
+
+                <div className="create-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    {/* Ліва частина: Заголовок */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <button onClick={() => navigate(-1)} className="back-btn" style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.2rem' }}>←</button>
                         <h2 className="create-title">{mode === "edit" ? "Edit module" : "Create new module"}</h2>
                     </div>
-                    <div className="create-actions">
-                        <Button variant="static" width={120} height={39} onClick={handleSubmit} disabled={loading}>
-                            {loading ? "Saving..." : (mode === "edit" ? "Save" : "Create")}
-                        </Button>
+
+                    {/* Права частина: Кнопка збереження + Хрестик */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div className="create-actions">
+                            <Button variant="static" width={120} height={39} onClick={handleSubmit} disabled={loading}>
+                                {loading ? "Saving..." : (mode === "edit" ? "Save" : "Create")}
+                            </Button>
+                        </div>
+
+                        {/* Хрестик тепер тут — як звичайний елемент, що не налізе на кнопку */}
+                        <button
+                            onClick={() => navigate(-1)}
+                            style={{
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                padding: 4,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: "var(--text-primary, #333)"
+                            }}
+                            title="Close"
+                        >
+                            <CloseIcon width={28} height={28} />
+                        </button>
                     </div>
                 </div>
 
@@ -189,7 +209,6 @@ export default function ModuleForm({
                         </div>
                     </ClickOutsideWrapper>
 
-                    {/* ГЛОБАЛЬНА КНОПКА СВАПУ МОВ (ТЕПЕР ВОНА ОСНОВНА) */}
                     <button className="swap-btn" onClick={handleSwapLanguages}>
                         <SwapArrows width={20} height={20} />
                     </button>
@@ -211,14 +230,10 @@ export default function ModuleForm({
                     </ClickOutsideWrapper>
                 </div>
 
-                {/* tags-block залишений тут, якщо він потрібен, хоча його немає у введеному JSX */}
-                {/* <div className="tags-block">...</div> */}
-
                 {/* --- Inputs --- */}
                 <div className="module-inputs">
                     <input className="module-input" placeholder="Name" value={name} onChange={e => setName(e.target.value)} />
 
-                    {/* Topic Select */}
                     <div style={{ width: "100%" }}>
                         <ClickOutsideWrapper onClickOutside={() => setOpenTopicDropdown(false)}>
                             <div className="lang-dropdown" style={{ width: '100%' }}>
@@ -259,10 +274,7 @@ export default function ModuleForm({
                         <div className="card-row" key={card.id}>
                             <div className="card-index-col">{idx + 1}</div>
                             <div className="card-center-col">
-
-                                {/* Шапка картки (Мови) */}
                                 <div className="card-lang-top">
-                                    {/* FIX: Використовуємо flexbox і space-between для вирівнювання */}
                                     <span className="lang-left">{selectedLangLeft?.name}</span>
                                     <span className="lang-right">{selectedLangRight?.name}</span>
                                 </div>
@@ -284,7 +296,6 @@ export default function ModuleForm({
                                 </div>
                             </div>
 
-                            {/* Кнопка видалення (Мусорка) */}
                             <div className="card-actions-col">
                                 <button
                                     className="icon-top-btn delete-card-btn"

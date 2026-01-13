@@ -28,6 +28,7 @@ import { ReactComponent as PrevIcon } from "../../../images/arrowLeft.svg";
 import { ReactComponent as NextIcon } from "../../../images/arrowRight.svg";
 import { ReactComponent as RestartIcon } from "../../../images/restart.svg";
 import { ReactComponent as BookSvg } from "../../../images/book.svg";
+import { ReactComponent as CloseIcon } from "../../../images/close.svg"; // Додано імпорт
 
 import "./moduleView.css";
 
@@ -239,10 +240,7 @@ export default function ModuleView() {
         <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", position: "relative" }}>
             <main className="mv-module-view">
 
-                {/* [FIXED HEADER]
-                    Ліва частина: Заголовок, Прапори, Рейтинг.
-                    Права частина: Меню трьох крапок.
-                */}
+                {/* [HEADER] */}
                 <div className="mv-module-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
 
                     <div className="mv-module-left-row" style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
@@ -255,7 +253,6 @@ export default function ModuleView() {
                             )}
                         </div>
 
-                        {/* Рейтинг перенесено сюди, щоб він був біля назви */}
                         <div className="mv-module-rating">
                             <Rating
                                 name="module-rating"
@@ -269,8 +266,8 @@ export default function ModuleView() {
                         </div>
                     </div>
 
-                    {/* Права частина: Тільки меню */}
-                    <div className="mv-header-controls">
+                    {/* Права частина: Меню + Хрестик */}
+                    <div className="mv-header-controls" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         {isOwnModule && (
                             <DropdownMenu align="right" width={180} items={menuItems}>
                                 <button className="mv-btn-icon" style={{ cursor: 'pointer', background: 'none', border: 'none' }}>
@@ -278,6 +275,24 @@ export default function ModuleView() {
                                 </button>
                             </DropdownMenu>
                         )}
+
+                        {/* Хрестик */}
+                        <button
+                            onClick={() => navigate(-1)}
+                            style={{
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                padding: 4,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: "var(--text-primary, #333)"
+                            }}
+                            title="Close"
+                        >
+                            <CloseIcon width={28} height={28} />
+                        </button>
                     </div>
                 </div>
 
@@ -397,9 +412,9 @@ export default function ModuleView() {
                     backgroundColor: "rgba(0,0,0,0.5)", zIndex: 1000,
                     display: "flex", justifyContent: "center", alignItems: "center"
                 }} onClick={() => setShowPermissions(false)}>
-                    {/* Зупиняємо спливання кліку, щоб не закрити модалку при кліку всередині неї */}
                     <div onClick={e => e.stopPropagation()}>
                         <PermissionsMenu
+                            moduleId={module.id}
                             users={module.collaborators || []}
                             onAddUser={handleAddPermission}
                             onRemoveUser={handleRemovePermission}

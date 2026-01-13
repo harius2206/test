@@ -12,9 +12,9 @@ const endpoints = {
         list: "/api/v1/modules/",
         detail: (id) => `/api/v1/modules/${id}/`,
 
-        // --- Нові ендпоінти, які ми додавали ---
         perms: (id) => `/api/v1/modules/${id}/perms/`,
         permsDetail: (id, userId) => `/api/v1/modules/${id}/perms/users/${userId}/`,
+        permsUsers: (id) => `/api/v1/modules/${id}/perms/users/`,
 
         visibles: (id) => `/api/v1/modules/${id}/visibles/`,
         pins: (id) => `/api/v1/modules/${id}/pins/`,
@@ -24,7 +24,6 @@ const endpoints = {
         tags: (id) => `/api/v1/modules/${id}/tags/`,
         tagsDetail: (id, tagName) => `/api/v1/modules/${id}/tags/${tagName}/`,
 
-        // Картки
         cards: {
             list: (moduleId) => `/api/v1/modules/${moduleId}/cards/`,
             detail: (moduleId, cardId) => `/api/v1/modules/${moduleId}/cards/${cardId}/`,

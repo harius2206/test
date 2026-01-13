@@ -102,6 +102,19 @@ export default function Modules({ source = "library" }) {
         });
     };
 
+    // --- Actions ---
+
+    // 1. EDIT (Додано функцію редагування)
+    const handleEditModule = (module) => {
+        navigate("/library/create-module", {
+            state: {
+                mode: "edit",
+                moduleId: module.id,
+                moduleData: module
+            }
+        });
+    };
+
     const handleDelete = async (id) => {
         if (!window.confirm("Delete this module?")) return;
         try {
@@ -121,7 +134,6 @@ export default function Modules({ source = "library" }) {
             const rect = trigger.getBoundingClientRect();
             anchor = { left: rect.left, top: rect.bottom };
         }
-        // Передаємо користувачів з модуля
         setPermissionsTarget({
             moduleId: module.id,
             users: module.collaborators || [],
@@ -135,7 +147,6 @@ export default function Modules({ source = "library" }) {
         try {
             await addModulePermission(permissionsTarget.moduleId, userObj.id);
 
-            // Оновлюємо список модулів
             setModules(prev => prev.map(m => {
                 if (m.id === permissionsTarget.moduleId) {
                     return { ...m, collaborators: [...(m.collaborators || []), userObj] };
@@ -143,7 +154,6 @@ export default function Modules({ source = "library" }) {
                 return m;
             }));
 
-            // Оновлюємо активну ціль
             setPermissionsTarget(prev => ({
                 ...prev,
                 users: [...prev.users, userObj]
@@ -221,6 +231,10 @@ export default function Modules({ source = "library" }) {
                             visibleCount={visibleCount}
                             expanded={expandedTags[module.id]}
                             toggleTags={toggleTags}
+
+                            // === ДОДАНО onEdit ===
+                            onEdit={() => handleEditModule(module)}
+
                             onDelete={() => handleDelete(module.id)}
                             onPermissions={openModulePermissions}
                             onAddToFolder={openAddToFolderMenu}
@@ -236,8 +250,8 @@ export default function Modules({ source = "library" }) {
                     top: permissionsTarget.anchor?.top,
                     zIndex: 300
                 }}>
-                    {/* 4. Передача пропсів в PermissionsMenu */}
                     <PermissionsMenu
+                        moduleId={permissionsTarget.moduleId}
                         users={permissionsTarget.users}
                         onAddUser={handleAddUser}
                         onRemoveUser={handleRemoveUser}
