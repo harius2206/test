@@ -21,6 +21,8 @@ const endpoints = {
         saves: (id) => `/api/v1/modules/${id}/saves/`,
         rates: (id) => `/api/v1/modules/${id}/rates/`,
 
+        merge: "/api/v1/modules/merge/",
+
         tags: (id) => `/api/v1/modules/${id}/tags/`,
         tagsDetail: (id, tagName) => `/api/v1/modules/${id}/tags/${tagName}/`,
 

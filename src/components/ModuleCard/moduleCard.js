@@ -13,6 +13,8 @@ import { ReactComponent as ShareIcon } from "../../images/share.svg";
 import { ReactComponent as MoreIcon } from "../../images/dotsHorizontal.svg";
 import { ReactComponent as CloseIcon } from "../../images/close.svg";
 import { ReactComponent as FolderIcon } from "../../images/folder.svg";
+import { ReactComponent as MergeIcon } from "../../images/merge.svg";
+
 
 import "./moduleCard.css";
 
@@ -25,7 +27,11 @@ export default function ModuleCard({
                                        deleteLabel = "Delete",
                                        onEdit,
                                        onPermissions,
-                                       onAddToFolder
+                                       onAddToFolder,
+                                       onMerge,         // Для виклику з меню
+                                       isMergeMode,    // Чи ми в режимі мерджа
+                                       isSelected,     // Чи ця картка вибрана
+                                       onSelect        // Функція кліку в режимі мерджа
                                    }) {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -40,7 +46,14 @@ export default function ModuleCard({
     const topicName = typeof module.topic === 'object' && module.topic ? module.topic.name : module.topic;
     const isOwnModule = user?.username === authorName;
 
-    const handleCardClick = () => navigate(`/library/module-view?id=${module.id}`);
+    // ЗМІНЕНО: Якщо режим мерджа — вибираємо, інакше — переходимо до перегляду
+    const handleCardClick = () => {
+        if (isMergeMode) {
+            onSelect(module);
+        } else {
+            navigate(`/library/module-view?id=${module.id}`);
+        }
+    };
 
     const menuItems = [];
 
@@ -74,6 +87,15 @@ export default function ModuleCard({
         });
     }
 
+    // ДОДАНО: Кнопка мерджа в меню
+    if (onMerge) {
+        menuItems.push({
+            label: isMergeMode ? "Cancel Merge" : "Merge",
+            onClick: (e, trigger) => onMerge(module),
+            icon: <MergeIcon width={16} height={16} />
+        });
+    }
+
     if (onDelete) {
         menuItems.push({
             label: deleteLabel,
@@ -83,7 +105,18 @@ export default function ModuleCard({
     }
 
     return (
-        <div className="module-card" onClick={handleCardClick} style={{ cursor: "pointer" }}>
+        <div
+            className={`module-card ${isSelected ? 'selected-for-merge' : ''}`}
+            onClick={handleCardClick}
+            style={{
+                cursor: "pointer",
+                // ЗМІНЕНО: Рамка міняє колір на фіолетовий при виборі
+                borderColor: isSelected ? "#6366f1" : "#e5e7eb",
+                borderWidth: "1px",
+                borderStyle: "solid",
+                transition: "border-color 0.2s ease"
+            }}
+        >
             <div className="module-info">
                 <div className="top-row">
                     <span className="terms-count">{termsCount} terms</span>

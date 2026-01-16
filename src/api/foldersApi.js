@@ -20,8 +20,8 @@ export const addModuleToFolder = (folderId, moduleId) =>
 export const removeModuleFromFolder = (folderId, moduleId) =>
     axiosClient.delete(endpoints.folders.modules(folderId, moduleId));
 
-export const saveFolder = (id) => axiosClient.post(endpoints.folders.saves(id), {});
+export const saveFolder = (id) => axiosClient.post(endpoints.folders.saves(id), {});    //ToDo
 
-export const unsaveFolder = (id) => axiosClient.delete(endpoints.folders.saves(id));
+export const unsaveFolder = (id) => axiosClient.delete(endpoints.folders.saves(id));    //ToDo
 
-export const toggleFolderPin = (id) => axiosClient.post(endpoints.folders.pins(id), {});
+export const toggleFolderPin = (id) => axiosClient.post(endpoints.folders.pins(id), {});    //ToDo
