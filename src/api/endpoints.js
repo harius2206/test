@@ -35,6 +35,7 @@ const endpoints = {
         detail: (id) => `/api/v1/folders/${id}/`,
         visibles: (id) => `/api/v1/folders/${id}/visibles/`,
         saves: (id) => `/api/v1/folders/${id}/saves/`,
+        pins: (id) => `/api/v1/folders/${id}/pins/`,
         modules: (id, moduleId) => `/api/v1/folders/${id}/modules/${moduleId}/`
     },
     languages: "/api/v1/languages/",

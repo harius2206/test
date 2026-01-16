@@ -23,8 +23,8 @@ export default function ModuleCard({
                                        toggleTags,
                                        onDelete,
                                        deleteLabel = "Delete",
-                                       onEdit,        // <-- ПОВЕРНУЛИ ПРОП
-                                       onPermissions, // <-- ПОВЕРНУЛИ ПРОП
+                                       onEdit,
+                                       onPermissions,
                                        onAddToFolder
                                    }) {
     const { user } = useAuth();
@@ -42,10 +42,8 @@ export default function ModuleCard({
 
     const handleCardClick = () => navigate(`/library/module-view?id=${module.id}`);
 
-    // Формуємо меню
     const menuItems = [];
 
-    // 1. Edit: Якщо передали проп onEdit, використовуємо його. Якщо ні - перевіряємо власника.
     if (onEdit) {
         menuItems.push({
             label: "Edit",
@@ -60,18 +58,14 @@ export default function ModuleCard({
         });
     }
 
-    // 2. Permissions
     if (onPermissions) {
         menuItems.push({
             label: "Permissions",
             onClick: (e, trigger) => onPermissions(module, e, trigger),
             icon: <ShareIcon width={16} height={16} />
         });
-    } else if (isOwnModule) {
-        // Fallback (хоча краще передавати проп)
     }
 
-    // 3. Add to folder
     if (onAddToFolder) {
         menuItems.push({
             label: "Add to folder",
@@ -80,7 +74,6 @@ export default function ModuleCard({
         });
     }
 
-    // 4. Delete
     if (onDelete) {
         menuItems.push({
             label: deleteLabel,
@@ -98,7 +91,7 @@ export default function ModuleCard({
                         <>
                             <span className="separator">|</span>
                             <div className="author-block">
-                                <UserAvatar name={authorName} avatar={authorAvatar} size={20} />
+                                <UserAvatar name={authorName} src={authorAvatar} size={20} />
                                 <span className="author">{authorName}</span>
                             </div>
                         </>

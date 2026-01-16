@@ -1,14 +1,14 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
-import { getUserDetails } from "../../../api/usersApi";
-import { createFolder, deleteFolder, updateFolder, toggleFolderVisibility } from "../../../api/foldersApi";
+import { getFolders, createFolder, deleteFolder, updateFolder, toggleFolderVisibility } from "../../../api/foldersApi";
 
 import EditableField from "../../../components/editableField/editableField";
 import ColoredIcon from "../../../components/coloredIcon";
 import SortMenu from "../../../components/sortMenu/sortMenu";
 import AddUniversalItem from "../../../components/addUniversalItem";
 import DropdownMenu from "../../../components/dropDownMenu/dropDownMenu";
+import Button from "../../../components/button/button";
 
 import { ReactComponent as FolderIcon } from "../../../images/folder.svg";
 import { ReactComponent as DotsIcon } from "../../../images/dots.svg";
@@ -18,7 +18,7 @@ import { ReactComponent as ExportIcon } from "../../../images/export.svg";
 import { ReactComponent as TickIcon } from "../../../images/tick.svg";
 import { ReactComponent as UntickIcon } from "../../../images/unTick.svg";
 
-export default function Folders({ addFolder, setAddFolder, source = "library" }) {
+export default function Folders({ addFolder, setAddFolder }) {
     const navigate = useNavigate();
     const { user } = useAuth();
 
@@ -33,85 +33,59 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
         "#d946ef", "#ec4899", "#78716c", "#000000"
     ];
 
-    // --- Завантаження даних ---
     const loadFolders = useCallback(async () => {
-        if (!user || !user.id) {
-            setLoading(false);
-            return;
-        }
-
-        if (source === "saves") {
-            setFolders([]);
+        if (!user?.id) {
             setLoading(false);
             return;
         }
 
         try {
             setLoading(true);
-            const response = await getUserDetails(user.id);
-            const userFolders = response.data.folders || [];
+            const response = await getFolders();
+            const data = response.data.results || response.data;
 
-            const mappedFolders = userFolders.map(f => ({
+            setFolders(data.map(f => ({
                 ...f,
                 modules: f.modules_count || 0,
                 pinned: f.pinned,
-                private: f.visible === "private" || f.private === true
-            }));
-
-            setFolders(mappedFolders);
+                private: f.visible === "private"
+            })));
         } catch (error) {
-            console.error("Failed to load folders", error);
+            console.error(error);
         } finally {
             setLoading(false);
         }
-    }, [user, source]);
+    }, [user]);
 
     useEffect(() => {
         loadFolders();
     }, [loadFolders]);
 
-    // --- Create ---
     const handleCreateFolder = async (newValues) => {
         try {
-            const payload = {
+            const response = await createFolder({
                 name: newValues.name,
                 color: newValues.color || "#6366f1",
-            };
-            const response = await createFolder(payload);
-            const created = response.data;
-
-            setFolders(prev => [{
-                ...created,
-                modules: 0,
-                pinned: false,
-                private: false
-            }, ...prev]);
-
+            });
+            setFolders(prev => [{ ...response.data, modules: 0, private: false }, ...prev]);
             setAddFolder(false);
         } catch (error) {
-            console.error("Create folder failed", error);
-            alert("Failed to create folder");
+            alert("Error");
         }
     };
 
-    // --- Delete ---
     const handleDeleteFolder = async (id) => {
-        if (!window.confirm("Delete this folder?")) return;
-        if (source === "saves") return;
-
+        if (!window.confirm("Delete?")) return;
         try {
             await deleteFolder(id);
             setFolders(prev => prev.filter(f => f.id !== id));
         } catch (error) {
-            console.error("Delete folder failed", error);
-            alert("Failed to delete folder");
+            alert("Error");
         }
     };
 
-    // --- Update ---
-    const handleUpdate = async (id, data, uiOptimisticUpdate) => {
-        setFolders(prev => prev.map(f => f.id === id ? { ...f, ...uiOptimisticUpdate } : f));
-
+    const handleUpdate = async (id, data, uiUpdate) => {
+        setFolders(prev => prev.map(f => f.id === id ? { ...f, ...uiUpdate } : f));
         try {
             if (data.visible !== undefined) {
                 await toggleFolderVisibility(id, data.visible);
@@ -119,7 +93,6 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
                 await updateFolder(id, data);
             }
         } catch (error) {
-            console.error("Update folder failed", error);
             loadFolders();
         }
     };
@@ -133,28 +106,16 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
         });
     };
 
-    // --- Rename ---
-    const startRenaming = (folder) => {
-        if (source === "saves") return;
-        setRenamingId(folder.id);
-        setRenameValue(folder.name);
-    };
+    const handlePin = () => {};
+    const handleExport = () => {};
 
     const saveRename = async (id) => {
-        if (!renameValue.trim()) return cancelRename();
+        if (!renameValue.trim()) return setRenamingId(null);
         await handleUpdate(id, { name: renameValue.trim() }, { name: renameValue.trim() });
-        cancelRename();
-    };
-
-    const cancelRename = () => {
         setRenamingId(null);
-        setRenameValue("");
     };
 
-    // [FIX] Центрування напису завантаження
-    if (loading) {
-        return <div style={{ padding: 20, textAlign: "center", width: "100%" }}>Loading folders...</div>;
-    }
+    if (loading) return <div style={{ padding: 20, textAlign: "center", width: "100%" }}>Loading...</div>;
 
     return (
         <div className="folders-page">
@@ -163,13 +124,12 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
             </div>
 
             <div className="module-list">
-                {source === "library" && addFolder && (
+                {addFolder && (
                     <AddUniversalItem
                         type="folder"
                         fields={["name", "color"]}
                         icon={FolderIcon}
                         colorOptions={colors}
-                        defaultValues={{ color: "#6366f1" }}
                         active={addFolder}
                         onClose={() => setAddFolder(false)}
                         onCreate={handleCreateFolder}
@@ -178,7 +138,7 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
 
                 {folders.length === 0 && !addFolder && (
                     <div style={{ padding: 20, color: "gray", textAlign: "center", width: "100%" }}>
-                        {source === "saves" ? "No saved folders." : "You haven't created any folders yet."}
+                        No folders.
                     </div>
                 )}
 
@@ -186,11 +146,7 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
                     <div
                         className="module-card"
                         key={folder.id}
-                        onClick={() => {
-                            if (renamingId !== folder.id) {
-                                navigate(`/library/folders/${folder.id}`, { state: folder });
-                            }
-                        }}
+                        onClick={() => renamingId !== folder.id && navigate(`/library/folders/${folder.id}`)}
                         style={{ cursor: "pointer" }}
                     >
                         <div className="module-info">
@@ -201,20 +157,12 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
                                 <ColoredIcon icon={FolderIcon} color={folder.color} size={20} />
                                 {renamingId === folder.id ? (
                                     <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }} onClick={e => e.stopPropagation()}>
-                                        <EditableField
-                                            value={renameValue}
-                                            onSave={setRenameValue}
-                                            editable={true}
-                                            autosave={true}
-                                            placeholder="Folder name"
-                                        />
-                                        <button className="btn-primary" onClick={() => saveRename(folder.id)}>Save</button>
-                                        <button className="btn-secondary" onClick={cancelRename}>Cancel</button>
+                                        <EditableField value={renameValue} onSave={setRenameValue} editable={true} autosave={true} />
+                                        <Button variant="static" width={70} height={30} onClick={() => saveRename(folder.id)}>Save</Button>
+                                        <Button variant="hover" width={70} height={30} onClick={() => setRenamingId(null)}>Cancel</Button>
                                     </div>
                                 ) : (
-                                    <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
-                                        <span className="folder-name-text">{folder.name}</span>
-                                    </div>
+                                    <span className="folder-name-text">{folder.name}</span>
                                 )}
                             </div>
                         </div>
@@ -226,21 +174,17 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
                                 items={[
                                     {
                                         label: folder.pinned ? "Unpin" : "Pin",
-                                        onClick: () => handleUpdate(folder.id, { pinned: !folder.pinned }, { pinned: !folder.pinned }),
+                                        onClick: handlePin,
                                         icon: <ColoredIcon icon={folder.pinned ? TickIcon : UntickIcon} size={16} />
                                     },
                                     {
-                                        label: folder.private ? "Unprivate" : "Private",
-                                        onClick: () => {
-                                            const newPrivacy = !folder.private;
-                                            const visibleStatus = newPrivacy ? "private" : "public";
-                                            handleUpdate(folder.id, { visible: visibleStatus }, { private: newPrivacy });
-                                        },
+                                        label: folder.private ? "Make Public" : "Make Private",
+                                        onClick: () => handleUpdate(folder.id, { visible: folder.private ? "public" : "private" }, { private: !folder.private }),
                                         icon: <ColoredIcon icon={folder.private ? TickIcon : UntickIcon} size={16} />
                                     },
                                     {
                                         label: "Rename",
-                                        onClick: () => startRenaming(folder),
+                                        onClick: () => { setRenamingId(folder.id); setRenameValue(folder.name); },
                                         icon: <ColoredIcon icon={RenameIcon} size={16} />
                                     },
                                     {
@@ -250,12 +194,12 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
                                     },
                                     {
                                         label: "Export",
-                                        onClick: () => console.log("Export implementation pending"),
+                                        onClick: handleExport,
                                         icon: <ColoredIcon icon={ExportIcon} size={16} />
                                     }
                                 ]}
                             >
-                                <button className="btn-icon" aria-label="Folder menu">
+                                <button className="btn-icon">
                                     <ColoredIcon icon={DotsIcon} color="#000" size={16} />
                                 </button>
                             </DropdownMenu>

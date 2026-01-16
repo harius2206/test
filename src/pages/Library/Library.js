@@ -1,4 +1,3 @@
-// src/pages/Library/Library.js
 import { useState, useEffect } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import Folders from "./Folders/Folders";
@@ -9,21 +8,17 @@ import "./library.css";
 
 export default function Library() {
     const navigate = useNavigate();
-
-    // Read active tab from localStorage or default to "folders"
     const [activeTab, setActiveTab] = useState(() => {
         return localStorage.getItem("libraryActiveTab") || "folders";
     });
-
     const [addFolder, setAddFolder] = useState(false);
 
-    // Persist activeTab to localStorage when it changes
     useEffect(() => {
         localStorage.setItem("libraryActiveTab", activeTab);
     }, [activeTab]);
 
     return (
-        <div className="app-wrapper" style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+        <div className="app-wrapper">
             <main className="library-main">
                 <Routes>
                     <Route
@@ -62,9 +57,11 @@ export default function Library() {
                                 </div>
 
                                 <div className="library-content">
-                                    {activeTab === "folders"
-                                        ? <Folders addFolder={addFolder} setAddFolder={setAddFolder} />
-                                        : <Modules />}
+                                    {activeTab === "folders" ? (
+                                        <Folders addFolder={addFolder} setAddFolder={setAddFolder} />
+                                    ) : (
+                                        <Modules />
+                                    )}
                                 </div>
                             </>
                         }

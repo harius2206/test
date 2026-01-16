@@ -1,4 +1,3 @@
-// javascript
 import React, { useRef, useEffect, useState } from "react";
 import EditableField from "./editableField/editableField";
 import ColoredIcon from "./coloredIcon";
@@ -21,25 +20,25 @@ export default function AddUniversalItem({
     const inputRef = useRef(null);
 
     useEffect(() => {
-        if (active && inputRef.current) inputRef.current.focus();
+        if (active && inputRef.current) {
+            inputRef.current.focus();
+        }
     }, [active]);
 
     useEffect(() => {
-        const handleClickOutside = (e) => {
-            if (colorMenuRef.current && !colorMenuRef.current.contains(e.target)) {
+        const handleClickOutside = (event) => {
+            if (colorMenuRef.current && !colorMenuRef.current.contains(event.target)) {
                 setColorMenuOpen(false);
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
     }, []);
 
-    const handleChange = (field, value) => {
-        setValues(prev => ({ ...prev, [field]: value }));
-    };
-
     const handleCreate = () => {
-        if (!values.name || !values.name.trim()) return;
+        if (!values.name || values.name.trim() === "") return;
         onCreate(values);
         setValues({ ...defaultValues });
         onClose();
@@ -58,8 +57,11 @@ export default function AddUniversalItem({
 
                 <div className="module-name-row" style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     {fields.includes("color") && IconComponent && (
-                        <span style={{ position: "relative", display: "inline-block" }}>
-                            <span onClick={() => setColorMenuOpen(true)} style={{ cursor: "pointer" }}>
+                        <span style={{ position: "relative" }}>
+                            <span
+                                onClick={() => setColorMenuOpen(true)}
+                                style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+                            >
                                 <ColoredIcon icon={IconComponent} color={values.color || "#6366f1"} size={20} />
                             </span>
                             {colorMenuOpen && (
@@ -72,27 +74,28 @@ export default function AddUniversalItem({
                                         left: 0,
                                         zIndex: 10,
                                         display: "flex",
+                                        flexWrap: "wrap",
                                         gap: 4,
                                         background: "#fff",
                                         border: "1px solid #ccc",
-                                        borderRadius: 6,
-                                        padding: 6
+                                        padding: 6,
+                                        borderRadius: 4,
+                                        width: 120
                                     }}
                                 >
                                     {colorOptions.map(c => (
                                         <button
                                             key={c}
-                                            className="color-square"
                                             style={{
                                                 background: c,
-                                                border: values.color === c ? "2px solid #000" : "2px solid transparent",
                                                 width: 22,
                                                 height: 22,
-                                                borderRadius: 4,
-                                                cursor: "pointer"
+                                                cursor: "pointer",
+                                                border: values.color === c ? "2px solid #000" : "1px solid #ddd",
+                                                borderRadius: 2
                                             }}
                                             onClick={() => {
-                                                handleChange("color", c);
+                                                setValues({ ...values, color: c });
                                                 setColorMenuOpen(false);
                                             }}
                                         />
@@ -101,24 +104,18 @@ export default function AddUniversalItem({
                             )}
                         </span>
                     )}
-
-                    {fields.includes("name") && (
-                        <EditableField
-                            value={values.name || ""}
-                            onSave={(val) => handleChange("name", val)}
-                            editable={true}
-                            autosave={true}
-                            inputRef={inputRef}
-                            placeholder={placeholder}
-                        />
-                    )}
+                    <EditableField
+                        value={values.name || ""}
+                        onSave={(val) => setValues({ ...values, name: val })}
+                        editable={true}
+                        autosave={true}
+                        inputRef={inputRef}
+                        placeholder={placeholder}
+                    />
                 </div>
             </div>
-
-            <div className="folder-actions">
-                <Button width={70} height={24} variant="static" color="#655ADE" onClick={handleCreate}>
-                    Create
-                </Button>
+            <div className="folder-actions" style={{ display: "flex", gap: 8 }}>
+                <Button width={70} height={24} variant="static" onClick={handleCreate}>Create</Button>
             </div>
         </div>
     );
