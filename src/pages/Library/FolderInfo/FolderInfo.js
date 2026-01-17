@@ -341,12 +341,6 @@ export default function FolderPage() {
                         items={[
                             { label: "Rename", onClick: startRename, icon: <EditIcon width={16} height={16} /> },
                             { label: "Delete", onClick: handleDeleteFolder, icon: <DeleteIcon width={16} height={16} /> },
-                            // === ДОДАНО КНОПКУ MERGE В МЕНЮ ===
-                            {
-                                label: "Merge",
-                                onClick: () => merge.setIsMergeMode(true),
-                                icon: <img src="/сюди картинку для мерджа" alt="merge" width={16} height={16} />
-                            },
                             { label: folderState.private ? "Unprivate" : "Private", onClick: handleTogglePrivate, icon: <ColoredIcon icon={folderState.private ? TickIcon : UntickIcon} size={16} /> },
                             { label: folderState.pinned ? "Unpin" : "Pin", onClick: handlePin, icon: <ColoredIcon icon={folderState.pinned ? TickIcon : UntickIcon} size={16} /> },
                             { label: "Export", onClick: handleExport, icon: <ShareIcon width={16} height={16} /> },
@@ -372,9 +366,6 @@ export default function FolderPage() {
                                 onAddToFolder={(e, trigger) => openAddToFolderMenu(module, e, trigger)}
                                 deleteLabel={"Remove from folder"}
                                 onDelete={() => handleRemoveModule(module.id)}
-
-                                // Параметри для злиття з хука
-                                onMerge={merge.handleMergeToggle}
                                 isMergeMode={merge.isMergeMode}
                                 isSelected={merge.selectedForMerge.some(m => m.id === module.id)}
                                 onSelect={merge.toggleModuleSelection}
@@ -386,7 +377,6 @@ export default function FolderPage() {
                 )}
             </div>
 
-            {/* МОДАЛКА ФІНАЛІЗАЦІЇ МЕРДЖА */}
             {merge.isMergeModalOpen && (
                 <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
                     <div style={{ background: "white", padding: "30px", borderRadius: "20px", width: "380px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>

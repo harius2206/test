@@ -5,7 +5,10 @@ import {
     deleteModule,
     addModulePermission,
     removeModulePermission,
-    getTopics
+    getTopics,
+    getSavedModules,
+    saveModule,
+    unsaveModule
 } from "../../../api/modulesApi";
 import { addModuleToFolder } from "../../../api/foldersApi";
 import { useAuth } from "../../../context/AuthContext";
@@ -17,8 +20,6 @@ import ColoredIcon from "../../../components/coloredIcon";
 import ModalMessage from "../../../components/ModalMessage/ModalMessage";
 
 import { ReactComponent as FolderIcon } from "../../../images/folder.svg";
-
-// Імпортуємо кастомний хук
 import { useMergeModules } from "../../../hooks/useMergeModules";
 
 const getFlagUrl = (url) => {
@@ -53,33 +54,39 @@ export default function Modules({ source = "library" }) {
 
     const loadData = useCallback(async () => {
         if (!user || !user.id) { setLoading(false); return; }
-        if (source === "saves") { setModules([]); setLoading(false); return; }
 
         try {
             setLoading(true);
-            const [userResp, topicsResp] = await Promise.all([
-                getUserDetails(user.id),
-                getTopics()
-            ]);
+            let userModules = [];
 
-            const userModules = userResp.data.modules || [];
+            if (source === "saves") {
+                const savedResp = await getSavedModules(user.id);
+                userModules = savedResp.data.results || savedResp.data || [];
+            } else {
+                const userResp = await getUserDetails(user.id);
+                userModules = userResp.data.modules || [];
+                setFolders(userResp.data.folders || []);
+            }
+
+            const topicsResp = await getTopics();
+
             const mappedModules = userModules.map(m => ({
                 ...m,
                 rating: m.avg_rate,
                 flagFrom: getFlagUrl(m.lang_from?.flag),
                 flagTo: getFlagUrl(m.lang_to?.flag),
-                user: { username: user.username, avatar: user.avatar },
+                user: m.user || { username: user.username, avatar: user.avatar },
                 topic: m.topic,
                 cards_count: m.cards ? m.cards.length : (m.cards_count || 0),
-                collaborators: m.collaborators || []
+                collaborators: m.collaborators || [],
+                is_saved: source === "saves" ? true : m.is_saved
             }));
 
             setModules(mappedModules);
-            setFolders(userResp.data.folders || []);
             setTopics(topicsResp.data || []);
             setError(null);
         } catch (err) {
-            console.error("Failed to load library", err);
+            console.error("Failed to load modules", err);
             setError("Failed to load your modules.");
         } finally {
             setLoading(false);
@@ -88,7 +95,6 @@ export default function Modules({ source = "library" }) {
 
     useEffect(() => { loadData(); }, [loadData]);
 
-    // ВИКОРИСТАННЯ ХУКА ЗЛИТТЯ
     const merge = useMergeModules(loadData);
 
     useEffect(() => {
@@ -116,10 +122,26 @@ export default function Modules({ source = "library" }) {
         });
     };
 
-    const handleEditModule = (module) => {
-        navigate("/library/create-module", {
-            state: { mode: "edit", moduleId: module.id, moduleData: module }
-        });
+    const handleSaveModule = async (id) => {
+        try {
+            await saveModule(id);
+            setModules(prev => prev.map(m => m.id === id ? { ...m, is_saved: true } : m));
+        } catch (err) {
+            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to save module." });
+        }
+    };
+
+    const handleUnsaveModule = async (id) => {
+        try {
+            await unsaveModule(id);
+            if (source === "saves") {
+                setModules(prev => prev.filter(m => m.id !== id));
+            } else {
+                setModules(prev => prev.map(m => m.id === id ? { ...m, is_saved: false } : m));
+            }
+        } catch (err) {
+            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to unsave module." });
+        }
     };
 
     const handleDelete = async (id) => {
@@ -187,7 +209,6 @@ export default function Modules({ source = "library" }) {
         }
     };
 
-    // Фіналізація мерджа через хук
     const handleFinishMerge = () => {
         merge.executeMerge(
             () => setModalInfo({ open: true, type: "success", title: "Success", message: "Modules merged successfully!" }),
@@ -200,7 +221,6 @@ export default function Modules({ source = "library" }) {
     return (
         <div className="modules-page" ref={containerRef} style={{ position: "relative", minHeight: "200px" }}>
 
-            {/* Панель керування злиттям (Дані з хука) */}
             {merge.isMergeMode && (
                 <div style={{
                     position: "sticky", top: 10, zIndex: 100, background: "#6366f1", color: "white",
@@ -251,12 +271,17 @@ export default function Modules({ source = "library" }) {
                             expanded={expandedTags[module.id]}
                             toggleTags={toggleTags}
 
-                            onEdit={() => handleEditModule(module)}
-                            onDelete={() => handleDelete(module.id)}
-                            onPermissions={openModulePermissions}
-                            onAddToFolder={openAddToFolderMenu}
+                            // Виправлено: у розділі Saves прибираємо onDelete, бо там є onUnsave
+                            onEdit={source === "saves" ? null : () => navigate("/library/create-module", { state: { mode: "edit", moduleId: module.id, moduleData: module } })}
+                            onDelete={source === "saves" ? null : () => handleDelete(module.id)}
+                            deleteLabel="Delete"
 
-                            // Параметри з хука для картки
+                            onPermissions={source === "saves" ? null : openModulePermissions}
+                            onAddToFolder={source === "saves" ? null : openAddToFolderMenu}
+
+                            onSave={handleSaveModule}
+                            onUnsave={handleUnsaveModule}
+
                             onMerge={merge.handleMergeToggle}
                             isMergeMode={merge.isMergeMode}
                             isSelected={merge.selectedForMerge.some(m => m.id === module.id)}
@@ -266,7 +291,6 @@ export default function Modules({ source = "library" }) {
                 </div>
             )}
 
-            {/* Модальне вікно фіналізації злиття (Дані з хука) */}
             {merge.isMergeModalOpen && (
                 <div style={{
                     position: "fixed", top: 0, left: 0, right: 0, bottom: 0,

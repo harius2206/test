@@ -26,10 +26,14 @@ const endpoints = {
         tags: (id) => `/api/v1/modules/${id}/tags/`,
         tagsDetail: (id, tagName) => `/api/v1/modules/${id}/tags/${tagName}/`,
 
+        saved: (userId) => `/api/v1/modules/saves/users/${userId}/`,
+
         cards: {
             list: (moduleId) => `/api/v1/modules/${moduleId}/cards/`,
             detail: (moduleId, cardId) => `/api/v1/modules/${moduleId}/cards/${cardId}/`,
             learn: (moduleId, cardId) => `/api/v1/modules/${moduleId}/cards/${cardId}/learns/`,
+            saves: (moduleId, cardId) => `/api/v1/modules/${moduleId}/cards/${cardId}/saves/`,
+            saved: (moduleId, userId) => `/api/v1/modules/${moduleId}/cards/saves/users/${userId}/`,
         }
     },
     folders: {
@@ -38,7 +42,8 @@ const endpoints = {
         visibles: (id) => `/api/v1/folders/${id}/visibles/`,
         saves: (id) => `/api/v1/folders/${id}/saves/`,
         pins: (id) => `/api/v1/folders/${id}/pins/`,
-        modules: (id, moduleId) => `/api/v1/folders/${id}/modules/${moduleId}/`
+        modules: (id, moduleId) => `/api/v1/folders/${id}/modules/${moduleId}/`,
+        saved: (userId) => `/api/v1/folders/saves/users/${userId}/`,
     },
     languages: "/api/v1/languages/",
     topics: {

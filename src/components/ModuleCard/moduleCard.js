@@ -14,6 +14,7 @@ import { ReactComponent as MoreIcon } from "../../images/dotsHorizontal.svg";
 import { ReactComponent as CloseIcon } from "../../images/close.svg";
 import { ReactComponent as FolderIcon } from "../../images/folder.svg";
 import { ReactComponent as MergeIcon } from "../../images/merge.svg";
+import { ReactComponent as SaveIcon } from "../../images/save.svg";
 
 import "./moduleCard.css";
 
@@ -27,10 +28,12 @@ export default function ModuleCard({
                                        onEdit,
                                        onPermissions,
                                        onAddToFolder,
-                                       onMerge,         // Функція для активації режиму злиття з меню
-                                       isMergeMode,    // Прапорець: чи зараз активний режим злиття
-                                       isSelected,     // Прапорець: чи вибрана саме ця картка
-                                       onSelect        // Функція для перемикання вибору картки
+                                       onMerge,
+                                       isMergeMode,
+                                       isSelected,
+                                       onSelect,
+                                       onSave,
+                                       onUnsave
                                    }) {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -45,19 +48,17 @@ export default function ModuleCard({
     const topicName = typeof module.topic === 'object' && module.topic ? module.topic.name : module.topic;
     const isOwnModule = user?.username === authorName;
 
-    // Змінено: Логіка кліку залежить від режиму злиття
     const handleCardClick = () => {
         if (isMergeMode) {
-            // Якщо режим мерджа — перемикаємо вибір картки
             if (onSelect) onSelect(module);
         } else {
-            // Звичайна поведінка — перехід до перегляду модуля
             navigate(`/library/module-view?id=${module.id}`);
         }
     };
 
     const menuItems = [];
 
+    // Редагування
     if (onEdit) {
         menuItems.push({
             label: "Edit",
@@ -69,6 +70,21 @@ export default function ModuleCard({
             label: "Edit",
             onClick: () => navigate("/library/create-module", { state: { mode: "edit", moduleId: module.id, moduleData: module } }),
             icon: <EditIcon width={16} height={16} />
+        });
+    }
+
+    // Збереження (Дозволяємо зберігати навіть власні модулі для вкладки Saves)
+    if (module.is_saved && onUnsave) {
+        menuItems.push({
+            label: "Unsave",
+            onClick: () => onUnsave(module.id),
+            icon: <SaveIcon width={16} height={16} />
+        });
+    } else if (!module.is_saved && onSave) {
+        menuItems.push({
+            label: "Save",
+            onClick: () => onSave(module.id),
+            icon: <SaveIcon width={16} height={16} />
         });
     }
 
@@ -88,7 +104,6 @@ export default function ModuleCard({
         });
     }
 
-    // Додано: Кнопка "Merge" у випадаюче меню
     if (onMerge) {
         menuItems.push({
             label: isMergeMode ? "Cancel Merge" : "Merge",

@@ -775,3 +775,75 @@ main {
 .mv-row-book-btn:hover .mv-book-icon {
     transform: scale(1.1);
 }
+/* --- Глобальні налаштування іконок --- */
+.book-icon, .save-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    color: var(--mv-text-muted); /* сірий колір за замовчуванням */
+    transition: color 0.12s ease, transform 0.12s ease;
+}
+
+/* Контури іконок */
+.book-icon path, .save-icon path {
+    stroke: currentColor;
+    fill: none;
+    transition: stroke 0.12s ease;
+}
+
+/* --- Активні стани (Фіолетовий) --- */
+/* Для FlipCard Overlay */
+.mv-card-book.mv-active .book-icon path,
+.mv-card-save.mv-active .save-icon path {
+    stroke: var(--mv-accent) !important;
+}
+
+/* Для спискового варіанту (Rows) */
+.mv-row-book-btn.mv-active .book-icon path,
+.mv-row-save-btn.mv-active .save-icon path {
+    stroke: var(--mv-accent) !important;
+}
+
+/* --- Вирівнювання у списку --- */
+.mv-row-right div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mv-row-save-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Опускаємо трошки значок, щоб він був на рівні книжки */
+    transition: transform 0.1s ease;
+}
+
+.mv-row-save-btn:hover {
+    transform: scale(1.1);
+}
+
+.mv-row-book-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s ease;
+}
+
+.mv-row-book-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Видаляємо старі правила fill, якщо вони були, щоб не конфліктували */
+.mv-card-save.mv-active .save-icon,
+.mv-row-save-btn.mv-active .save-icon {
+    fill: none;
+}
