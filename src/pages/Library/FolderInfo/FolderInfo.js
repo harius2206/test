@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 import {
@@ -6,7 +6,8 @@ import {
     removeModuleFromFolder, addModuleToFolder
 } from "../../../api/foldersApi";
 import { getUserDetails } from "../../../api/usersApi";
-import { addModulePermission, removeModulePermission } from "../../../api/modulesApi";
+// Використовуємо готові функції для отримання тем
+import { addModulePermission, removeModulePermission, getTopics } from "../../../api/modulesApi";
 import { useAuth } from "../../../context/AuthContext";
 
 import ModuleCard from "../../../components/ModuleCard/moduleCard";
@@ -27,6 +28,9 @@ import { ReactComponent as TickIcon } from "../../../images/tick.svg";
 import { ReactComponent as UntickIcon } from "../../../images/unTick.svg";
 import { ReactComponent as FolderIcon } from "../../../images/folder.svg";
 
+// Імпортуємо кастомний хук для злиття
+import { useMergeModules } from "../../../hooks/useMergeModules";
+
 import "./folderInfo.css";
 
 const getFlagUrl = (url) => {
@@ -42,15 +46,17 @@ export default function FolderPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
+    const containerRef = useRef(null);
 
     const [folderState, setFolderState] = useState(null);
     const [modules, setModules] = useState([]);
+    const [topics, setTopics] = useState([]);
     const [userFolders, setUserFolders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     const [expandedTags, setExpandedTags] = useState({});
-    const [visibleCount] = useState(9);
+    const [visibleCount, setVisibleCount] = useState(9);
     const [renaming, setRenaming] = useState(false);
     const [renameValue, setRenameValue] = useState("");
 
@@ -63,9 +69,12 @@ export default function FolderPage() {
     const loadData = useCallback(async () => {
         try {
             setLoading(true);
-            const response = await getFolder(id);
-            const data = response.data;
+            const [folderRes, topicsRes] = await Promise.all([
+                getFolder(id),
+                getTopics()
+            ]);
 
+            const data = folderRes.data;
             const mappedModules = (data.modules || []).map(m => ({
                 ...m,
                 rating: m.avg_rate,
@@ -82,6 +91,7 @@ export default function FolderPage() {
                 private: data.visible === "private" || data.private === true
             });
             setModules(mappedModules);
+            setTopics(topicsRes.data || []);
 
             if (user?.id) {
                 const userRes = await getUserDetails(user.id);
@@ -98,6 +108,23 @@ export default function FolderPage() {
     useEffect(() => {
         loadData();
     }, [loadData]);
+
+    // ВИКОРИСТАННЯ ХУКА ЗЛИТТЯ
+    const merge = useMergeModules(loadData);
+
+    useEffect(() => {
+        if (loading) return;
+        const computeVisible = () => {
+            if (containerRef.current) {
+                const count = Math.max(3, Math.floor(containerRef.current.offsetWidth / 80) - 5);
+                setVisibleCount(count);
+            }
+        };
+        computeVisible();
+        const obs = new ResizeObserver(computeVisible);
+        if (containerRef.current) obs.observe(containerRef.current);
+        return () => obs.disconnect();
+    }, [loading]);
 
     const toggleTags = (modId) => setExpandedTags((prev) => ({ ...prev, [modId]: !prev[modId] }));
 
@@ -225,12 +252,54 @@ export default function FolderPage() {
         }
     };
 
+    // Обробник злиття через хук
+    const handleFinishMerge = () => {
+        merge.executeMerge(
+            () => setModalInfo({ open: true, type: "success", title: "Success", message: "Modules merged successfully!" }),
+            () => setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to merge modules." })
+        );
+    };
+
     if (loading) return <div className="folder-page" style={{padding: 20}}>Loading...</div>;
     if (error) return <div className="folder-page" style={{padding: 20, color: 'red'}}>{error}</div>;
     if (!folderState) return null;
 
     return (
-        <div className="folder-page" style={{ position: "relative" }}>
+        <div className="folder-page" ref={containerRef} style={{ position: "relative" }}>
+
+            {/* ПАНЕЛЬ РЕЖИМУ МЕРДЖА */}
+            {merge.isMergeMode && (
+                <div style={{
+                    position: "sticky", top: 10, zIndex: 100, background: "#6366f1", color: "white",
+                    padding: "12px 20px", borderRadius: "12px", marginBottom: "20px",
+                    display: "flex", justifyContent: "space-between", alignItems: "center",
+                    boxShadow: "0 4px 15px rgba(99, 102, 241, 0.4)"
+                }}>
+                    <div>
+                        <strong>Merge Mode:</strong> {merge.selectedForMerge.length} modules selected.
+                        <span style={{ marginLeft: 10, fontSize: "13px" }}>Click cards to select/deselect.</span>
+                    </div>
+                    <div style={{ display: "flex", gap: "10px" }}>
+                        <button
+                            onClick={merge.openFinalMergeModal}
+                            disabled={merge.selectedForMerge.length < 2}
+                            style={{
+                                padding: "6px 15px", borderRadius: "8px", border: "none", cursor: "pointer",
+                                fontWeight: "bold", opacity: merge.selectedForMerge.length < 2 ? 0.6 : 1
+                            }}
+                        >
+                            Process
+                        </button>
+                        <button
+                            onClick={merge.cancelMergeMode}
+                            style={{ background: "transparent", color: "white", border: "1px solid white", padding: "6px 12px", borderRadius: "8px", cursor: "pointer" }}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <div className="folder-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 {renaming ? (
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -272,6 +341,12 @@ export default function FolderPage() {
                         items={[
                             { label: "Rename", onClick: startRename, icon: <EditIcon width={16} height={16} /> },
                             { label: "Delete", onClick: handleDeleteFolder, icon: <DeleteIcon width={16} height={16} /> },
+                            // === ДОДАНО КНОПКУ MERGE В МЕНЮ ===
+                            {
+                                label: "Merge",
+                                onClick: () => merge.setIsMergeMode(true),
+                                icon: <img src="/сюди картинку для мерджа" alt="merge" width={16} height={16} />
+                            },
                             { label: folderState.private ? "Unprivate" : "Private", onClick: handleTogglePrivate, icon: <ColoredIcon icon={folderState.private ? TickIcon : UntickIcon} size={16} /> },
                             { label: folderState.pinned ? "Unpin" : "Pin", onClick: handlePin, icon: <ColoredIcon icon={folderState.pinned ? TickIcon : UntickIcon} size={16} /> },
                             { label: "Export", onClick: handleExport, icon: <ShareIcon width={16} height={16} /> },
@@ -284,24 +359,64 @@ export default function FolderPage() {
 
             <div className="folder-modules" style={{ marginTop: 16 }}>
                 {modules.length > 0 ? (
-                    modules.map((module) => (
-                        <ModuleCard
-                            key={module.id}
-                            module={module}
-                            visibleCount={visibleCount}
-                            expanded={!!expandedTags[module.id]}
-                            toggleTags={toggleTags}
-                            onEdit={() => handleEditModule(module)}
-                            onPermissions={(e, trigger) => openModulePermissions(module, e, trigger)}
-                            onAddToFolder={(e, trigger) => openAddToFolderMenu(module, e, trigger)}
-                            deleteLabel={"Remove from folder"}
-                            onDelete={() => handleRemoveModule(module.id)}
-                        />
-                    ))
+                    <div className="module-list">
+                        {modules.map((module) => (
+                            <ModuleCard
+                                key={module.id}
+                                module={module}
+                                visibleCount={visibleCount}
+                                expanded={!!expandedTags[module.id]}
+                                toggleTags={toggleTags}
+                                onEdit={() => handleEditModule(module)}
+                                onPermissions={(e, trigger) => openModulePermissions(module, e, trigger)}
+                                onAddToFolder={(e, trigger) => openAddToFolderMenu(module, e, trigger)}
+                                deleteLabel={"Remove from folder"}
+                                onDelete={() => handleRemoveModule(module.id)}
+
+                                // Параметри для злиття з хука
+                                onMerge={merge.handleMergeToggle}
+                                isMergeMode={merge.isMergeMode}
+                                isSelected={merge.selectedForMerge.some(m => m.id === module.id)}
+                                onSelect={merge.toggleModuleSelection}
+                            />
+                        ))}
+                    </div>
                 ) : (
                     <div className="empty-folder">No modules yet</div>
                 )}
             </div>
+
+            {/* МОДАЛКА ФІНАЛІЗАЦІЇ МЕРДЖА */}
+            {merge.isMergeModalOpen && (
+                <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
+                    <div style={{ background: "white", padding: "30px", borderRadius: "20px", width: "380px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
+                        <h3 style={{ marginBottom: "20px" }}>Finalize Merge</h3>
+                        <div style={{ marginTop: 15 }}>
+                            <label style={{ fontSize: "12px", color: "gray" }}>New Name</label>
+                            <input
+                                style={{ width: "100%", padding: "10px", marginTop: "5px", borderRadius: "8px", border: "1px solid #ddd" }}
+                                type="text" value={merge.mergeForm.name}
+                                onChange={(e) => merge.setMergeForm({...merge.mergeForm, name: e.target.value})}
+                            />
+                        </div>
+                        <div style={{ marginTop: 15, marginBottom: 20 }}>
+                            <label style={{ fontSize: "12px", color: "gray" }}>Topic</label>
+                            <select
+                                style={{ width: "100%", padding: "10px", marginTop: "5px", borderRadius: "8px", border: "1px solid #ddd" }}
+                                value={merge.mergeForm.topic}
+                                onChange={(e) => merge.setMergeForm({...merge.mergeForm, topic: e.target.value})}
+                            >
+                                <option value="">Select Topic...</option>
+                                {topics.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                            </select>
+                        </div>
+                        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+                            <button onClick={() => merge.setIsMergeModalOpen(false)} style={{ padding: "10px 15px", borderRadius: "8px", border: "none", cursor: "pointer" }}>Back</button>
+                            <button onClick={handleFinishMerge} style={{ background: "#6366f1", color: "white", border: "none", padding: "10px 20px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}>Confirm Merge</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {permissionsTarget && (
                 <div style={{ position: "fixed", left: permissionsTarget.anchor?.left, top: permissionsTarget.anchor?.top, zIndex: 300 }}>
@@ -332,6 +447,8 @@ export default function FolderPage() {
                             userFolders.map(folder => (
                                 <div key={folder.id} onClick={() => handleAddToFolder(folder)}
                                      style={{ padding: "10px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", transition: "background 0.2s" }}
+                                     onMouseEnter={(e) => e.currentTarget.style.background = "#f5f5f7"}
+                                     onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
                                 >
                                     <ColoredIcon icon={FolderIcon} color={folder.color || "#6366f1"} size={18} />
                                     <span style={{ fontSize: "14px", color: "#333" }}>{folder.name}</span>

@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUserDetails } from "../../../api/usersApi";
-// Імпорт необхідних функцій, включаючи mergeModules та getTopics
 import {
     deleteModule,
     addModulePermission,
     removeModulePermission,
-    mergeModules,
     getTopics
 } from "../../../api/modulesApi";
 import { addModuleToFolder } from "../../../api/foldersApi";
@@ -19,6 +17,9 @@ import ColoredIcon from "../../../components/coloredIcon";
 import ModalMessage from "../../../components/ModalMessage/ModalMessage";
 
 import { ReactComponent as FolderIcon } from "../../../images/folder.svg";
+
+// Імпортуємо кастомний хук
+import { useMergeModules } from "../../../hooks/useMergeModules";
 
 const getFlagUrl = (url) => {
     if (!url) return null;
@@ -47,12 +48,6 @@ export default function Modules({ source = "library" }) {
     const [sortType, setSortType] = useState("date");
     const [addToFolderTarget, setAddToFolderTarget] = useState(null);
     const [modalInfo, setModalInfo] = useState({ open: false, type: "info", title: "", message: "" });
-
-    // === СТАН ДЛЯ РЕЖИМУ ЗЛИТТЯ ===
-    const [isMergeMode, setIsMergeMode] = useState(false);
-    const [selectedForMerge, setSelectedForMerge] = useState([]);
-    const [isMergeModalOpen, setIsMergeModalOpen] = useState(false);
-    const [mergeForm, setMergeForm] = useState({ name: "", topic: "" });
 
     const handleCloseModal = () => setModalInfo((prev) => ({ ...prev, open: false }));
 
@@ -93,92 +88,23 @@ export default function Modules({ source = "library" }) {
 
     useEffect(() => { loadData(); }, [loadData]);
 
+    // ВИКОРИСТАННЯ ХУКА ЗЛИТТЯ
+    const merge = useMergeModules(loadData);
+
     useEffect(() => {
         if (loading) return;
+        const element = containerRef.current;
+        if (!element) return;
         const computeVisible = () => {
-            if (containerRef.current) {
-                const count = Math.max(3, Math.floor(containerRef.current.offsetWidth / 80) - 5);
-                setVisibleCount(count);
-            }
+            const width = element.offsetWidth;
+            const count = Math.max(3, Math.floor(width / 80) - 5);
+            setVisibleCount(count);
         };
         computeVisible();
-        const obs = new ResizeObserver(computeVisible);
-        if (containerRef.current) obs.observe(containerRef.current);
-        return () => obs.disconnect();
+        const observer = new ResizeObserver(computeVisible);
+        observer.observe(element);
+        return () => observer.disconnect();
     }, [loading]);
-
-    // === ЛОГІКА ЗЛИТТЯ ===
-
-    // Викликається при виборі "Merge" в меню картки
-    const handleMergeMenuClick = (module) => {
-        if (!isMergeMode) {
-            setIsMergeMode(true);
-            setSelectedForMerge([module]);
-        } else {
-            // Якщо режим вже активний, просто додаємо/видаляємо цей модуль
-            toggleModuleSelection(module);
-        }
-    };
-
-    // Обробник вибору модулів кліком по картці
-    const toggleModuleSelection = (module) => {
-        setSelectedForMerge(prev => {
-            const isSelected = prev.some(m => m.id === module.id);
-            if (isSelected) {
-                return prev.filter(m => m.id !== module.id);
-            } else {
-                return [...prev, module];
-            }
-        });
-    };
-
-    const handleConfirmMerge = async () => {
-        if (selectedForMerge.length < 2) return;
-
-        // Значення за замовчуванням для форми
-        setMergeForm({
-            name: `Merged Module (${selectedForMerge.length})`,
-            topic: selectedForMerge[0].topic?.id || selectedForMerge[0].topic || ""
-        });
-        setIsMergeModalOpen(true);
-    };
-
-    const executeMerge = async () => {
-        if (!mergeForm.name || !mergeForm.topic) {
-            alert("Будь ласка, вкажіть назву та тему");
-            return;
-        }
-        try {
-            const payload = {
-                name: mergeForm.name,
-                topic: parseInt(mergeForm.topic),
-                modules: selectedForMerge.map(m => m.id)
-            };
-            await mergeModules(payload);
-
-            setModalInfo({
-                open: true,
-                type: "success",
-                title: "Успіх",
-                message: "Модулі успішно об'єднано!"
-            });
-
-            // Скидання стану
-            setIsMergeMode(false);
-            setSelectedForMerge([]);
-            setIsMergeModalOpen(false);
-            loadData();
-        } catch (err) {
-            setModalInfo({ open: true, type: "error", title: "Помилка", message: "Не вдалося об'єднати модулі." });
-        }
-    };
-
-    const cancelMergeMode = () => {
-        setIsMergeMode(false);
-        setSelectedForMerge([]);
-    };
-
-    // --- Actions ---
 
     const handleSort = (type) => {
         setSortType(type);
@@ -187,6 +113,12 @@ export default function Modules({ source = "library" }) {
             if (type === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
             else sorted.sort((a, b) => b.id - a.id);
             return sorted;
+        });
+    };
+
+    const handleEditModule = (module) => {
+        navigate("/library/create-module", {
+            state: { mode: "edit", moduleId: module.id, moduleData: module }
         });
     };
 
@@ -200,18 +132,42 @@ export default function Modules({ source = "library" }) {
         }
     };
 
+    const toggleTags = (id) => setExpandedTags(prev => ({ ...prev, [id]: !prev[id] }));
+
     const openModulePermissions = (module, evt, trigger) => {
         let anchor = null;
-        if (trigger?.getBoundingClientRect) {
+        if (trigger && trigger.getBoundingClientRect) {
             const rect = trigger.getBoundingClientRect();
             anchor = { left: rect.left, top: rect.bottom };
         }
         setPermissionsTarget({ moduleId: module.id, users: module.collaborators || [], anchor });
     };
 
+    const handleAddUser = async (userObj) => {
+        if (!permissionsTarget) return;
+        try {
+            await addModulePermission(permissionsTarget.moduleId, userObj.id);
+            setModules(prev => prev.map(m => m.id === permissionsTarget.moduleId ? { ...m, collaborators: [...(m.collaborators || []), userObj] } : m));
+            setPermissionsTarget(prev => ({ ...prev, users: [...prev.users, userObj] }));
+        } catch (err) {
+            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to add user." });
+        }
+    };
+
+    const handleRemoveUser = async (userId) => {
+        if (!permissionsTarget) return;
+        try {
+            await removeModulePermission(permissionsTarget.moduleId, userId);
+            setModules(prev => prev.map(m => m.id === permissionsTarget.moduleId ? { ...m, collaborators: (m.collaborators || []).filter(u => u.id !== userId) } : m));
+            setPermissionsTarget(prev => ({ ...prev, users: prev.users.filter(u => u.id !== userId) }));
+        } catch (err) {
+            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to remove user." });
+        }
+    };
+
     const openAddToFolderMenu = (module, evt, trigger) => {
         let anchor = null;
-        if (trigger?.getBoundingClientRect) {
+        if (trigger && trigger.getBoundingClientRect) {
             const rect = trigger.getBoundingClientRect();
             anchor = { left: rect.left - 100, top: rect.bottom + 5 };
         }
@@ -220,14 +176,23 @@ export default function Modules({ source = "library" }) {
 
     const handleAddToFolder = async (folder) => {
         if (!addToFolderTarget) return;
+        const { module } = addToFolderTarget;
         try {
-            await addModuleToFolder(folder.id, addToFolderTarget.module.id);
-            setModalInfo({ open: true, type: "success", title: "Додано", message: "Модуль додано до папки" });
+            await addModuleToFolder(folder.id, module.id);
+            setModalInfo({ open: true, type: "success", title: "Added", message: `Added "${module.name}" to folder "${folder.name}"` });
         } catch (err) {
-            setModalInfo({ open: true, type: "error", title: "Помилка", message: "Не вдалося додати до папки" });
+            setModalInfo({ open: true, type: "error", title: "Error", message: "Could not add to folder." });
         } finally {
             setAddToFolderTarget(null);
         }
+    };
+
+    // Фіналізація мерджа через хук
+    const handleFinishMerge = () => {
+        merge.executeMerge(
+            () => setModalInfo({ open: true, type: "success", title: "Success", message: "Modules merged successfully!" }),
+            () => setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to merge modules." })
+        );
     };
 
     if (loading) return <div style={{ padding: 20, textAlign: "center" }}>Loading library...</div>;
@@ -235,8 +200,8 @@ export default function Modules({ source = "library" }) {
     return (
         <div className="modules-page" ref={containerRef} style={{ position: "relative", minHeight: "200px" }}>
 
-            {/* Панель керування злиттям */}
-            {isMergeMode && (
+            {/* Панель керування злиттям (Дані з хука) */}
+            {merge.isMergeMode && (
                 <div style={{
                     position: "sticky", top: 10, zIndex: 100, background: "#6366f1", color: "white",
                     padding: "12px 20px", borderRadius: "12px", marginBottom: "20px",
@@ -244,25 +209,25 @@ export default function Modules({ source = "library" }) {
                     boxShadow: "0 4px 15px rgba(99, 102, 241, 0.4)"
                 }}>
                     <div>
-                        <strong>Режим злиття:</strong> Вибрано модулів: {selectedForMerge.length}.
-                        <span style={{ marginLeft: 10, fontSize: "13px" }}>Натискайте на картки, щоб вибрати.</span>
+                        <strong>Merge Mode:</strong> {merge.selectedForMerge.length} modules selected.
+                        <span style={{ marginLeft: 10, fontSize: "13px" }}>Click cards to select/deselect.</span>
                     </div>
                     <div style={{ display: "flex", gap: "10px" }}>
                         <button
-                            onClick={handleConfirmMerge}
-                            disabled={selectedForMerge.length < 2}
+                            onClick={merge.openFinalMergeModal}
+                            disabled={merge.selectedForMerge.length < 2}
                             style={{
                                 padding: "6px 15px", borderRadius: "8px", border: "none", cursor: "pointer",
-                                fontWeight: "bold", opacity: selectedForMerge.length < 2 ? 0.6 : 1
+                                fontWeight: "bold", opacity: merge.selectedForMerge.length < 2 ? 0.6 : 1
                             }}
                         >
-                            Далі
+                            Process
                         </button>
                         <button
-                            onClick={cancelMergeMode}
+                            onClick={merge.cancelMergeMode}
                             style={{ background: "transparent", color: "white", border: "1px solid white", padding: "6px 12px", borderRadius: "8px", cursor: "pointer" }}
                         >
-                            Скасувати
+                            Cancel
                         </button>
                     </div>
                 </div>
@@ -284,71 +249,70 @@ export default function Modules({ source = "library" }) {
                             module={module}
                             visibleCount={visibleCount}
                             expanded={expandedTags[module.id]}
-                            toggleTags={(id) => setExpandedTags(prev => ({...prev, [id]: !prev[id]}))}
+                            toggleTags={toggleTags}
 
-                            onEdit={() => navigate("/library/create-module", { state: { mode: "edit", moduleId: module.id, moduleData: module } })}
+                            onEdit={() => handleEditModule(module)}
                             onDelete={() => handleDelete(module.id)}
                             onPermissions={openModulePermissions}
                             onAddToFolder={openAddToFolderMenu}
 
-                            // === Пропси для злиття ===
-                            onMerge={handleMergeMenuClick}
-                            isMergeMode={isMergeMode}
-                            isSelected={selectedForMerge.some(m => m.id === module.id)}
-                            onSelect={toggleModuleSelection}
+                            // Параметри з хука для картки
+                            onMerge={merge.handleMergeToggle}
+                            isMergeMode={merge.isMergeMode}
+                            isSelected={merge.selectedForMerge.some(m => m.id === module.id)}
+                            onSelect={merge.toggleModuleSelection}
                         />
                     ))}
                 </div>
             )}
 
-            {/* Модальне вікно налаштування нового модуля */}
-            {isMergeModalOpen && (
+            {/* Модальне вікно фіналізації злиття (Дані з хука) */}
+            {merge.isMergeModalOpen && (
                 <div style={{
                     position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
                     background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000
                 }}>
-                    <div style={{ background: "white", padding: "30px", borderRadius: "20px", width: "400px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
-                        <h2 style={{ marginBottom: "20px" }}>Злиття модулів</h2>
+                    <div style={{ background: "white", padding: "30px", borderRadius: "20px", width: "380px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
+                        <h3 style={{ marginBottom: "20px" }}>Finalize Merge</h3>
                         <div style={{ marginBottom: "15px" }}>
-                            <label style={{ display: "block", marginBottom: "5px", fontSize: "14px", color: "#666" }}>Назва нового модуля</label>
+                            <label style={{ display: "block", marginBottom: "5px", fontSize: "14px", color: "#666" }}>New Module Name</label>
                             <input
                                 style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }}
                                 type="text"
-                                value={mergeForm.name}
-                                onChange={(e) => setMergeForm({...mergeForm, name: e.target.value})}
+                                value={merge.mergeForm.name}
+                                onChange={(e) => merge.setMergeForm({...merge.mergeForm, name: e.target.value})}
                             />
                         </div>
                         <div style={{ marginBottom: "25px" }}>
-                            <label style={{ display: "block", marginBottom: "5px", fontSize: "14px", color: "#666" }}>Тема</label>
+                            <label style={{ display: "block", marginBottom: "5px", fontSize: "14px", color: "#666" }}>New Topic</label>
                             <select
                                 style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }}
-                                value={mergeForm.topic}
-                                onChange={(e) => setMergeForm({...mergeForm, topic: e.target.value})}
+                                value={merge.mergeForm.topic}
+                                onChange={(e) => merge.setMergeForm({...merge.mergeForm, topic: e.target.value})}
                             >
-                                <option value="">Оберіть тему...</option>
+                                <option value="">Select Topic...</option>
                                 {topics.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                             </select>
                         </div>
                         <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
-                            <button onClick={() => setIsMergeModalOpen(false)} style={{ padding: "10px 20px", background: "#f0f0f0", border: "none", borderRadius: "8px", cursor: "pointer" }}>
-                                Назад
+                            <button onClick={() => merge.setIsMergeModalOpen(false)} style={{ padding: "10px 20px", background: "#f0f0f0", border: "none", borderRadius: "8px", cursor: "pointer" }}>
+                                Back
                             </button>
-                            <button onClick={executeMerge} style={{ padding: "10px 20px", background: "#6366f1", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}>
-                                Об'єднати
+                            <button onClick={handleFinishMerge} style={{ padding: "10px 20px", background: "#6366f1", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}>
+                                Confirm Merge
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Допоміжні меню (права доступу, папки) */}
             {permissionsTarget && (
                 <div style={{ position: "fixed", left: permissionsTarget.anchor?.left, top: permissionsTarget.anchor?.top, zIndex: 300 }}>
                     <PermissionsMenu
                         moduleId={permissionsTarget.moduleId}
                         users={permissionsTarget.users}
-                        onAddUser={async (u) => { await addModulePermission(permissionsTarget.moduleId, u.id); loadData(); }}
-                        onRemoveUser={async (uid) => { await removeModulePermission(permissionsTarget.moduleId, uid); loadData(); }}
+                        onAddUser={handleAddUser}
+                        onRemoveUser={handleRemoveUser}
                         onClose={() => setPermissionsTarget(null)}
                     />
                 </div>
@@ -363,10 +327,10 @@ export default function Modules({ source = "library" }) {
                         padding: "8px 0", minWidth: "200px", maxHeight: "300px", overflowY: "auto"
                     }}>
                         <div style={{ padding: "8px 16px", fontWeight: "bold", borderBottom: "1px solid #eee", fontSize: "14px", color: "#666" }}>
-                            Додати "{addToFolderTarget.module.name}" до:
+                            Add "{addToFolderTarget.module.name}" to:
                         </div>
                         {folders.length === 0 ? (
-                            <div style={{ padding: "12px", textAlign: "center", color: "gray", fontSize: "13px" }}>Папок не знайдено.</div>
+                            <div style={{ padding: "12px", textAlign: "center", color: "gray", fontSize: "13px" }}>No folders found.</div>
                         ) : (
                             folders.map(folder => (
                                 <div key={folder.id} onClick={() => handleAddToFolder(folder)}
