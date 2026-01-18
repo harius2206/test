@@ -18,15 +18,23 @@
 
 .dm-wrapper {
     position: relative;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    /* Жорстко обмежуємо висоту wrapper-а, щоб він не розтягував рядок */
+    height: fit-content !important;
+    align-self: center;
 }
 
 .dm-trigger {
     cursor: pointer;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     color: var(--dm-text);
     transition: color 0.2s ease;
+    height: fit-content !important;
 }
 
 .dm-menu {
@@ -34,21 +42,27 @@
     background: var(--dm-bg);
     border: 1px solid var(--dm-border);
     border-radius: 6px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     padding: 6px 0;
     z-index: 99999;
     transition: background-color 0.2s ease, border-color 0.2s ease;
+
+    /* ВИДАЛЕНО СКРОЛ: Прибираємо обмеження висоти та авто-скрол */
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
 }
 
 .dm-item {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 12px;
+    padding: 8px 16px;
     cursor: pointer;
     font-size: 14px;
     color: var(--dm-text);
     transition: background 0.15s ease, color 0.15s ease;
+    min-height: 32px;
 }
 
 .dm-item svg,
@@ -72,10 +86,14 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
 }
 
 .dm-label {
     flex: 1;
     color: inherit;
     transition: color 0.15s ease;
+    white-space: nowrap;
 }

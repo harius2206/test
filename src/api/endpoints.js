@@ -28,13 +28,14 @@ const endpoints = {
 
         saved: (userId) => `/api/v1/modules/saves/users/${userId}/`,
 
-        cards: {
-            list: (moduleId) => `/api/v1/modules/${moduleId}/cards/`,
-            detail: (moduleId, cardId) => `/api/v1/modules/${moduleId}/cards/${cardId}/`,
-            learn: (moduleId, cardId) => `/api/v1/modules/${moduleId}/cards/${cardId}/learns/`,
-            saves: (moduleId, cardId) => `/api/v1/modules/${moduleId}/cards/${cardId}/saves/`,
-            saved: (moduleId, userId) => `/api/v1/modules/${moduleId}/cards/saves/users/${userId}/`,
-        }
+
+    },
+    cards: {
+        list: "/api/v1/cards/",
+        detail: (id) => `/api/v1/cards/${id}/`,
+        learn: (id) => `/api/v1/cards/${id}/learns/`,
+        saves: (id) => `/api/v1/cards/${id}/saves/`,
+        saved: (userId) => `/api/v1/cards/saves/users/${userId}/`,
     },
     folders: {
         list: "/api/v1/folders/",

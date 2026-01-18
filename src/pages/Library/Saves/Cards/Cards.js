@@ -3,8 +3,7 @@ import SortMenu from "../../../../components/sortMenu/sortMenu";
 import DropdownMenu from "../../../../components/dropDownMenu/dropDownMenu";
 import { useAuth } from "../../../../context/AuthContext";
 import {
-    getSavedModules,
-    getSavedCardsByModule,
+    getSavedCards,
     unsaveCard,
     saveCard,
     updateCardLearnStatus
@@ -30,26 +29,20 @@ export default function Cards({ source = "saves" }) {
         }
         try {
             setLoading(true);
-            const modulesResp = await getSavedModules(user.id);
-            const savedModules = modulesResp.data.results || modulesResp.data || [];
+            // Отримуємо всі засейвлені картки юзера (новий ендпоінт)
+            const resp = await getSavedCards(user.id);
+            const data = resp.data.results || resp.data || [];
 
-            const cardsPromises = savedModules.map(m => getSavedCardsByModule(m.id, user.id));
-            const results = await Promise.all(cardsPromises);
+            const mappedCards = data.map(c => ({
+                ...c,
+                createdAt: c.created_at || new Date().toISOString(),
+                is_saved: true,
+                is_learned: c.learned_status === "learned"
+            }));
 
-            const allSavedCards = results.flatMap((resp, index) => {
-                const moduleCards = resp.data.results || resp.data || [];
-                return moduleCards.map(c => ({
-                    ...c,
-                    moduleId: savedModules[index].id,
-                    createdAt: c.created_at || new Date().toISOString(),
-                    is_saved: true,
-                    is_learned: c.learned_status === "learned"
-                }));
-            });
-
-            setCards(allSavedCards);
+            setCards(mappedCards);
         } catch (err) {
-            console.error("Failed to load cards", err);
+            console.error("Failed to load saved cards:", err);
         } finally {
             setLoading(false);
         }
@@ -75,20 +68,20 @@ export default function Cards({ source = "saves" }) {
         const copy = [...cards];
         if (sort === "newest") copy.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         else if (sort === "oldest") copy.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-        else if (sort === "title_asc") copy.sort((a, b) => (a.term || a.original || "").localeCompare(b.term || b.original || ""));
-        else if (sort === "title_desc") copy.sort((a, b) => (b.term || b.original || "").localeCompare(a.term || a.original || ""));
+        else if (sort === "title_asc") copy.sort((a, b) => (a.original || "").localeCompare(b.original || ""));
+        else if (sort === "title_desc") copy.sort((a, b) => (b.original || "").localeCompare(a.original || ""));
         return copy;
     }, [cards, sort]);
 
     const toggleLearn = async (card) => {
         try {
-            const newStatus = !card.is_learned ? "learned" : "in_progress";
-            await updateCardLearnStatus(card.moduleId, card.id, newStatus);
+            const newStatus = !card.is_learned;
+            await updateCardLearnStatus(card.id, newStatus);
             setCards(prev => prev.map(c =>
-                c.id === card.id ? { ...c, is_learned: !card.is_learned } : c
+                c.id === card.id ? { ...c, is_learned: newStatus } : c
             ));
         } catch (err) {
-            alert("Помилка оновлення статусу.");
+            alert("Error updating learned status");
         }
     };
 
@@ -96,16 +89,16 @@ export default function Cards({ source = "saves" }) {
         if (e) e.stopPropagation();
         try {
             if (card.is_saved) {
-                await unsaveCard(card.moduleId, card.id);
+                await unsaveCard(card.id);
                 setCards(prev => prev.filter(c => c.id !== card.id));
             } else {
-                await saveCard(card.moduleId, card.id);
+                await saveCard(card.id);
                 setCards(prev => prev.map(c =>
                     c.id === card.id ? { ...c, is_saved: true } : c
                 ));
             }
         } catch (err) {
-            alert("Дія не вдалася.");
+            alert("Action failed");
         }
     };
 
@@ -126,32 +119,30 @@ export default function Cards({ source = "saves" }) {
                     sorted.map((c) => (
                         <div key={c.id} className="mv-row">
                             <div className="mv-row-half mv-row-left">
-                                {c.term || c.original}
+                                {c.original}
                             </div>
                             <div className="mv-row-divider" />
                             <div className="mv-row-right">
                                 <span className="mv-row-definition">
-                                    {c.definition || c.translation}
+                                    {c.translation}
                                 </span>
                                 <div style={{ display: 'flex', gap: '8px', position: 'absolute', right: '10px', alignItems: 'center' }}>
                                     <button
                                         className={`mv-row-book-btn ${c.is_learned ? "mv-active" : ""}`}
                                         onClick={() => toggleLearn(c)}
-                                        title={c.is_learned ? "Повернути до вивчення" : "Позначити як вивчене"}
                                         style={{ position: 'static' }}
                                     >
                                         <BookSvg className="book-icon" />
                                     </button>
 
                                     <button
-                                        className="mv-row-save-btn"
+                                        className={`mv-row-save-btn ${c.is_saved ? "mv-active" : ""}`}
                                         onClick={(e) => toggleSave(c, e)}
-                                        title={c.is_saved ? "Вилучити зі збереженого" : "Зберегти картку"}
                                         style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', marginTop: '2px' }}
                                     >
                                         <SaveIcon
                                             className="save-icon"
-                                            style={{ color: c.is_saved ? '#a855f7' : 'var(--mv-text-muted)', width: '20px', height: '20px' }}
+                                            style={{ width: '20px', height: '20px' }}
                                         />
                                     </button>
 
