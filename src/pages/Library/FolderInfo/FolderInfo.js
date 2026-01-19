@@ -6,8 +6,7 @@ import {
     removeModuleFromFolder, addModuleToFolder
 } from "../../../api/foldersApi";
 import { getUserDetails } from "../../../api/usersApi";
-// Використовуємо готові функції для отримання тем
-import { addModulePermission, removeModulePermission, getTopics } from "../../../api/modulesApi";
+import { addModulePermission, removeModulePermission, getTopics, toggleModuleVisibility } from "../../../api/modulesApi";
 import { useAuth } from "../../../context/AuthContext";
 
 import ModuleCard from "../../../components/ModuleCard/moduleCard";
@@ -27,8 +26,9 @@ import { ReactComponent as ShareIcon } from "../../../images/share.svg";
 import { ReactComponent as TickIcon } from "../../../images/tick.svg";
 import { ReactComponent as UntickIcon } from "../../../images/unTick.svg";
 import { ReactComponent as FolderIcon } from "../../../images/folder.svg";
+import { ReactComponent as EyeOpenedIcon } from "../../../images/eyeOpened.svg";
+import { ReactComponent as EyeClosedIcon } from "../../../images/eyeClosed.svg";
 
-// Імпортуємо кастомний хук для злиття
 import { useMergeModules } from "../../../hooks/useMergeModules";
 
 import "./folderInfo.css";
@@ -40,6 +40,16 @@ const getFlagUrl = (url) => {
     const cleanBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
     const cleanUrl = url.startsWith("/") ? url : `/${url}`;
     return `${cleanBase}${cleanUrl}`;
+};
+
+// Допоміжна функція для визначення видимості
+const resolveVisibility = (item) => {
+    // Якщо явно прийшло "private" або boolean private=true
+    if (item.visible === "private" || item.private === true || item.is_private === true) {
+        return "private";
+    }
+    // В інших випадках (включно з "public" або відсутністю поля)
+    return "public";
 };
 
 export default function FolderPage() {
@@ -75,6 +85,8 @@ export default function FolderPage() {
             ]);
 
             const data = folderRes.data;
+
+            // Мапимо модулі, додаючи правильний visible статус
             const mappedModules = (data.modules || []).map(m => ({
                 ...m,
                 rating: m.avg_rate,
@@ -83,12 +95,18 @@ export default function FolderPage() {
                 user: m.user,
                 topic: m.topic,
                 cards_count: m.cards_count || (m.cards ? m.cards.length : 0),
-                collaborators: m.collaborators || []
+                collaborators: m.collaborators || [],
+                // Визначаємо видимість надійно
+                visible: resolveVisibility(m)
             }));
+
+            // Визначаємо статус самої папки
+            const folderVisibility = resolveVisibility(data);
 
             setFolderState({
                 ...data,
-                private: data.visible === "private" || data.private === true
+                visible: folderVisibility,
+                private: folderVisibility === "private"
             });
             setModules(mappedModules);
             setTopics(topicsRes.data || []);
@@ -99,6 +117,7 @@ export default function FolderPage() {
             }
 
         } catch (err) {
+            console.error(err);
             setError("Folder not found or failed to load.");
         } finally {
             setLoading(false);
@@ -109,7 +128,6 @@ export default function FolderPage() {
         loadData();
     }, [loadData]);
 
-    // ВИКОРИСТАННЯ ХУКА ЗЛИТТЯ
     const merge = useMergeModules(loadData);
 
     useEffect(() => {
@@ -151,17 +169,38 @@ export default function FolderPage() {
 
     const handleTogglePrivate = async () => {
         if (!folderState) return;
-        const newPrivacy = !folderState.private;
-        const visibleStatus = newPrivacy ? "private" : "public";
-        setFolderState(prev => ({ ...prev, private: newPrivacy }));
+        const currentIsPrivate = folderState.private;
+        const newStatus = currentIsPrivate ? "public" : "private";
+
+        // Оптимістичне оновлення інтерфейсу
+        setFolderState(prev => ({ ...prev, private: !currentIsPrivate, visible: newStatus }));
+
         try {
-            await toggleFolderVisibility(id, visibleStatus);
+            await toggleFolderVisibility(id, newStatus);
         } catch (err) {
-            setFolderState(prev => ({ ...prev, private: !newPrivacy }));
+            // Відкат у разі помилки
+            setFolderState(prev => ({ ...prev, private: currentIsPrivate, visible: currentIsPrivate ? "private" : "public" }));
+            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to change visibility" });
         }
     };
 
-    const handlePin = async () => {};
+    const handleModuleVisibility = async (module) => {
+        const currentStatus = module.visible;
+        const newStatus = currentStatus === "private" ? "public" : "private";
+
+        // Оптимістичне оновлення
+        setModules(prev => prev.map(m => m.id === module.id ? { ...m, visible: newStatus } : m));
+
+        try {
+            await toggleModuleVisibility(module.id, newStatus);
+        } catch (err) {
+            // Відкат
+            setModules(prev => prev.map(m => m.id === module.id ? { ...m, visible: currentStatus } : m));
+            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to change module visibility" });
+        }
+    };
+
+    const handlePin = async () => {}; // Реалізація пінгу, якщо є бекенд
 
     const startRename = () => { setRenaming(true); setRenameValue(folderState.name); };
     const cancelRename = () => { setRenaming(false); setRenameValue(""); };
@@ -252,7 +291,6 @@ export default function FolderPage() {
         }
     };
 
-    // Обробник злиття через хук
     const handleFinishMerge = () => {
         merge.executeMerge(
             () => setModalInfo({ open: true, type: "success", title: "Success", message: "Modules merged successfully!" }),
@@ -264,10 +302,14 @@ export default function FolderPage() {
     if (error) return <div className="folder-page" style={{padding: 20, color: 'red'}}>{error}</div>;
     if (!folderState) return null;
 
+    // Визначаємо власника, щоб показати меню керування
+    const isOwnFolder = user && (folderState.user === user.id || folderState.user?.id === user.id);
+    // Для папок, де немає об'єкта user, припускаємо, що це власна папка (якщо API так працює)
+    const canEditFolder = isOwnFolder || !folderState.user;
+
     return (
         <div className="folder-page" ref={containerRef} style={{ position: "relative" }}>
 
-            {/* ПАНЕЛЬ РЕЖИМУ МЕРДЖА */}
             {merge.isMergeMode && (
                 <div style={{
                     position: "sticky", top: 10, zIndex: 100, background: "#6366f1", color: "white",
@@ -280,22 +322,8 @@ export default function FolderPage() {
                         <span style={{ marginLeft: 10, fontSize: "13px" }}>Click cards to select/deselect.</span>
                     </div>
                     <div style={{ display: "flex", gap: "10px" }}>
-                        <button
-                            onClick={merge.openFinalMergeModal}
-                            disabled={merge.selectedForMerge.length < 2}
-                            style={{
-                                padding: "6px 15px", borderRadius: "8px", border: "none", cursor: "pointer",
-                                fontWeight: "bold", opacity: merge.selectedForMerge.length < 2 ? 0.6 : 1
-                            }}
-                        >
-                            Process
-                        </button>
-                        <button
-                            onClick={merge.cancelMergeMode}
-                            style={{ background: "transparent", color: "white", border: "1px solid white", padding: "6px 12px", borderRadius: "8px", cursor: "pointer" }}
-                        >
-                            Cancel
-                        </button>
+                        <button onClick={merge.openFinalMergeModal} disabled={merge.selectedForMerge.length < 2} style={{ padding: "6px 15px", borderRadius: "8px", border: "none", cursor: "pointer", fontWeight: "bold", opacity: merge.selectedForMerge.length < 2 ? 0.6 : 1 }}>Process</button>
+                        <button onClick={merge.cancelMergeMode} style={{ background: "transparent", color: "white", border: "1px solid white", padding: "6px 12px", borderRadius: "8px", cursor: "pointer" }}>Cancel</button>
                     </div>
                 </div>
             )}
@@ -311,14 +339,7 @@ export default function FolderPage() {
                     <h2 className="folder-title" style={{ margin: 0 }}>{folderState.name}</h2>
                 )}
 
-                <button
-                    onClick={() => navigate("/library")}
-                    style={{
-                        background: "none", border: "none", cursor: "pointer",
-                        padding: 4, display: "flex", alignItems: "center"
-                    }}
-                    title="Close"
-                >
+                <button onClick={() => navigate("/library")} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", alignItems: "center" }} title="Close">
                     <CloseIcon width={28} height={28} />
                 </button>
             </div>
@@ -326,23 +347,24 @@ export default function FolderPage() {
             <div className="folder-controls" style={{ justifyContent: "space-between", marginTop: 8, display: "flex", alignItems: "center" }}>
                 <SortMenu onSort={handleSort} />
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <button
-                        onClick={() => navigate("/library/create-module", { state: { folderId: folderState.id } })}
-                        style={{
-                            background: "#6366f1", color: "#fff", border: "none", height: 40,
-                            minWidth: 140, borderRadius: 6, fontWeight: "bold", cursor: "pointer"
-                        }}
-                    >
+                    <button onClick={() => navigate("/library/create-module", { state: { folderId: folderState.id } })} style={{ background: "#6366f1", color: "#fff", border: "none", height: 40, minWidth: 140, borderRadius: 6, fontWeight: "bold", cursor: "pointer" }}>
                         Add module
                     </button>
 
                     <DropdownMenu
                         align="right" width={220}
                         items={[
-                            { label: "Rename", onClick: startRename, icon: <EditIcon width={16} height={16} /> },
-                            { label: "Delete", onClick: handleDeleteFolder, icon: <DeleteIcon width={16} height={16} /> },
-                            { label: folderState.private ? "Unprivate" : "Private", onClick: handleTogglePrivate, icon: <ColoredIcon icon={folderState.private ? TickIcon : UntickIcon} size={16} /> },
-                            { label: folderState.pinned ? "Unpin" : "Pin", onClick: handlePin, icon: <ColoredIcon icon={folderState.pinned ? TickIcon : UntickIcon} size={16} /> },
+                            // Показуємо кнопки редагування тільки якщо є права
+                            ...(canEditFolder ? [
+                                { label: "Rename", onClick: startRename, icon: <EditIcon width={16} height={16} /> },
+                                { label: "Delete", onClick: handleDeleteFolder, icon: <DeleteIcon width={16} height={16} /> },
+                                {
+                                    label: folderState.private ? "Make Public" : "Make Private",
+                                    onClick: handleTogglePrivate,
+                                    icon: <ColoredIcon icon={folderState.private ? EyeClosedIcon : EyeOpenedIcon} size={16} />
+                                },
+                                { label: folderState.pinned ? "Unpin" : "Pin", onClick: handlePin, icon: <ColoredIcon icon={folderState.pinned ? TickIcon : UntickIcon} size={16} /> }
+                            ] : []),
                             { label: "Export", onClick: handleExport, icon: <ShareIcon width={16} height={16} /> },
                         ]}
                     >
@@ -364,6 +386,7 @@ export default function FolderPage() {
                                 onEdit={() => handleEditModule(module)}
                                 onPermissions={(e, trigger) => openModulePermissions(module, e, trigger)}
                                 onAddToFolder={(e, trigger) => openAddToFolderMenu(module, e, trigger)}
+                                onVisibilityToggle={handleModuleVisibility} // Важливо: передаємо функцію
                                 deleteLabel={"Remove from folder"}
                                 onDelete={() => handleRemoveModule(module.id)}
                                 isMergeMode={merge.isMergeMode}
@@ -377,25 +400,16 @@ export default function FolderPage() {
                 )}
             </div>
 
+            {/* Модалки для мерджу, пермішенів і т.д. (без змін) */}
             {merge.isMergeModalOpen && (
                 <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
                     <div style={{ background: "white", padding: "30px", borderRadius: "20px", width: "380px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
                         <h3 style={{ marginBottom: "20px" }}>Finalize Merge</h3>
                         <div style={{ marginTop: 15 }}>
-                            <label style={{ fontSize: "12px", color: "gray" }}>New Name</label>
-                            <input
-                                style={{ width: "100%", padding: "10px", marginTop: "5px", borderRadius: "8px", border: "1px solid #ddd" }}
-                                type="text" value={merge.mergeForm.name}
-                                onChange={(e) => merge.setMergeForm({...merge.mergeForm, name: e.target.value})}
-                            />
+                            <input style={{ width: "100%", padding: "10px", marginTop: "5px", borderRadius: "8px", border: "1px solid #ddd" }} type="text" value={merge.mergeForm.name} onChange={(e) => merge.setMergeForm({...merge.mergeForm, name: e.target.value})} placeholder="New Name" />
                         </div>
                         <div style={{ marginTop: 15, marginBottom: 20 }}>
-                            <label style={{ fontSize: "12px", color: "gray" }}>Topic</label>
-                            <select
-                                style={{ width: "100%", padding: "10px", marginTop: "5px", borderRadius: "8px", border: "1px solid #ddd" }}
-                                value={merge.mergeForm.topic}
-                                onChange={(e) => merge.setMergeForm({...merge.mergeForm, topic: e.target.value})}
-                            >
+                            <select style={{ width: "100%", padding: "10px", marginTop: "5px", borderRadius: "8px", border: "1px solid #ddd" }} value={merge.mergeForm.topic} onChange={(e) => merge.setMergeForm({...merge.mergeForm, topic: e.target.value})}>
                                 <option value="">Select Topic...</option>
                                 {topics.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                             </select>
@@ -410,52 +424,26 @@ export default function FolderPage() {
 
             {permissionsTarget && (
                 <div style={{ position: "fixed", left: permissionsTarget.anchor?.left, top: permissionsTarget.anchor?.top, zIndex: 300 }}>
-                    <PermissionsMenu
-                        moduleId={permissionsTarget.moduleId}
-                        users={permissionsTarget.users}
-                        onAddUser={handleAddUser}
-                        onRemoveUser={handleRemoveUser}
-                        onClose={() => setPermissionsTarget(null)}
-                    />
+                    <PermissionsMenu moduleId={permissionsTarget.moduleId} users={permissionsTarget.users} onAddUser={handleAddUser} onRemoveUser={handleRemoveUser} onClose={() => setPermissionsTarget(null)} />
                 </div>
             )}
 
             {addToFolderTarget && (
                 <>
                     <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 301 }} onClick={() => setAddToFolderTarget(null)} />
-                    <div className="dropdown-menu" style={{
-                        position: "fixed", left: addToFolderTarget.anchor?.left || "50%", top: addToFolderTarget.anchor?.top || "50%",
-                        zIndex: 302, background: "white", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
-                        padding: "8px 0", minWidth: "200px", maxHeight: "300px", overflowY: "auto"
-                    }}>
-                        <div style={{ padding: "8px 16px", fontWeight: "bold", borderBottom: "1px solid #eee", fontSize: "14px", color: "#666" }}>
-                            Add "{addToFolderTarget.module.name}" to:
-                        </div>
-                        {userFolders.length === 0 ? (
-                            <div style={{ padding: "12px", textAlign: "center", color: "gray", fontSize: "13px" }}>No folders found.</div>
-                        ) : (
-                            userFolders.map(folder => (
-                                <div key={folder.id} onClick={() => handleAddToFolder(folder)}
-                                     style={{ padding: "10px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", transition: "background 0.2s" }}
-                                     onMouseEnter={(e) => e.currentTarget.style.background = "#f5f5f7"}
-                                     onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-                                >
-                                    <ColoredIcon icon={FolderIcon} color={folder.color || "#6366f1"} size={18} />
-                                    <span style={{ fontSize: "14px", color: "#333" }}>{folder.name}</span>
-                                </div>
-                            ))
-                        )}
+                    <div className="dropdown-menu" style={{ position: "fixed", left: addToFolderTarget.anchor?.left || "50%", top: addToFolderTarget.anchor?.top || "50%", zIndex: 302, background: "white", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", padding: "8px 0", minWidth: "200px", maxHeight: "300px", overflowY: "auto" }}>
+                        <div style={{ padding: "8px 16px", fontWeight: "bold", borderBottom: "1px solid #eee", fontSize: "14px", color: "#666" }}>Add "{addToFolderTarget.module.name}" to:</div>
+                        {userFolders.length === 0 ? <div style={{ padding: "12px", textAlign: "center", color: "gray", fontSize: "13px" }}>No folders found.</div> : userFolders.map(folder => (
+                            <div key={folder.id} onClick={() => handleAddToFolder(folder)} style={{ padding: "10px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px" }}>
+                                <ColoredIcon icon={FolderIcon} color={folder.color || "#6366f1"} size={18} />
+                                <span style={{ fontSize: "14px", color: "#333" }}>{folder.name}</span>
+                            </div>
+                        ))}
                     </div>
                 </>
             )}
 
-            <ModalMessage
-                open={modalInfo.open}
-                type={modalInfo.type}
-                title={modalInfo.title}
-                message={modalInfo.message}
-                onClose={handleCloseModal}
-            />
+            <ModalMessage open={modalInfo.open} type={modalInfo.type} title={modalInfo.title} message={modalInfo.message} onClose={handleCloseModal} />
         </div>
     );
 }

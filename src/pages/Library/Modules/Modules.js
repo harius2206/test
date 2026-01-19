@@ -8,7 +8,8 @@ import {
     getTopics,
     getSavedModules,
     saveModule,
-    unsaveModule
+    unsaveModule,
+    toggleModuleVisibility
 } from "../../../api/modulesApi";
 import { addModuleToFolder } from "../../../api/foldersApi";
 import { useAuth } from "../../../context/AuthContext";
@@ -29,6 +30,14 @@ const getFlagUrl = (url) => {
     const cleanBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
     const cleanUrl = url.startsWith("/") ? url : `/${url}`;
     return `${cleanBase}${cleanUrl}`;
+};
+
+// Та сама функція для визначення видимості
+const resolveVisibility = (item) => {
+    if (item.visible === "private" || item.private === true || item.is_private === true) {
+        return "private";
+    }
+    return "public";
 };
 
 export default function Modules({ source = "library" }) {
@@ -58,29 +67,51 @@ export default function Modules({ source = "library" }) {
         try {
             setLoading(true);
             let userModules = [];
+            let profileOwner = user;
 
             if (source === "saves") {
                 const savedResp = await getSavedModules(user.id);
                 userModules = savedResp.data.results || savedResp.data || [];
             } else {
                 const userResp = await getUserDetails(user.id);
-                userModules = userResp.data.modules || [];
-                setFolders(userResp.data.folders || []);
+                const data = userResp.data;
+                userModules = data.modules || [];
+                setFolders(data.folders || []);
+
+                profileOwner = {
+                    id: data.id,
+                    username: data.username,
+                    avatar: data.avatar
+                };
             }
 
             const topicsResp = await getTopics();
 
-            const mappedModules = userModules.map(m => ({
-                ...m,
-                rating: m.avg_rate,
-                flagFrom: getFlagUrl(m.lang_from?.flag),
-                flagTo: getFlagUrl(m.lang_to?.flag),
-                user: m.user || { username: user.username, avatar: user.avatar },
-                topic: m.topic,
-                cards_count: m.cards ? m.cards.length : (m.cards_count || 0),
-                collaborators: m.collaborators || [],
-                is_saved: source === "saves" ? true : m.is_saved
-            }));
+            const mappedModules = userModules.map(m => {
+                let moduleAuthor = m.user;
+                if (typeof moduleAuthor === "number" || typeof moduleAuthor === "string") {
+                    if (String(moduleAuthor) === String(profileOwner.id)) {
+                        moduleAuthor = profileOwner;
+                    } else {
+                        moduleAuthor = { id: moduleAuthor, username: "User" };
+                    }
+                } else if (!moduleAuthor) {
+                    moduleAuthor = { id: user.id, username: user.username, avatar: user.avatar };
+                }
+
+                return {
+                    ...m,
+                    rating: m.avg_rate,
+                    flagFrom: getFlagUrl(m.lang_from?.flag),
+                    flagTo: getFlagUrl(m.lang_to?.flag),
+                    user: moduleAuthor,
+                    topic: m.topic,
+                    cards_count: m.cards ? m.cards.length : (m.cards_count || 0),
+                    collaborators: m.collaborators || [],
+                    is_saved: source === "saves" ? true : m.is_saved,
+                    visible: resolveVisibility(m) // Використовуємо надійну перевірку
+                };
+            });
 
             setModules(mappedModules);
             setTopics(topicsResp.data || []);
@@ -151,6 +182,20 @@ export default function Modules({ source = "library" }) {
             setModules(prev => prev.filter(m => m.id !== id));
         } catch (err) {
             setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to delete module." });
+        }
+    };
+
+    const handleVisibility = async (module) => {
+        const newStatus = module.visible === "private" ? "public" : "private";
+        // Оптимістичне оновлення
+        setModules(prev => prev.map(m => m.id === module.id ? { ...m, visible: newStatus } : m));
+        try {
+            await toggleModuleVisibility(module.id, newStatus);
+        } catch (err) {
+            // Відкат
+            const oldStatus = module.visible;
+            setModules(prev => prev.map(m => m.id === module.id ? { ...m, visible: oldStatus } : m));
+            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to change visibility." });
         }
     };
 
@@ -233,22 +278,8 @@ export default function Modules({ source = "library" }) {
                         <span style={{ marginLeft: 10, fontSize: "13px" }}>Click cards to select/deselect.</span>
                     </div>
                     <div style={{ display: "flex", gap: "10px" }}>
-                        <button
-                            onClick={merge.openFinalMergeModal}
-                            disabled={merge.selectedForMerge.length < 2}
-                            style={{
-                                padding: "6px 15px", borderRadius: "8px", border: "none", cursor: "pointer",
-                                fontWeight: "bold", opacity: merge.selectedForMerge.length < 2 ? 0.6 : 1
-                            }}
-                        >
-                            Process
-                        </button>
-                        <button
-                            onClick={merge.cancelMergeMode}
-                            style={{ background: "transparent", color: "white", border: "1px solid white", padding: "6px 12px", borderRadius: "8px", cursor: "pointer" }}
-                        >
-                            Cancel
-                        </button>
+                        <button onClick={merge.openFinalMergeModal} disabled={merge.selectedForMerge.length < 2} style={{ padding: "6px 15px", borderRadius: "8px", border: "none", cursor: "pointer", fontWeight: "bold", opacity: merge.selectedForMerge.length < 2 ? 0.6 : 1 }}>Process</button>
+                        <button onClick={merge.cancelMergeMode} style={{ background: "transparent", color: "white", border: "1px solid white", padding: "6px 12px", borderRadius: "8px", cursor: "pointer" }}>Cancel</button>
                     </div>
                 </div>
             )}
@@ -271,13 +302,13 @@ export default function Modules({ source = "library" }) {
                             expanded={expandedTags[module.id]}
                             toggleTags={toggleTags}
 
-                            // Виправлено: у розділі Saves прибираємо onDelete, бо там є onUnsave
                             onEdit={source === "saves" ? null : () => navigate("/library/create-module", { state: { mode: "edit", moduleId: module.id, moduleData: module } })}
                             onDelete={source === "saves" ? null : () => handleDelete(module.id)}
                             deleteLabel="Delete"
 
                             onPermissions={source === "saves" ? null : openModulePermissions}
                             onAddToFolder={source === "saves" ? null : openAddToFolderMenu}
+                            onVisibilityToggle={source === "saves" ? null : handleVisibility}
 
                             onSave={handleSaveModule}
                             onUnsave={handleUnsaveModule}
@@ -291,40 +322,23 @@ export default function Modules({ source = "library" }) {
                 </div>
             )}
 
+            {/* Модалки (мердж, пермішени) */}
             {merge.isMergeModalOpen && (
-                <div style={{
-                    position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-                    background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000
-                }}>
+                <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
                     <div style={{ background: "white", padding: "30px", borderRadius: "20px", width: "380px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
                         <h3 style={{ marginBottom: "20px" }}>Finalize Merge</h3>
                         <div style={{ marginBottom: "15px" }}>
-                            <label style={{ display: "block", marginBottom: "5px", fontSize: "14px", color: "#666" }}>New Module Name</label>
-                            <input
-                                style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }}
-                                type="text"
-                                value={merge.mergeForm.name}
-                                onChange={(e) => merge.setMergeForm({...merge.mergeForm, name: e.target.value})}
-                            />
+                            <input style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }} type="text" value={merge.mergeForm.name} onChange={(e) => merge.setMergeForm({...merge.mergeForm, name: e.target.value})} placeholder="New Module Name" />
                         </div>
                         <div style={{ marginBottom: "25px" }}>
-                            <label style={{ display: "block", marginBottom: "5px", fontSize: "14px", color: "#666" }}>New Topic</label>
-                            <select
-                                style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }}
-                                value={merge.mergeForm.topic}
-                                onChange={(e) => merge.setMergeForm({...merge.mergeForm, topic: e.target.value})}
-                            >
+                            <select style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }} value={merge.mergeForm.topic} onChange={(e) => merge.setMergeForm({...merge.mergeForm, topic: e.target.value})}>
                                 <option value="">Select Topic...</option>
                                 {topics.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                             </select>
                         </div>
                         <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
-                            <button onClick={() => merge.setIsMergeModalOpen(false)} style={{ padding: "10px 20px", background: "#f0f0f0", border: "none", borderRadius: "8px", cursor: "pointer" }}>
-                                Back
-                            </button>
-                            <button onClick={handleFinishMerge} style={{ padding: "10px 20px", background: "#6366f1", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}>
-                                Confirm Merge
-                            </button>
+                            <button onClick={() => merge.setIsMergeModalOpen(false)} style={{ padding: "10px 20px", background: "#f0f0f0", border: "none", borderRadius: "8px", cursor: "pointer" }}>Back</button>
+                            <button onClick={handleFinishMerge} style={{ padding: "10px 20px", background: "#6366f1", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}>Confirm Merge</button>
                         </div>
                     </div>
                 </div>
@@ -332,52 +346,26 @@ export default function Modules({ source = "library" }) {
 
             {permissionsTarget && (
                 <div style={{ position: "fixed", left: permissionsTarget.anchor?.left, top: permissionsTarget.anchor?.top, zIndex: 300 }}>
-                    <PermissionsMenu
-                        moduleId={permissionsTarget.moduleId}
-                        users={permissionsTarget.users}
-                        onAddUser={handleAddUser}
-                        onRemoveUser={handleRemoveUser}
-                        onClose={() => setPermissionsTarget(null)}
-                    />
+                    <PermissionsMenu moduleId={permissionsTarget.moduleId} users={permissionsTarget.users} onAddUser={handleAddUser} onRemoveUser={handleRemoveUser} onClose={() => setPermissionsTarget(null)} />
                 </div>
             )}
 
             {addToFolderTarget && (
                 <>
                     <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 301 }} onClick={() => setAddToFolderTarget(null)} />
-                    <div className="dropdown-menu" style={{
-                        position: "fixed", left: addToFolderTarget.anchor?.left || "50%", top: addToFolderTarget.anchor?.top || "50%",
-                        zIndex: 302, background: "white", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
-                        padding: "8px 0", minWidth: "200px", maxHeight: "300px", overflowY: "auto"
-                    }}>
-                        <div style={{ padding: "8px 16px", fontWeight: "bold", borderBottom: "1px solid #eee", fontSize: "14px", color: "#666" }}>
-                            Add "{addToFolderTarget.module.name}" to:
-                        </div>
-                        {folders.length === 0 ? (
-                            <div style={{ padding: "12px", textAlign: "center", color: "gray", fontSize: "13px" }}>No folders found.</div>
-                        ) : (
-                            folders.map(folder => (
-                                <div key={folder.id} onClick={() => handleAddToFolder(folder)}
-                                     style={{ padding: "10px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", transition: "background 0.2s" }}
-                                     onMouseEnter={(e) => e.currentTarget.style.background = "#f5f5f7"}
-                                     onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-                                >
-                                    <ColoredIcon icon={FolderIcon} color={folder.color || "#6366f1"} size={18} />
-                                    <span style={{ fontSize: "14px", color: "#333" }}>{folder.name}</span>
-                                </div>
-                            ))
-                        )}
+                    <div className="dropdown-menu" style={{ position: "fixed", left: addToFolderTarget.anchor?.left || "50%", top: addToFolderTarget.anchor?.top || "50%", zIndex: 302, background: "white", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", padding: "8px 0", minWidth: "200px", maxHeight: "300px", overflowY: "auto" }}>
+                        <div style={{ padding: "8px 16px", fontWeight: "bold", borderBottom: "1px solid #eee", fontSize: "14px", color: "#666" }}>Add "{addToFolderTarget.module.name}" to:</div>
+                        {folders.length === 0 ? <div style={{ padding: "12px", textAlign: "center", color: "gray", fontSize: "13px" }}>No folders found.</div> : folders.map(folder => (
+                            <div key={folder.id} onClick={() => handleAddToFolder(folder)} style={{ padding: "10px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", transition: "background 0.2s" }}>
+                                <ColoredIcon icon={FolderIcon} color={folder.color || "#6366f1"} size={18} />
+                                <span style={{ fontSize: "14px", color: "#333" }}>{folder.name}</span>
+                            </div>
+                        ))}
                     </div>
                 </>
             )}
 
-            <ModalMessage
-                open={modalInfo.open}
-                type={modalInfo.type}
-                title={modalInfo.title}
-                message={modalInfo.message}
-                onClose={handleCloseModal}
-            />
+            <ModalMessage open={modalInfo.open} type={modalInfo.type} title={modalInfo.title} message={modalInfo.message} onClose={handleCloseModal} />
         </div>
     );
 }

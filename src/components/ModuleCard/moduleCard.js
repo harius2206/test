@@ -15,6 +15,9 @@ import { ReactComponent as CloseIcon } from "../../images/close.svg";
 import { ReactComponent as FolderIcon } from "../../images/folder.svg";
 import { ReactComponent as MergeIcon } from "../../images/merge.svg";
 import { ReactComponent as SaveIcon } from "../../images/save.svg";
+// Імпорт іконок очей
+import { ReactComponent as EyeOpenedIcon } from "../../images/eyeOpened.svg";
+import { ReactComponent as EyeClosedIcon } from "../../images/eyeClosed.svg";
 
 import "./moduleCard.css";
 
@@ -33,7 +36,8 @@ export default function ModuleCard({
                                        isSelected,
                                        onSelect,
                                        onSave,
-                                       onUnsave
+                                       onUnsave,
+                                       onVisibilityToggle // Новий проп
                                    }) {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -46,7 +50,11 @@ export default function ModuleCard({
     const authorAvatar = module.user?.avatar || module.avatar;
     const termsCount = module.cards_count !== undefined ? module.cards_count : (module.terms || 0);
     const topicName = typeof module.topic === 'object' && module.topic ? module.topic.name : module.topic;
-    const isOwnModule = user?.username === authorName;
+
+    const isOwnModule = (module.user?.id && user?.id && module.user.id === user.id) || (user?.username === authorName);
+
+    // Перевірка прав редагування: власник або має права "editor"
+    const canEdit = isOwnModule || (module.user_perm === "editor");
 
     const handleCardClick = () => {
         if (isMergeMode) {
@@ -73,7 +81,17 @@ export default function ModuleCard({
         });
     }
 
-    // Збереження (Дозволяємо зберігати навіть власні модулі для вкладки Saves)
+    // --- VISIBILITY TOGGLE (Тільки для власників/редакторів) ---
+    if (onVisibilityToggle && canEdit) {
+        const isPrivate = module.visible === "private";
+        menuItems.push({
+            label: isPrivate ? "Make Public" : "Make Private",
+            onClick: () => onVisibilityToggle(module),
+            icon: isPrivate ? <EyeClosedIcon width={16} height={16} /> : <EyeOpenedIcon width={16} height={16} />
+        });
+    }
+
+    // Збереження
     if (module.is_saved && onUnsave) {
         menuItems.push({
             label: "Unsave",

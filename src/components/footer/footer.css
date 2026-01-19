@@ -22,7 +22,7 @@
 
 .footer {
     width: 100%;
-    min-height: 75px;
+    min-height: 175px;
     background-color: var(--footer-bg);
     color: var(--footer-text);
     display: flex;

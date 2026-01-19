@@ -18,15 +18,17 @@ import SortMenu from "../../../components/sortMenu/sortMenu";
 import AddUniversalItem from "../../../components/addUniversalItem";
 import DropdownMenu from "../../../components/dropDownMenu/dropDownMenu";
 import Button from "../../../components/button/button";
+import UserAvatar from "../../../components/avatar/avatar";
 
 import { ReactComponent as FolderIcon } from "../../../images/folder.svg";
 import { ReactComponent as DotsIcon } from "../../../images/dots.svg";
 import { ReactComponent as RenameIcon } from "../../../images/rename.svg";
 import { ReactComponent as DeleteIcon } from "../../../images/delete.svg";
 import { ReactComponent as ExportIcon } from "../../../images/export.svg";
-import { ReactComponent as TickIcon } from "../../../images/tick.svg";
-import { ReactComponent as UntickIcon } from "../../../images/unTick.svg";
 import { ReactComponent as SaveIcon } from "../../../images/save.svg";
+// Імпортуємо нові іконки очей
+import { ReactComponent as EyeOpenedIcon } from "../../../images/eyeOpened.svg";
+import { ReactComponent as EyeClosedIcon } from "../../../images/eyeClosed.svg";
 
 export default function Folders({ addFolder, setAddFolder, source = "library" }) {
     const navigate = useNavigate();
@@ -143,7 +145,7 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
                         colorOptions={colors}
                         active={addFolder}
                         onClose={() => setAddFolder(false)}
-                        onCreate={(val) => {}} // Handle create...
+                        onCreate={(val) => {}}
                     />
                 )}
 
@@ -155,19 +157,26 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
 
                 {folders.map(folder => {
                     const isOwn = folder.user?.id === user?.id || !folder.user;
+                    const authorName = folder.user?.username || "User";
+                    const authorAvatar = folder.user?.avatar;
+
                     const menuItems = [];
 
                     // Керування (Тільки для власника)
                     if (isOwn) {
                         menuItems.push(
-                            { label: folder.pinned ? "Unpin" : "Pin", onClick: () => {}, icon: <ColoredIcon icon={folder.pinned ? TickIcon : UntickIcon} size={16} /> },
-                            { label: folder.private ? "Make Public" : "Make Private", onClick: () => handleUpdate(folder.id, { visible: folder.private ? "public" : "private" }, { private: !folder.private }), icon: <ColoredIcon icon={folder.private ? TickIcon : UntickIcon} size={16} /> },
+                            // Логіка видимості (очі)
+                            {
+                                label: folder.private ? "Make Public" : "Make Private",
+                                onClick: () => handleUpdate(folder.id, { visible: folder.private ? "public" : "private" }, { private: !folder.private }),
+                                // Якщо папка приватна - показуємо закрите око (стан), якщо публічна - відкрите
+                                icon: <ColoredIcon icon={folder.private ? EyeClosedIcon : EyeOpenedIcon} size={16} />
+                            },
                             { label: "Rename", onClick: () => { setRenamingId(folder.id); setRenameValue(folder.name); }, icon: <ColoredIcon icon={RenameIcon} size={16} /> },
                             { label: "Delete", onClick: () => handleDeleteFolder(folder.id), icon: <ColoredIcon icon={DeleteIcon} size={16} /> }
                         );
                     }
 
-                    // Збереження (Для всіх папок - тепер доступно "в принципі")
                     menuItems.push({
                         label: folder.is_saved ? "Unsave" : "Save",
                         onClick: () => handleSaveToggle(folder),
@@ -186,6 +195,15 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
                             <div className="module-info">
                                 <div className="top-row">
                                     <span className="terms-count">{folder.modules} modules</span>
+                                    {!isOwn && (
+                                        <>
+                                            <span className="separator">|</span>
+                                            <div className="author-block">
+                                                <UserAvatar name={authorName} src={authorAvatar} size={20} />
+                                                <span className="author">{authorName}</span>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                                 <div className="module-name-row" style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                     <ColoredIcon icon={FolderIcon} color={folder.color} size={20} />
