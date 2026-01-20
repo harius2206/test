@@ -1,4 +1,3 @@
-// javascript
 import React, { useState, useEffect } from "react";
 import { getUserAvatar, getUserData } from "../../utils/storage";
 
@@ -11,8 +10,11 @@ export default function UserAvatar({
                                        className = "",
                                        style = {},
                                        alt,
+                                       disableStrictFallback = false, // Новий проп
                                    }) {
-    const imageSrc = src || avatar || getUserAvatar() || getUserData()?.avatar || undefined;
+    // Якщо disableStrictFallback === true, ми не беремо дані з localStorage (поточного юзера)
+    const currentUserData = disableStrictFallback ? null : (getUserAvatar() || getUserData()?.avatar);
+    const imageSrc = src || avatar || currentUserData || undefined;
 
     const [imgError, setImgError] = useState(false);
 

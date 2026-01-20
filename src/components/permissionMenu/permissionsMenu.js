@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getUsersList } from "../../api/usersApi";
-import { getModulePermissionsUsers } from "../../api/modulesApi"; // Імпорт функції
+import { getModulePermissionsUsers } from "../../api/modulesApi";
 import UserAvatar from "../avatar/avatar";
 import { ReactComponent as CloseIcon } from "../../images/close.svg";
 import { ReactComponent as DeleteIcon } from "../../images/delete.svg";
@@ -17,7 +17,6 @@ const useDebounce = (value, delay) => {
     return debouncedValue;
 };
 
-// Тепер приймаємо moduleId
 export default function PermissionsMenu({ moduleId, users = [], onAddUser, onRemoveUser, onClose }) {
     const [search, setSearch] = useState("");
     const [searchResults, setSearchResults] = useState([]);
@@ -35,15 +34,12 @@ export default function PermissionsMenu({ moduleId, users = [], onAddUser, onRem
             setLoadingUsers(true);
             getModulePermissionsUsers(moduleId)
                 .then((response) => {
-                    // API повертає масив об'єктів: [{ id, perm, user: { ... } }]
-                    // Нам потрібно витягнути саме поле 'user'
                     const mappedUsers = (response.data || []).map(item => item.user);
                     setCurrentUsers(mappedUsers);
                 })
                 .catch(err => console.error("Failed to fetch permissions", err))
                 .finally(() => setLoadingUsers(false));
         } else {
-            // Якщо moduleId не передали, використовуємо пропси
             setCurrentUsers(users);
         }
     }, [moduleId, users]);
@@ -59,8 +55,6 @@ export default function PermissionsMenu({ moduleId, users = [], onAddUser, onRem
             setLoadingSearch(true);
             try {
                 const response = await getUsersList({ username: debouncedSearch });
-
-                // Фільтруємо тих, хто вже має доступ (з локального стейту currentUsers)
                 const existingIds = new Set(currentUsers.map(u => u.id));
                 const filtered = (response.data.results || response.data || []).filter(u => !existingIds.has(u.id));
 
@@ -75,17 +69,16 @@ export default function PermissionsMenu({ moduleId, users = [], onAddUser, onRem
         fetchUsers();
     }, [debouncedSearch, currentUsers]);
 
-    // Обгортки для onAdd/onRemove, щоб оновлювати локальний список миттєво
     const handleAddClick = (userToAdd) => {
-        onAddUser(userToAdd); // Виклик API в батьківському компоненті
-        setCurrentUsers(prev => [...prev, userToAdd]); // Оновлення інтерфейсу
+        onAddUser(userToAdd);
+        setCurrentUsers(prev => [...prev, userToAdd]);
         setSearch("");
         setSearchResults([]);
     };
 
     const handleRemoveClick = (userId) => {
-        onRemoveUser(userId); // Виклик API в батьківському компоненті
-        setCurrentUsers(prev => prev.filter(u => u.id !== userId)); // Оновлення інтерфейсу
+        onRemoveUser(userId);
+        setCurrentUsers(prev => prev.filter(u => u.id !== userId));
     };
 
     return (
@@ -125,7 +118,14 @@ export default function PermissionsMenu({ moduleId, users = [], onAddUser, onRem
                                 style={{ cursor: "pointer" }}
                             >
                                 <div className="pm-user-left">
-                                    <UserAvatar name={user.username} src={user.avatar} className="user-avatar" size={22} />
+                                    {/* Додано disableStrictFallback={true} */}
+                                    <UserAvatar
+                                        name={user.username}
+                                        src={user.avatar}
+                                        className="user-avatar"
+                                        size={22}
+                                        disableStrictFallback={true}
+                                    />
                                     <span className="pm-user-name">{user.username}</span>
                                 </div>
                                 <div className="pm-user-right">
@@ -155,7 +155,14 @@ export default function PermissionsMenu({ moduleId, users = [], onAddUser, onRem
                         {currentUsers.map(user => (
                             <div key={user.id} className="pm-user-item">
                                 <div className="pm-user-left">
-                                    <UserAvatar name={user.username} src={user.avatar} className="user-avatar" size={22} />
+                                    {/* Додано disableStrictFallback={true} */}
+                                    <UserAvatar
+                                        name={user.username}
+                                        src={user.avatar}
+                                        className="user-avatar"
+                                        size={22}
+                                        disableStrictFallback={true}
+                                    />
                                     <span className="pm-user-name">{user.username}</span>
                                 </div>
                                 <div className="pm-user-right">

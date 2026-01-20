@@ -5,7 +5,7 @@ import { ReactComponent as GlobeIcon } from "../../images/language.svg";
 import ClickOutsideWrapper from "../clickOutsideWrapper";
 import { ThemeContext } from "../../context/ThemeContext";
 import SearchField from "../searchField/searchField";
-import UserAvatar from "../avatar/avatar";
+import UserAvatar from "../avatar/avatar"; // Повернув UserAvatar
 import { useAuth } from "../../context/AuthContext";
 import { getUserData, saveUserData } from "../../utils/storage";
 import { clearAllExceptTheme } from "../../utils/storage";
@@ -28,10 +28,7 @@ export default function UserMenu() {
         location.pathname.includes("/saves") ||
         location.pathname.includes("/library/saves");
 
-    /* ==== FIX: Прибрано зайвий виклик setUser ==== */
     const toggleMenu = () => {
-        // Ми просто відкриваємо/закриваємо меню.
-        // Не потрібно оновлювати глобальний контекст тут, це викликає ре-рендер сторінок.
         setOpen((p) => !p);
     };
 

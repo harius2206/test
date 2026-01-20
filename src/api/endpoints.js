@@ -7,6 +7,7 @@ const endpoints = {
     users: {
         list: "/api/v1/users/",
         detail: (id) => `/api/v1/users/${id}/`,
+        ratings: "/api/v1/users/ratings/",
     },
     modules: {
         list: "/api/v1/modules/",

@@ -8,3 +8,7 @@ export const getUserDetails = (id) => {
 export const getUsersList = (params) => {
     return axiosClient.get(endpoints.users.list, { params });
 };
+
+export const getUsersRatings = () => {
+    return axiosClient.get(endpoints.users.ratings);
+};
