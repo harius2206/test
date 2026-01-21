@@ -31,7 +31,7 @@ const DiagonalFlagRect = ({ flag1, flag2, width = 60, height = 40 }) => {
                     style={{
                         ...commonImgStyle,
                         clipPath: 'polygon(0 0, 100% 0, 0 100%)',
-                        zIndex: 1, // Забезпечуємо правильне накладання
+                        zIndex: 1,
                     }}
                 />
             )}

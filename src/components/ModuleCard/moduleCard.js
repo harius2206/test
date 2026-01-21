@@ -47,11 +47,14 @@ export default function ModuleCard({
     const visibleTags = expanded ? tags : tags.slice(0, visibleCount);
 
     const authorName = module.user?.username || module.author || "User";
-    const authorAvatar = module.user?.avatar || module.avatar;
+
+    // Перейменував для ясності, але головне - передати disableStrictFallback
+    const displayAuthorAvatar = module.user?.avatar || module.avatar;
+
     const termsCount = module.cards_count !== undefined ? module.cards_count : (module.terms || 0);
     const topicName = typeof module.topic === 'object' && module.topic ? module.topic.name : module.topic;
 
-    const isOwnModule = (module.user?.id && user?.id && module.user.id === user.id) || (user?.username === authorName);
+    const isOwnModule = (module.user?.id && user?.id && String(module.user.id) === String(user.id)) || (user?.username === authorName);
 
     // Перевірка прав редагування: власник або має права "editor"
     const canEdit = isOwnModule || (module.user_perm === "editor");
@@ -158,7 +161,13 @@ export default function ModuleCard({
                         <>
                             <span className="separator">|</span>
                             <div className="author-block">
-                                <UserAvatar name={authorName} src={authorAvatar} size={20} />
+                                {/* ДОДАНО disableStrictFallback={true}, ЩОБ НЕ ПІДТЯГУВАЛО АВАТАР ПОТОЧНОГО ЮЗЕРА */}
+                                <UserAvatar
+                                    name={authorName}
+                                    src={displayAuthorAvatar}
+                                    size={20}
+                                    disableStrictFallback={true}
+                                />
                                 <span className="author">{authorName}</span>
                             </div>
                         </>
