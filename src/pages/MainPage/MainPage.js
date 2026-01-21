@@ -90,6 +90,7 @@ export default function MainPage() {
                     const modules = (userDetails.data.modules || []).map(m => ({ ...m, type: 'module' }));
                     const folders = (userDetails.data.folders || []).map(f => ({ ...f, type: 'folder' }));
 
+                    // Об'єднуємо та сортуємо за ID (новіші зверху)
                     const mixed = [...modules, ...folders].sort((a, b) => b.id - a.id);
                     myRecent = mixed.slice(0, 10);
                 }
@@ -99,7 +100,12 @@ export default function MainPage() {
                 const modulesResp = await getModules();
                 const allModules = modulesResp.data.results || modulesResp.data || [];
                 const popular = allModules
-                    .filter(m => m.avg_rate && parseFloat(m.avg_rate) >= 4.3)
+                    .filter(m => {
+                        // Фільтр: рейтинг >= 4.3 + це не мій модуль
+                        const isHighRated = m.avg_rate && parseFloat(m.avg_rate) >= 4.3;
+                        const isNotMine = user ? String(typeof m.user === 'object' ? m.user.id : m.user) !== String(user.id) : true;
+                        return isHighRated && isNotMine;
+                    })
                     .sort((a, b) => parseFloat(b.avg_rate) - parseFloat(a.avg_rate))
                     .slice(0, 10);
                 setPopularModules(popular);
@@ -107,7 +113,11 @@ export default function MainPage() {
                 // C. Best Authors
                 const authorsResp = await getUsersRatings();
                 const authors = authorsResp.data.results || authorsResp.data || [];
-                setBestAuthors(authors.slice(0, 100)); // Завантажуємо 100 авторів
+
+                // Фільтр: прибираємо себе зі списку авторів
+                const filteredAuthors = authors.filter(a => String(a.id) !== String(user?.id));
+
+                setBestAuthors(filteredAuthors.slice(0, 100)); // Завантажуємо 100 авторів
 
             } catch (error) {
                 console.error("Failed to load main page data:", error);

@@ -267,7 +267,7 @@ export default function ModuleView() {
                             <Rating
                                 name="module-rating"
                                 value={rating}
-                                precision={0.5}
+                                precision={1}
                                 readOnly={isOwnModule}
                                 onChange={handleRatingChange}
                                 icon={<StarSvg className="mv-star-icon mv-active" />}

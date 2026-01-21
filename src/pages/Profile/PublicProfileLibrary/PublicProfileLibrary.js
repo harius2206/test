@@ -1,224 +1,275 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { getUserDetails } from "../../../api/usersApi";
+import {
+    saveModule,
+    unsaveModule
+} from "../../../api/modulesApi";
+import { useAuth } from "../../../context/AuthContext"; // Імпорт контексту авторизації
+
 import UserAvatar from "../../../components/avatar/avatar";
 import SortMenu from "../../../components/sortMenu/sortMenu";
+import ModuleCard from "../../../components/ModuleCard/moduleCard";
+import ColoredIcon from "../../../components/coloredIcon";
 import DropdownMenu from "../../../components/dropDownMenu/dropDownMenu";
+import ModalMessage from "../../../components/ModalMessage/ModalMessage";
 
 import { ReactComponent as StarIcon } from "../../../images/star.svg";
-import { ReactComponent as PinIcon } from "../../../images/pin.svg";
-import { ReactComponent as SaveIcon } from "../../../images/save.svg";
-import { ReactComponent as AddIcon } from "../../../images/add.svg";
-import { ReactComponent as DotsIcon } from "../../../images/dots.svg";
 import { ReactComponent as FolderIcon } from "../../../images/folder.svg";
+import { ReactComponent as DotsIcon } from "../../../images/dots.svg";
+import { ReactComponent as ExportIcon } from "../../../images/export.svg";
 
 import "./publicProfileLibrary.css";
 
+const getFlagUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith("http") || url.startsWith("data:")) return url;
+    const baseUrl = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
+    const cleanBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+    const cleanUrl = url.startsWith("/") ? url : `/${url}`;
+    return `${cleanBase}${cleanUrl}`;
+};
+
 export default function PublicProfileLibrary() {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const { user: currentUser } = useAuth(); // Поточний залогінений юзер
+
+    const [userData, setUserData] = useState(null);
     const [activeTab, setActiveTab] = useState("modules");
-    const [sortOption, setSortOption] = useState("date");
-    const [underlineStyle, setUnderlineStyle] = useState({});
-    const tabsRef = useRef([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [modalInfo, setModalInfo] = useState({ open: false, type: "info", title: "", message: "" });
 
-    const user = {
-        name: "Admin",
-        rating: 4.2,
-        created: "15.05.2030",
-        avatar: "",
-        folders: 15,
-        modules: 8,
-        words: 2500,
-    };
+    // Стейт для списків контенту
+    const [modulesList, setModulesList] = useState([]);
+    const [foldersList, setFoldersList] = useState([]);
 
-    const baseModules = [
-        {
-            id: 1,
-            name: "Polisz",
-            terms: 150,
-            rating: 4.2,
-            tags: ["vocab", "letters", "words", "common"],
-            date: "2025-09-10",
-        },
-        {
-            id: 2,
-            name: "Aolisz 2.0",
-            terms: 360,
-            rating: 3.4,
-            tags: ["letters", "words"],
-            date: "2025-08-25",
-        },
-    ];
+    const handleCloseModal = () => setModalInfo(prev => ({ ...prev, open: false }));
 
-    const baseFolders = [
-        { id: 1, name: "Polisz", color: "#b91c1c", modules: 15, date: "2025-09-20" },
-        { id: 2, name: "Polisz 2.0", color: "#9333ea", modules: 0, date: "2025-09-01" },
-    ];
+    const loadProfile = useCallback(async () => {
+        if (!id) return;
+        setLoading(true);
+        try {
+            const res = await getUserDetails(id);
+            const data = res.data;
 
-    // --- handle sorting
-    const handleSort = (option) => {
-        setSortOption(option);
-    };
+            // === ФІЛЬТРАЦІЯ ДОСТУПУ ===
+            const hasAccess = (item) => {
+                // 1. Якщо модуль/папка публічні - показуємо
+                if (item.visible === "public") return true;
 
-    const sortedModules = [...baseModules].sort((a, b) => {
-        if (sortOption === "name") return a.name.localeCompare(b.name);
-        if (sortOption === "date") return new Date(b.date) - new Date(a.date);
-        return 0;
-    });
+                // 2. Якщо я власник цього профілю - показуємо все (включаючи private)
+                if (currentUser && String(currentUser.id) === String(data.id)) return true;
 
-    const sortedFolders = [...baseFolders].sort((a, b) => {
-        if (sortOption === "name") return a.name.localeCompare(b.name);
-        if (sortOption === "date") return new Date(b.date) - new Date(a.date);
-        return 0;
-    });
+                // 3. Якщо я є у списку collaborators - показуємо
+                // (перевіряємо, чи є currentUser в масиві item.collaborators)
+                if (currentUser && item.collaborators && item.collaborators.some(c => String(c.id) === String(currentUser.id))) {
+                    return true;
+                }
 
-    // underline animation for tabs
+                // 4. Додаткова перевірка на user_perm (якщо бек повертає це поле для юзера)
+                // Якщо user_perm не null, значить якісь права є
+                if (item.user_perm) return true;
+
+                return false; // Інакше ховаємо
+            };
+
+            const allowedModules = (data.modules || []).filter(hasAccess);
+            const allowedFolders = (data.folders || []).filter(hasAccess);
+            // ============================
+
+            setUserData(data);
+
+            // Мапінг модулів для картки
+            const mappedModules = allowedModules.map(m => ({
+                ...m,
+                rating: m.avg_rate,
+                flagFrom: getFlagUrl(m.lang_from?.flag),
+                flagTo: getFlagUrl(m.lang_to?.flag),
+                user: { id: data.id, username: data.username, avatar: data.avatar }, // Автор модуля
+                topic: m.topic,
+                // Беремо cards_count з об'єкта, або довжину масиву
+                cards_count: m.cards_count !== undefined ? m.cards_count : (m.cards ? m.cards.length : 0),
+                collaborators: m.collaborators || [],
+                is_saved: m.saved // У твоєму JSON поле називається "saved", а не "is_saved"
+            }));
+            setModulesList(mappedModules);
+
+            // Мапінг папок
+            const mappedFolders = allowedFolders.map(f => ({
+                ...f,
+                modules_count: f.modules_count || (f.modules ? f.modules.length : 0),
+                user: { id: data.id, username: data.username, avatar: data.avatar },
+                is_saved: f.saved
+            }));
+            setFoldersList(mappedFolders);
+
+            setError(null);
+
+        } catch (err) {
+            console.error("Failed to load profile", err);
+            setError("User not found or connection error.");
+        } finally {
+            setLoading(false);
+        }
+    }, [id, currentUser]);
+
     useEffect(() => {
-        const activeIndex = activeTab === "modules" ? 0 : 1;
-        const el = tabsRef.current[activeIndex];
-        if (el) {
-            const { offsetLeft, offsetWidth } = el;
-            setUnderlineStyle({
-                left: offsetLeft,
-                width: offsetWidth,
+        loadProfile();
+    }, [loadProfile]);
+
+    const handleSort = (type) => {
+        if (activeTab === "modules") {
+            setModulesList(prev => {
+                const sorted = [...prev];
+                if (type === "date") sorted.sort((a, b) => b.id - a.id);
+                if (type === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
+                if (type === "rating") sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+                return sorted;
+            });
+        } else {
+            setFoldersList(prev => {
+                const sorted = [...prev];
+                if (type === "date") sorted.sort((a, b) => b.id - a.id);
+                if (type === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
+                return sorted;
             });
         }
-    }, [activeTab]);
+    };
+
+    const handleSaveModule = async (modId) => {
+        try {
+            await saveModule(modId);
+            setModulesList(prev => prev.map(m => m.id === modId ? { ...m, is_saved: true } : m));
+            setModalInfo({ open: true, type: "success", title: "Saved", message: "Module saved successfully." });
+        } catch (err) {
+            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to save module." });
+        }
+    };
+
+    const handleUnsaveModule = async (modId) => {
+        try {
+            await unsaveModule(modId);
+            setModulesList(prev => prev.map(m => m.id === modId ? { ...m, is_saved: false } : m));
+        } catch (err) {
+            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to unsave module." });
+        }
+    };
+
+    if (loading) return <div className="pp-container" style={{textAlign:"center", paddingTop:40}}>Loading profile...</div>;
+    if (error) return <div className="pp-container" style={{textAlign:"center", paddingTop:40, color:"red"}}>{error}</div>;
+    if (!userData) return null;
+
+    // Якщо total_cards_count є в корені, можна використати, або порахувати середнє по модулях
+    const displayRating = userData.avg_rate
+        ? parseFloat(userData.avg_rate).toFixed(1)
+        : "0.0";
 
     return (
-        <div className="ppl-wrapper">
+        <div className="pp-container">
             {/* Header */}
-            <div className="ppl-header">
-                <div className="ppl-avatar-section">
-                    <UserAvatar name={user.name} avatar={user.avatar} size={110} />
-                    <p className="ppl-created">created: {user.created}</p>
-                </div>
-
-                <div className="ppl-info">
-                    <h2 className="ppl-name">
-                        {user.name}
-                        <span className="ppl-rating">
-              {user.rating}/5 <StarIcon width={16} height={16} />
-            </span>
-                    </h2>
-
-                    <p className="ppl-description">
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Eum, ex.
-                    </p>
-
-                    <div className="ppl-stats-column">
-                        <p>folders: {user.folders}</p>
-                        <p>modules: {user.modules}</p>
-                        <p>words: {user.words}</p>
+            <div className="pp-header">
+                <div className="pp-user-info">
+                    <UserAvatar
+                        src={getFlagUrl(userData.avatar)}
+                        name={userData.username}
+                        size={80}
+                        fontSize={32}
+                        disableStrictFallback={true}
+                    />
+                    <div className="pp-text-info">
+                        <div className="pp-username-row">
+                            <h2 className="pp-username">{userData.username}</h2>
+                            <div className="pp-rating-badge">
+                                {displayRating} <StarIcon className="pp-star-icon" />
+                            </div>
+                        </div>
+                        <p className="pp-bio">{userData.bio || "No bio provided."}</p>
                     </div>
                 </div>
             </div>
 
-            <h3 className="ppl-library-title">{user.name}’s library</h3>
-
             {/* Tabs */}
-            <div className="ppl-tabs">
+            <div className="pp-tabs">
                 <button
-                    ref={(el) => (tabsRef.current[0] = el)}
-                    className={activeTab === "modules" ? "active" : ""}
+                    className={`pp-tab ${activeTab === "modules" ? "active" : ""}`}
                     onClick={() => setActiveTab("modules")}
                 >
-                    Modules
+                    Modules ({modulesList.length})
                 </button>
                 <button
-                    ref={(el) => (tabsRef.current[1] = el)}
-                    className={activeTab === "folders" ? "active" : ""}
+                    className={`pp-tab ${activeTab === "folders" ? "active" : ""}`}
                     onClick={() => setActiveTab("folders")}
                 >
-                    Folders
+                    Folders ({foldersList.length})
                 </button>
-                <div className="ppl-underline" style={underlineStyle}></div>
             </div>
 
-            {/* Sort row */}
-            <div className="ppl-sort-row">
+            {/* Controls */}
+            <div className="pp-controls">
                 <SortMenu onSort={handleSort} />
             </div>
 
-            {/* Content */}
-            <div className="ppl-content">
+            {/* Content List */}
+            <div className="pp-content-list">
                 {activeTab === "modules" ? (
-                    <div className="module-list ppl-modules">
-                        {sortedModules.map((m) => (
-                            <div key={m.id} className="module-card">
-                                <div className="module-info">
-                                    <div className="top-row">
-                                        <span className="terms-count">{m.terms} terms</span>
-                                        <span className="rating">
-                      {m.rating}/5 <StarIcon className="star-icon" />
-                    </span>
-                                        <div className="tags-row">
-                                            {m.tags.map((tag, i) => (
-                                                <span key={i} className="tag">
-                          {tag}
-                        </span>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <div className="module-name-row">
-                                        <span className="module-name-text">{m.name}</span>
-                                    </div>
-                                </div>
-
-                                <div className="folder-actions" onClick={(e) => e.stopPropagation()}>
-                                    <DropdownMenu
-                                        align="right"
-                                        width={180}
-                                        items={[
-                                            { label: "Add to library", icon: <AddIcon width={15} height={15} /> },
-                                            { label: "Pin", icon: <PinIcon width={15} height={15} /> },
-                                            { label: "Save", icon: <SaveIcon width={15} height={15} /> },
-                                        ]}
-                                    >
-                                        <button className="btn-icon">
-                                            <DotsIcon width={16} height={16} />
-                                        </button>
-                                    </DropdownMenu>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                    modulesList.length === 0 ? (
+                        <div className="pp-empty">No accessible modules found.</div>
+                    ) : (
+                        <div className="module-list">
+                            {modulesList.map((module) => (
+                                <ModuleCard
+                                    key={module.id}
+                                    module={module}
+                                    onSave={handleSaveModule}
+                                    onUnsave={handleUnsaveModule}
+                                />
+                            ))}
+                        </div>
+                    )
                 ) : (
-                    <div className="module-list ppl-folders">
-                        {sortedFolders.map((f) => (
-                            <div key={f.id} className="module-card">
+                    foldersList.length === 0 ? (
+                        <div className="pp-empty">No accessible folders found.</div>
+                    ) : (
+                        foldersList.map(folder => (
+                            <div
+                                key={folder.id}
+                                className="module-card"
+                                onClick={() => navigate(`/library/folders/${folder.id}`)}
+                                style={{cursor: "pointer"}}
+                            >
                                 <div className="module-info">
                                     <div className="top-row">
-                                        <span className="terms-count">{f.modules} modules</span>
+                                        <span className="terms-count">{folder.modules_count} modules</span>
                                     </div>
-                                    <div
-                                        className="module-name-row"
-                                        style={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: 8,
-                                            marginTop: 6,
-                                        }}
-                                    >
-                                        <FolderIcon width={20} height={20} fill={f.color || "#6366f1"} />
-                                        <span className="module-name-text">{f.name}</span>
+                                    <div className="module-name-row" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                        <ColoredIcon icon={FolderIcon} color={folder.color || "#6366f1"} size={20} />
+                                        <span className="folder-name-text">{folder.name}</span>
                                     </div>
                                 </div>
-
-                                <div className="folder-actions" onClick={(e) => e.stopPropagation()}>
-                                    <DropdownMenu
-                                        align="right"
-                                        width={140}
-                                        items={[{ label: "Pin", icon: <PinIcon width={15} height={15} /> }]}
-                                    >
+                                <div className="folder-actions" onClick={e => e.stopPropagation()}>
+                                    <DropdownMenu align="left" width={160} items={[
+                                        { label: "Export", onClick: () => {}, icon: <ExportIcon width={16} /> }
+                                    ]}>
                                         <button className="btn-icon">
-                                            <DotsIcon width={16} height={16} />
+                                            <DotsIcon width={16} />
                                         </button>
                                     </DropdownMenu>
                                 </div>
                             </div>
-                        ))}
-                    </div>
+                        ))
+                    )
                 )}
             </div>
+
+            <ModalMessage
+                open={modalInfo.open}
+                type={modalInfo.type}
+                title={modalInfo.title}
+                message={modalInfo.message}
+                onClose={handleCloseModal}
+            />
         </div>
     );
 }
