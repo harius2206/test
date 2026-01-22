@@ -15,9 +15,6 @@ import { ReactComponent as CloseIcon } from "../../images/close.svg";
 import { ReactComponent as FolderIcon } from "../../images/folder.svg";
 import { ReactComponent as MergeIcon } from "../../images/merge.svg";
 import { ReactComponent as SaveIcon } from "../../images/save.svg";
-// Імпорт іконок очей
-import { ReactComponent as EyeOpenedIcon } from "../../images/eyeOpened.svg";
-import { ReactComponent as EyeClosedIcon } from "../../images/eyeClosed.svg";
 
 import "./moduleCard.css";
 
@@ -36,28 +33,25 @@ export default function ModuleCard({
                                        isSelected,
                                        onSelect,
                                        onSave,
-                                       onUnsave,
-                                       onVisibilityToggle // Новий проп
+                                       onUnsave
                                    }) {
     const { user } = useAuth();
     const navigate = useNavigate();
 
     const tags = module.tags || [];
+    // Якщо теги розгорнуті - показуємо всі, якщо ні - показуємо visibleCount
+    // Але оскільки ми робимо адаптивні, можна показувати всі, або залишити логіку "More"
+    // Тут залишаю логіку: якщо expanded = true -> всі, інакше -> 3 (або visibleCount)
     const showMore = tags.length > visibleCount;
     const visibleTags = expanded ? tags : tags.slice(0, visibleCount);
 
     const authorName = module.user?.username || module.author || "User";
-
-    // Перейменував для ясності, але головне - передати disableStrictFallback
-    const displayAuthorAvatar = module.user?.avatar || module.avatar;
-
+    const authorAvatar = module.user?.avatar || module.avatar;
     const termsCount = module.cards_count !== undefined ? module.cards_count : (module.terms || 0);
     const topicName = typeof module.topic === 'object' && module.topic ? module.topic.name : module.topic;
 
-    const isOwnModule = (module.user?.id && user?.id && String(module.user.id) === String(user.id)) || (user?.username === authorName);
-
-    // Перевірка прав редагування: власник або має права "editor"
-    const canEdit = isOwnModule || (module.user_perm === "editor");
+    const isOwnModule = (user?.username === authorName) ||
+        (user?.username && authorName && user.username.toLowerCase() === authorName.toLowerCase());
 
     const handleCardClick = () => {
         if (isMergeMode) {
@@ -69,7 +63,6 @@ export default function ModuleCard({
 
     const menuItems = [];
 
-    // Редагування
     if (onEdit) {
         menuItems.push({
             label: "Edit",
@@ -84,17 +77,6 @@ export default function ModuleCard({
         });
     }
 
-    // --- VISIBILITY TOGGLE (Тільки для власників/редакторів) ---
-    if (onVisibilityToggle && canEdit) {
-        const isPrivate = module.visible === "private";
-        menuItems.push({
-            label: isPrivate ? "Make Public" : "Make Private",
-            onClick: () => onVisibilityToggle(module),
-            icon: isPrivate ? <EyeClosedIcon width={16} height={16} /> : <EyeOpenedIcon width={16} height={16} />
-        });
-    }
-
-    // Збереження
     if (module.is_saved && onUnsave) {
         menuItems.push({
             label: "Unsave",
@@ -155,40 +137,25 @@ export default function ModuleCard({
             }}
         >
             <div className="module-info">
+                {/* Верхній рядок: кількість термінів, автор, рейтинг */}
                 <div className="top-row">
                     <span className="terms-count">{termsCount} terms</span>
-                    {!isOwnModule && (
-                        <>
-                            <span className="separator">|</span>
-                            <div className="author-block">
-                                {/* ДОДАНО disableStrictFallback={true}, ЩОБ НЕ ПІДТЯГУВАЛО АВАТАР ПОТОЧНОГО ЮЗЕРА */}
-                                <UserAvatar
-                                    name={authorName}
-                                    src={displayAuthorAvatar}
-                                    size={20}
-                                    disableStrictFallback={true}
-                                />
-                                <span className="author">{authorName}</span>
-                            </div>
-                        </>
-                    )}
+
+                    <span className="separator">|</span>
+                    <div className="author-block">
+                        <UserAvatar name={authorName} src={authorAvatar} size={20} />
+                        <span className="author">{authorName}</span>
+                    </div>
+
                     {module.rating > 0 && (
                         <>
                             <span className="separator">|</span>
                             <span className="rating">{module.rating}<StarIcon className="mc-star-icon" /></span>
                         </>
                     )}
-                    <div className="mc-tags-wrapper">
-                        <div className="mc-tags-row">
-                            {visibleTags.map((tag, i) => <span key={i} className="mc-tag">{tag}</span>)}
-                            {showMore && (
-                                <a onClick={(e) => { e.stopPropagation(); toggleTags && toggleTags(module.id); }} className="tags-dots" style={{ cursor: "pointer" }}>
-                                    {expanded ? <CloseIcon width={14} height={14} /> : <MoreIcon width={14} height={14} />}
-                                </a>
-                            )}
-                        </div>
-                    </div>
                 </div>
+
+                {/* Середній рядок: назва, прапорці, опис */}
                 <div className="module-name-row hover-wrapper">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
                         <span className="module-name-text" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -202,7 +169,26 @@ export default function ModuleCard({
                     </div>
                     <span className="hover-hint">{module.description || "No description"}</span>
                 </div>
+
+                {/* Нижній рядок: ТЕГИ (перенесено сюди) */}
+                {tags.length > 0 && (
+                    <div className="mc-tags-wrapper">
+                        <div className="mc-tags-row">
+                            {visibleTags.map((tag, i) => <span key={i} className="mc-tag">{tag}</span>)}
+                            {showMore && (
+                                <a
+                                    onClick={(e) => { e.stopPropagation(); toggleTags && toggleTags(module.id); }}
+                                    className="tags-dots"
+                                    style={{ cursor: "pointer" }}
+                                >
+                                    {expanded ? <CloseIcon width={12} height={12} /> : <MoreIcon width={12} height={12} />}
+                                </a>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
+
             {menuItems.length > 0 && (
                 <div className="folder-actions" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu align="left" width={180} items={menuItems}>

@@ -5,7 +5,7 @@ import {
     saveModule,
     unsaveModule
 } from "../../../api/modulesApi";
-import { useAuth } from "../../../context/AuthContext"; // Імпорт контексту авторизації
+import { useAuth } from "../../../context/AuthContext";
 
 import UserAvatar from "../../../components/avatar/avatar";
 import SortMenu from "../../../components/sortMenu/sortMenu";
@@ -33,7 +33,7 @@ const getFlagUrl = (url) => {
 export default function PublicProfileLibrary() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { user: currentUser } = useAuth(); // Поточний залогінений юзер
+    const { user: currentUser } = useAuth();
 
     const [userData, setUserData] = useState(null);
     const [activeTab, setActiveTab] = useState("modules");
@@ -56,43 +56,46 @@ export default function PublicProfileLibrary() {
 
             // === ФІЛЬТРАЦІЯ ДОСТУПУ ===
             const hasAccess = (item) => {
-                // 1. Якщо модуль/папка публічні - показуємо
                 if (item.visible === "public") return true;
-
-                // 2. Якщо я власник цього профілю - показуємо все (включаючи private)
                 if (currentUser && String(currentUser.id) === String(data.id)) return true;
-
-                // 3. Якщо я є у списку collaborators - показуємо
-                // (перевіряємо, чи є currentUser в масиві item.collaborators)
                 if (currentUser && item.collaborators && item.collaborators.some(c => String(c.id) === String(currentUser.id))) {
                     return true;
                 }
-
-                // 4. Додаткова перевірка на user_perm (якщо бек повертає це поле для юзера)
-                // Якщо user_perm не null, значить якісь права є
                 if (item.user_perm) return true;
-
-                return false; // Інакше ховаємо
+                return false;
             };
 
             const allowedModules = (data.modules || []).filter(hasAccess);
             const allowedFolders = (data.folders || []).filter(hasAccess);
             // ============================
 
-            setUserData(data);
+            // === ПІДРАХУНОК РЕЙТИНГУ ===
+            // Якщо сервер не повернув avg_rate або він 0, рахуємо його на фронті
+            let calculatedRating = parseFloat(data.avg_rate || 0);
 
-            // Мапінг модулів для картки
+            // Якщо серверний рейтинг 0, спробуємо порахувати з модулів
+            if (calculatedRating === 0 && allowedModules.length > 0) {
+                const ratedModules = allowedModules.filter(m => m.avg_rate && parseFloat(m.avg_rate) > 0);
+                if (ratedModules.length > 0) {
+                    const sum = ratedModules.reduce((acc, m) => acc + parseFloat(m.avg_rate), 0);
+                    calculatedRating = sum / ratedModules.length;
+                }
+            }
+
+            // Оновлюємо дані користувача з (можливо) новим рейтингом
+            setUserData({ ...data, avg_rate: calculatedRating });
+
+            // Мапінг модулів
             const mappedModules = allowedModules.map(m => ({
                 ...m,
                 rating: m.avg_rate,
                 flagFrom: getFlagUrl(m.lang_from?.flag),
                 flagTo: getFlagUrl(m.lang_to?.flag),
-                user: { id: data.id, username: data.username, avatar: data.avatar }, // Автор модуля
+                user: { id: data.id, username: data.username, avatar: data.avatar },
                 topic: m.topic,
-                // Беремо cards_count з об'єкта, або довжину масиву
                 cards_count: m.cards_count !== undefined ? m.cards_count : (m.cards ? m.cards.length : 0),
                 collaborators: m.collaborators || [],
-                is_saved: m.saved // У твоєму JSON поле називається "saved", а не "is_saved"
+                is_saved: m.saved
             }));
             setModulesList(mappedModules);
 
@@ -125,7 +128,7 @@ export default function PublicProfileLibrary() {
                 const sorted = [...prev];
                 if (type === "date") sorted.sort((a, b) => b.id - a.id);
                 if (type === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
-                if (type === "rating") sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+                if (type === "rating") sorted.sort((a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0));
                 return sorted;
             });
         } else {
@@ -161,7 +164,6 @@ export default function PublicProfileLibrary() {
     if (error) return <div className="pp-container" style={{textAlign:"center", paddingTop:40, color:"red"}}>{error}</div>;
     if (!userData) return null;
 
-    // Якщо total_cards_count є в корені, можна використати, або порахувати середнє по модулях
     const displayRating = userData.avg_rate
         ? parseFloat(userData.avg_rate).toFixed(1)
         : "0.0";
