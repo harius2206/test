@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import SortMenu from "../../../../components/sortMenu/sortMenu";
 import DropdownMenu from "../../../../components/dropDownMenu/dropDownMenu";
 import { useAuth } from "../../../../context/AuthContext";
+import FullscreenCard from "../../../../components/fullscreenCard/fullscreenCard";
 import {
     getSavedCards,
     unsaveCard,
@@ -22,6 +23,9 @@ export default function Cards({ source = "saves" }) {
     const [loading, setLoading] = useState(true);
     const [sort, setSort] = useState(() => localStorage.getItem(storageKey) || "newest");
 
+    // State для fullscreen
+    const [fullscreenStartIndex, setFullscreenStartIndex] = useState(null);
+
     const loadSavedCards = useCallback(async () => {
         if (!user?.id) {
             setLoading(false);
@@ -29,7 +33,6 @@ export default function Cards({ source = "saves" }) {
         }
         try {
             setLoading(true);
-            // Отримуємо всі засейвлені картки юзера (новий ендпоінт)
             const resp = await getSavedCards(user.id);
             const data = resp.data.results || resp.data || [];
 
@@ -73,32 +76,37 @@ export default function Cards({ source = "saves" }) {
         return copy;
     }, [cards, sort]);
 
-    const toggleLearn = async (card) => {
-        try {
-            const newStatus = !card.is_learned;
-            await updateCardLearnStatus(card.id, newStatus);
-            setCards(prev => prev.map(c =>
-                c.id === card.id ? { ...c, is_learned: newStatus } : c
-            ));
-        } catch (err) {
-            alert("Error updating learned status");
-        }
-    };
+    const handleCardStatusUpdate = async (cardId, type) => {
+        const card = cards.find(c => c.id === cardId);
+        if (!card) return;
 
-    const toggleSave = async (card, e) => {
-        if (e) e.stopPropagation();
-        try {
-            if (card.is_saved) {
-                await unsaveCard(card.id);
-                setCards(prev => prev.filter(c => c.id !== card.id));
-            } else {
-                await saveCard(card.id);
-                setCards(prev => prev.map(c =>
-                    c.id === card.id ? { ...c, is_saved: true } : c
-                ));
+        if (type === "learn") {
+            try {
+                const newStatus = !card.is_learned; // true якщо вчимо
+
+                // Передаємо всі необхідні поля.
+                // Якщо newStatus === false (delete), data ігнорується в api
+                await updateCardLearnStatus(cardId, newStatus, {
+                    original: card.original || "",
+                    translation: card.translation || "",
+                    learned: "learned" // Додано поле, яке вимагав бекенд
+                });
+
+                setCards(prev => prev.map(c => c.id === cardId ? { ...c, is_learned: newStatus } : c));
+            } catch (err) {
+                console.error(err);
+                alert("Error updating learned status");
             }
-        } catch (err) {
-            alert("Action failed");
+        } else if (type === "save") {
+            try {
+                if (card.is_saved) {
+                    await unsaveCard(cardId);
+                    setCards(prev => prev.filter(c => c.id !== cardId));
+                } else {
+                    await saveCard(cardId);
+                    setCards(prev => prev.map(c => c.id === cardId ? { ...c, is_saved: true } : c));
+                }
+            } catch (err) { alert("Action failed"); }
         }
     };
 
@@ -116,7 +124,7 @@ export default function Cards({ source = "saves" }) {
                         Тут поки порожньо
                     </div>
                 ) : (
-                    sorted.map((c) => (
+                    sorted.map((c, index) => (
                         <div key={c.id} className="mv-row">
                             <div className="mv-row-half mv-row-left">
                                 {c.original}
@@ -129,7 +137,7 @@ export default function Cards({ source = "saves" }) {
                                 <div style={{ display: 'flex', gap: '8px', position: 'absolute', right: '10px', alignItems: 'center' }}>
                                     <button
                                         className={`mv-row-book-btn ${c.is_learned ? "mv-active" : ""}`}
-                                        onClick={() => toggleLearn(c)}
+                                        onClick={(e) => { e.stopPropagation(); handleCardStatusUpdate(c.id, 'learn'); }}
                                         style={{ position: 'static' }}
                                     >
                                         <BookSvg className="book-icon" />
@@ -137,7 +145,7 @@ export default function Cards({ source = "saves" }) {
 
                                     <button
                                         className={`mv-row-save-btn ${c.is_saved ? "mv-active" : ""}`}
-                                        onClick={(e) => toggleSave(c, e)}
+                                        onClick={(e) => { e.stopPropagation(); handleCardStatusUpdate(c.id, 'save'); }}
                                         style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', marginTop: '2px' }}
                                     >
                                         <SaveIcon
@@ -148,7 +156,11 @@ export default function Cards({ source = "saves" }) {
 
                                     <DropdownMenu
                                         align="left"
-                                        items={[{ label: "На весь екран", icon: <FullscreenIcon width={16} />, onClick: () => { } }]}
+                                        items={[{
+                                            label: "На весь екран",
+                                            icon: <FullscreenIcon width={16} />,
+                                            onClick: () => setFullscreenStartIndex(index)
+                                        }]}
                                     >
                                         <button className="mv-btn-icon">
                                             <DotsIcon width={20} />
@@ -160,6 +172,17 @@ export default function Cards({ source = "saves" }) {
                     ))
                 )}
             </div>
+
+            {fullscreenStartIndex !== null && sorted.length > 0 && (
+                <FullscreenCard
+                    cards={sorted}
+                    initialIndex={fullscreenStartIndex}
+                    onClose={() => setFullscreenStartIndex(null)}
+                    onUpdateCardStatus={handleCardStatusUpdate}
+                    checkIsLearned={(id) => cards.find(x => x.id === id)?.is_learned}
+                    checkIsSaved={(id) => cards.find(x => x.id === id)?.is_saved}
+                />
+            )}
         </div>
     );
 }

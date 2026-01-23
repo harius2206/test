@@ -2,14 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import Button from "../../../components/button/button";
 import DropdownMenu from "../../../components/dropDownMenu/dropDownMenu";
-import UserAvatar from "../../../components/avatar/avatar";
 import Rating from "@mui/material/Rating";
 import FlipCard from "../../../components/flipCard/flipCard";
 import DiagonalFlag43 from "../../../components/diagonalFlagRect43";
 import { useAuth } from "../../../context/AuthContext";
 import PermissionsMenu from "../../../components/permissionMenu/permissionsMenu";
+import FullscreenCard from "../../../components/fullscreenCard/fullscreenCard";
 
-// Імпорт API методів
 import {
     getModuleById,
     deleteModule,
@@ -21,7 +20,6 @@ import {
     unsaveCard
 } from "../../../api/modulesApi";
 
-// Імпорт іконок
 import { ReactComponent as StarSvg } from "../../../images/star.svg";
 import { ReactComponent as DotsIcon } from "../../../images/dots.svg";
 import { ReactComponent as EditIcon } from "../../../images/editImg.svg";
@@ -66,10 +64,15 @@ export default function ModuleView() {
     const [learned, setLearned] = useState(new Set());
     const [saved, setSaved] = useState(new Set());
     const [rating, setRating] = useState(0);
+
+    // Вбудований автоплей
     const [autoplay, setAutoplay] = useState(false);
     const autoplayRef = useRef(null);
     const autoplayInterval = 3000;
-    const [isFullscreen, setIsFullscreen] = useState(false);
+
+    // Відкриття Fullscreen компонента
+    const [showFullscreen, setShowFullscreen] = useState(false);
+
     const [showPermissions, setShowPermissions] = useState(false);
 
     useEffect(() => {
@@ -90,7 +93,6 @@ export default function ModuleView() {
                 if (data.cards) {
                     data.cards.forEach(c => {
                         if (c.learned_status === "learned") learnedSet.add(c.id);
-                        // ВИПРАВЛЕНО: Читаємо стан збереження з поля "saved"
                         if (c.saved === true) savedSet.add(c.id);
                     });
                 }
@@ -130,54 +132,59 @@ export default function ModuleView() {
     const hasNext = currentIndex < cards.length - 1;
     const isOwnModule = user?.username === module?.author;
 
-    const toggleCardLearned = async (cardId, e) => {
-        if (e) e.stopPropagation();
-        const isCurrentlyLearned = learned.has(cardId);
-
-        // Оновлюємо UI миттєво (optimistic update)
-        setLearned(prev => {
-            const next = new Set(prev);
-            isCurrentlyLearned ? next.delete(cardId) : next.add(cardId);
-            return next;
-        });
-
-        try {
-            // Новий API: статус тепер передається як boolean (або обробляється всередині api)
-            await updateCardLearnStatus(cardId, !isCurrentlyLearned);
-        } catch (err) {
-            // Відкат стану при помилці
+    const handleUpdateCardStatus = async (cardId, type) => {
+        if (type === 'learn') {
+            const isCurrentlyLearned = learned.has(cardId);
             setLearned(prev => {
                 const next = new Set(prev);
-                isCurrentlyLearned ? next.add(cardId) : next.delete(cardId);
+                isCurrentlyLearned ? next.delete(cardId) : next.add(cardId);
                 return next;
             });
+            try {
+                const card = cards.find(c => c.id === cardId);
+                if (card) {
+                    await updateCardLearnStatus(cardId, !isCurrentlyLearned, {
+                        original: card.term || "",
+                        translation: card.definition || "",
+                        learned: "learned" // Додаємо обов'язкове поле
+                    });
+                }
+            } catch (err) {
+                setLearned(prev => {
+                    const next = new Set(prev);
+                    isCurrentlyLearned ? next.add(cardId) : next.delete(cardId);
+                    return next;
+                });
+            }
+        } else if (type === 'save') {
+            const isCurrentlySaved = saved.has(cardId);
+            setSaved(prev => {
+                const next = new Set(prev);
+                isCurrentlySaved ? next.delete(cardId) : next.add(cardId);
+                return next;
+            });
+            try {
+                if (isCurrentlySaved) await unsaveCard(cardId);
+                else await saveCard(cardId);
+            } catch (err) {
+                setSaved(prev => {
+                    const next = new Set(prev);
+                    isCurrentlySaved ? next.add(cardId) : next.delete(cardId);
+                    return next;
+                });
+                alert("Дія не вдалася.");
+            }
         }
     };
 
-    const toggleCardSave = async (cardId, e) => {
+    const toggleCardLearned = (cardId, e) => {
         if (e) e.stopPropagation();
-        const isCurrentlySaved = saved.has(cardId);
+        handleUpdateCardStatus(cardId, 'learn');
+    };
 
-        setSaved(prev => {
-            const next = new Set(prev);
-            isCurrentlySaved ? next.delete(cardId) : next.add(cardId);
-            return next;
-        });
-
-        try {
-            if (isCurrentlySaved) {
-                await unsaveCard(cardId);
-            } else {
-                await saveCard(cardId);
-            }
-        } catch (err) {
-            setSaved(prev => {
-                const next = new Set(prev);
-                isCurrentlySaved ? next.add(cardId) : next.delete(cardId);
-                return next;
-            });
-            alert("Дія не вдалася.");
-        }
+    const toggleCardSave = (cardId, e) => {
+        if (e) e.stopPropagation();
+        handleUpdateCardStatus(cardId, 'save');
     };
 
     const handleDelete = async () => {
@@ -211,13 +218,11 @@ export default function ModuleView() {
     const prevCard = () => { setCurrentIndex((i) => (i > 0 ? i - 1 : cards.length - 1)); setFlipped(false); };
     const nextCard = () => { setCurrentIndex((i) => (i < cards.length - 1 ? i + 1 : 0)); setFlipped(false); };
     const flipCard = () => setFlipped((v) => !v);
-    const toggleFullscreen = () => setIsFullscreen((v) => !v);
 
-    useEffect(() => {
-        if (isFullscreen) document.body.style.overflow = "hidden";
-        else document.body.style.overflow = "";
-        return () => { document.body.style.overflow = ""; };
-    }, [isFullscreen]);
+    const openFullscreen = () => {
+        setAutoplay(false);
+        setShowFullscreen(true);
+    };
 
     useEffect(() => {
         if (autoplay) {
@@ -298,7 +303,7 @@ export default function ModuleView() {
                     <Button variant="toggle" onClick={() => navigate(`/cardstest?id=${module.id}`, { state: { module } })} width="100%" height={42}>Тест</Button>
                 </div>
 
-                <div className={`mv-flashcard-area ${isFullscreen ? "mv-fullscreen" : ""}`}>
+                <div className="mv-flashcard-area">
                     <div className="mv-flashcard-wrapper">
                         {cards.length > 0 ? (
                             <FlipCard
@@ -320,7 +325,7 @@ export default function ModuleView() {
                             <div className="mv-icon-controls">
                                 <button className="mv-icon-btn" onClick={() => setCurrentIndex(0)} title="Restart"><RestartIcon /></button>
                                 <button className="mv-icon-btn" onClick={() => setAutoplay(v => !v)} title="Auto">{autoplay ? <PauseIcon /> : <PlayIcon />}</button>
-                                <button className="mv-icon-btn" onClick={toggleFullscreen} title="Fullscreen"><FullscreenIcon /></button>
+                                <button className="mv-icon-btn" onClick={openFullscreen} title="Fullscreen"><FullscreenIcon /></button>
                             </div>
                         </div>
                     )}
@@ -348,7 +353,6 @@ export default function ModuleView() {
                                                     >
                                                         <BookSvg className="book-icon" />
                                                     </button>
-                                                    {/* Кнопка сейва у списку: додано клас mv-active для підсвітки */}
                                                     <button
                                                         className={`mv-row-save-btn ${saved.has(c.id) ? "mv-active" : ""}`}
                                                         onClick={(e) => toggleCardSave(c.id, e)}
@@ -368,6 +372,17 @@ export default function ModuleView() {
                     })}
                 </div>
             </main>
+
+            {showFullscreen && cards.length > 0 && (
+                <FullscreenCard
+                    cards={cards}
+                    initialIndex={currentIndex}
+                    onClose={() => setShowFullscreen(false)}
+                    onUpdateCardStatus={handleUpdateCardStatus}
+                    checkIsLearned={(id) => learned.has(id)}
+                    checkIsSaved={(id) => saved.has(id)}
+                />
+            )}
 
             {showPermissions && (
                 <div className="modal-overlay" onClick={() => setShowPermissions(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", justifyContent: "center", alignItems: "center" }}>

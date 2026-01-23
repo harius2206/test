@@ -31,10 +31,16 @@ export const getSavedModules = (userId) => axiosClient.get(endpoints.modules.sav
 // --- Cards ---
 export const getModuleCards = (params) => axiosClient.get(endpoints.cards.list, { params });
 
-// Статус вивчення: true -> POST (вивчено), false -> DELETE (не вивчено)
-export const updateCardLearnStatus = (cardId, status) => {
-    const method = status ? 'post' : 'delete';
-    return axiosClient[method](endpoints.cards.learn(cardId), {});
+// ВИПРАВЛЕНО: Додано третій аргумент data.
+// При POST запиті ми передаємо data, при DELETE - пустий об'єкт.
+export const updateCardLearnStatus = (cardId, status, data = {}) => {
+    if (status) {
+        // Якщо вчимо (POST), передаємо дані
+        return axiosClient.post(endpoints.cards.learn(cardId), data);
+    } else {
+        // Якщо забуваємо (DELETE)
+        return axiosClient.delete(endpoints.cards.learn(cardId));
+    }
 };
 
 // Збереження карток
@@ -44,8 +50,6 @@ export const unsaveCard = (cardId) => axiosClient.delete(endpoints.cards.saves(c
 // Отримання всіх збережених карток користувача
 export const getSavedCards = (userId) => axiosClient.get(endpoints.cards.saved(userId));
 
-// Ця функція потрібна для Cards.js, якщо ти хочеш фільтрувати по модулю,
-// або просто як аліас для завантаження всіх засейвлених
 export const getSavedCardsByModule = (moduleId, userId) => axiosClient.get(endpoints.cards.saved(userId));
 
 // --- Other ---
