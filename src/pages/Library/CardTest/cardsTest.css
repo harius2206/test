@@ -30,6 +30,7 @@
     transition: background 0.3s ease, color 0.3s ease;
 }
 
+/* Sticky замість Fixed, як у твоєму коді */
 .ct-header-fixed {
     position: sticky;
     top: 0;
@@ -51,10 +52,10 @@
 .ct-header-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
+    /* justify-content: space-between; <-- прибираємо, бо центруємо абсолютно */
+    position: relative; /* Це база для абсолютного центрування */
+    min-height: 40px;
 }
-
 
 .ct-title {
     font-size: 20px;
@@ -64,17 +65,28 @@
     overflow: hidden;
     text-overflow: ellipsis;
     transition: color 0.3s ease;
+
+    /* Обмежуємо ширину, щоб не наїхало на центр */
+    max-width: 35%;
+    margin-right: auto; /* Притискає все інше (кнопку) вправо, якщо вони в потоці */
 }
 
+/* Ідеальне центрування */
 .ct-progress {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+
     font-weight: 600;
     color: var(--ct-text);
     min-width: 72px;
     text-align: center;
     transition: color 0.3s ease;
+    white-space: nowrap;
 }
 
 .ct-close-btn {
+    margin-left: auto; /* Притискаємо кнопку до правого краю */
     border: none;
     background: transparent;
     padding: 4px;
@@ -86,6 +98,7 @@
     width: 36px;
     height: 36px;
     transition: opacity 0.15s ease;
+    z-index: 2; /* Щоб лічильник не перекрив клік, якщо екран дуже вузький */
 }
 
 .ct-close-btn:hover {
@@ -105,7 +118,7 @@
     filter: brightness(0) invert(1);
 }
 
-/* Попередження (якщо не всі питання відповіли) */
+/* Попередження */
 .ct-warning-text {
     margin-top: 8px;
     background: var(--ct-warning-bg);
@@ -117,7 +130,7 @@
     transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Список карток питань */
+/* Список карток */
 .ct-questions-list {
     margin-top: 18px;
     display: flex;
@@ -127,7 +140,6 @@
     box-sizing: border-box;
 }
 
-/* Вирівнювання та обмеження карток */
 .ct-questions-list .tq-card,
 .ct-questions-list .fc-card {
     flex: 0 0 auto;
@@ -137,7 +149,6 @@
     box-sizing: border-box;
 }
 
-/* Кнопки внизу */
 .ct-send-row {
     display: flex;
     justify-content: center;
@@ -152,22 +163,30 @@
         flex-direction: column;
         align-items: center;
         gap: 8px;
+        /* На мобільному скидаємо абсолютне позиціонування, щоб елементи йшли стовпчиком */
+        position: static;
+        height: auto;
     }
 
     .ct-title {
         font-size: 18px;
         text-align: center;
+        max-width: 100%;
+        margin-right: 0;
     }
 
     .ct-progress {
+        /* Скидаємо центрування для мобілки, щоб воно стало частиною потоку */
+        position: static;
+        transform: none;
         font-size: 14px;
     }
 
     .ct-close-btn {
+        margin-left: 0;
         margin-top: 4px;
     }
 
-    /* горизонтальний скрол для питань */
     .ct-questions-list {
         align-items: flex-start;
         overflow-x: auto;
