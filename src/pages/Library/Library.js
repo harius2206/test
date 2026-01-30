@@ -1,5 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { getUserDetails } from "../../api/usersApi";
+
 import Folders from "./Folders/Folders";
 import Modules from "./Modules/Modules";
 import FolderInfo from "./FolderInfo/FolderInfo";
@@ -8,14 +11,37 @@ import "./library.css";
 
 export default function Library() {
     const navigate = useNavigate();
+    const { user } = useAuth();
+
     const [activeTab, setActiveTab] = useState(() => {
         return localStorage.getItem("libraryActiveTab") || "folders";
     });
+
     const [addFolder, setAddFolder] = useState(false);
+    const [libraryData, setLibraryData] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         localStorage.setItem("libraryActiveTab", activeTab);
     }, [activeTab]);
+
+    // Завантажуємо дані один раз при вході в бібліотеку
+    const fetchLibraryData = useCallback(async () => {
+        if (!user?.id) return;
+        setLoading(true);
+        try {
+            const res = await getUserDetails(user.id);
+            setLibraryData(res.data);
+        } catch (error) {
+            console.error("Failed to load library data", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [user]);
+
+    useEffect(() => {
+        fetchLibraryData();
+    }, [fetchLibraryData]);
 
     return (
         <div className="app-wrapper">
@@ -57,11 +83,23 @@ export default function Library() {
                                 </div>
 
                                 <div className="library-content">
-                                    {activeTab === "folders" ? (
-                                        <Folders addFolder={addFolder} setAddFolder={setAddFolder} />
-                                    ) : (
-                                        <Modules />
-                                    )}
+                                    <div style={{ display: activeTab === "modules" ? "block" : "none" }}>
+                                        <Modules
+                                            preloadedModules={libraryData?.modules || []}
+                                            loadingParent={loading}
+                                            onRefresh={fetchLibraryData}
+                                        />
+                                    </div>
+
+                                    <div style={{ display: activeTab === "folders" ? "block" : "none" }}>
+                                        <Folders
+                                            addFolder={addFolder}
+                                            setAddFolder={setAddFolder}
+                                            preloadedFolders={libraryData?.folders || []}
+                                            loadingParent={loading}
+                                            onRefresh={fetchLibraryData}
+                                        />
+                                    </div>
                                 </div>
                             </>
                         }

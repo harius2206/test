@@ -19,7 +19,13 @@ export const createModule = (data) => axiosClient.post(endpoints.modules.list, d
 export const updateModule = (id, data) => axiosClient.patch(endpoints.modules.detail(id), data);
 export const deleteModule = (id) => axiosClient.delete(endpoints.modules.detail(id));
 export const toggleModuleVisibility = (id, status) => axiosClient.patch(endpoints.modules.visibles(id), { visible: status });
+
+// Pins
 export const pinModule = (id) => axiosClient.post(endpoints.modules.pins(id), {});
+export const unpinModule = (id) => axiosClient.delete(endpoints.modules.pins(id));
+// Отримання списку закріплених модулів
+export const getPinnedModules = (userId) => axiosClient.get(endpoints.modules.pinned(userId));
+
 export const mergeModules = (data) => axiosClient.post(endpoints.modules.merge, data);
 export const rateModule = (id, rating) => axiosClient.post(endpoints.modules.rates(id), { rate: rating });
 
@@ -31,14 +37,10 @@ export const getSavedModules = (userId) => axiosClient.get(endpoints.modules.sav
 // --- Cards ---
 export const getModuleCards = (params) => axiosClient.get(endpoints.cards.list, { params });
 
-// ВИПРАВЛЕНО: Додано третій аргумент data.
-// При POST запиті ми передаємо data, при DELETE - пустий об'єкт.
 export const updateCardLearnStatus = (cardId, status, data = {}) => {
     if (status) {
-        // Якщо вчимо (POST), передаємо дані
         return axiosClient.post(endpoints.cards.learn(cardId), data);
     } else {
-        // Якщо забуваємо (DELETE)
         return axiosClient.delete(endpoints.cards.learn(cardId));
     }
 };
@@ -49,7 +51,6 @@ export const unsaveCard = (cardId) => axiosClient.delete(endpoints.cards.saves(c
 
 // Отримання всіх збережених карток користувача
 export const getSavedCards = (userId) => axiosClient.get(endpoints.cards.saved(userId));
-
 export const getSavedCardsByModule = (moduleId, userId) => axiosClient.get(endpoints.cards.saved(userId));
 
 // --- Other ---

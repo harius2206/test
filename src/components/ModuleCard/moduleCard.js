@@ -15,6 +15,7 @@ import { ReactComponent as CloseIcon } from "../../images/close.svg";
 import { ReactComponent as FolderIcon } from "../../images/folder.svg";
 import { ReactComponent as MergeIcon } from "../../images/merge.svg";
 import { ReactComponent as SaveIcon } from "../../images/save.svg";
+import { ReactComponent as PinIcon } from "../../images/pin.svg";
 
 import "./moduleCard.css";
 
@@ -33,15 +34,14 @@ export default function ModuleCard({
                                        isSelected,
                                        onSelect,
                                        onSave,
-                                       onUnsave
+                                       onUnsave,
+                                       onPin,
+                                       onUnpin
                                    }) {
     const { user } = useAuth();
     const navigate = useNavigate();
 
     const tags = module.tags || [];
-    // Якщо теги розгорнуті - показуємо всі, якщо ні - показуємо visibleCount
-    // Але оскільки ми робимо адаптивні, можна показувати всі, або залишити логіку "More"
-    // Тут залишаю логіку: якщо expanded = true -> всі, інакше -> 3 (або visibleCount)
     const showMore = tags.length > visibleCount;
     const visibleTags = expanded ? tags : tags.slice(0, visibleCount);
 
@@ -88,6 +88,21 @@ export default function ModuleCard({
             label: "Save",
             onClick: () => onSave(module.id),
             icon: <SaveIcon width={16} height={16} />
+        });
+    }
+
+    // PIN / UNPIN
+    if (module.pinned && onUnpin) {
+        menuItems.push({
+            label: "Unpin",
+            onClick: () => onUnpin(module.id),
+            icon: <PinIcon width={16} height={16} />
+        });
+    } else if (!module.pinned && onPin) {
+        menuItems.push({
+            label: "Pin",
+            onClick: () => onPin(module.id),
+            icon: <PinIcon width={16} height={16} />
         });
     }
 
@@ -170,7 +185,7 @@ export default function ModuleCard({
                     <span className="hover-hint">{module.description || "No description"}</span>
                 </div>
 
-                {/* Нижній рядок: ТЕГИ (перенесено сюди) */}
+                {/* Нижній рядок: ТЕГИ */}
                 {tags.length > 0 && (
                     <div className="mc-tags-wrapper">
                         <div className="mc-tags-row">

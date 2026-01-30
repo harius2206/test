@@ -18,7 +18,8 @@ const endpoints = {
         permsUsers: (id) => `/api/v1/modules/${id}/perms/users/`,
 
         visibles: (id) => `/api/v1/modules/${id}/visibles/`,
-        pins: (id) => `/api/v1/modules/${id}/pins/`,
+        pins: (id) => `/api/v1/modules/${id}/pins/`,         // POST/DELETE (toggle)
+        pinned: (userId) => `/api/v1/modules/pins/users/${userId}/`, // GET list
         saves: (id) => `/api/v1/modules/${id}/saves/`,
         rates: (id) => `/api/v1/modules/${id}/rates/`,
 
@@ -28,8 +29,6 @@ const endpoints = {
         tagsDetail: (id, tagName) => `/api/v1/modules/${id}/tags/${tagName}/`,
 
         saved: (userId) => `/api/v1/modules/saves/users/${userId}/`,
-
-
     },
     cards: {
         list: "/api/v1/cards/",
@@ -43,7 +42,8 @@ const endpoints = {
         detail: (id) => `/api/v1/folders/${id}/`,
         visibles: (id) => `/api/v1/folders/${id}/visibles/`,
         saves: (id) => `/api/v1/folders/${id}/saves/`,
-        pins: (id) => `/api/v1/folders/${id}/pins/`,
+        pins: (id) => `/api/v1/folders/${id}/pins/`,         // POST/DELETE (toggle)
+        pinned: (userId) => `/api/v1/folders/pins/users/${userId}/`, // GET list
         modules: (id, moduleId) => `/api/v1/folders/${id}/modules/${moduleId}/`,
         saved: (userId) => `/api/v1/folders/saves/users/${userId}/`,
     },

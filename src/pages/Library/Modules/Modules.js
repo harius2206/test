@@ -9,7 +9,9 @@ import {
     getSavedModules,
     saveModule,
     unsaveModule,
-    toggleModuleVisibility
+    toggleModuleVisibility,
+    pinModule,
+    unpinModule
 } from "../../../api/modulesApi";
 import { addModuleToFolder } from "../../../api/foldersApi";
 import { useAuth } from "../../../context/AuthContext";
@@ -32,7 +34,6 @@ const getFlagUrl = (url) => {
     return `${cleanBase}${cleanUrl}`;
 };
 
-// Та сама функція для визначення видимості
 const resolveVisibility = (item) => {
     if (item.visible === "private" || item.private === true || item.is_private === true) {
         return "private";
@@ -40,13 +41,14 @@ const resolveVisibility = (item) => {
     return "public";
 };
 
-export default function Modules({ source = "library" }) {
+// Додано пропси: preloadedModules, loadingParent, onRefresh
+export default function Modules({ source = "library", preloadedModules, loadingParent, onRefresh }) {
     const navigate = useNavigate();
     const containerRef = useRef(null);
     const { user } = useAuth();
 
     const [modules, setModules] = useState([]);
-    const [folders, setFolders] = useState([]);
+    const [folders, setFolders] = useState([]); // Для меню "Add to folder"
     const [topics, setTopics] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -61,9 +63,63 @@ export default function Modules({ source = "library" }) {
 
     const handleCloseModal = () => setModalInfo((prev) => ({ ...prev, open: false }));
 
+    // Функція мапінгу сирих даних у формат для відображення
+    const mapModulesData = useCallback((rawModules, currentUser) => {
+        return rawModules.map(m => {
+            let moduleAuthor = m.user;
+            // Нормалізація автора
+            if (typeof moduleAuthor === "number" || typeof moduleAuthor === "string") {
+                // Якщо id автора співпадає з поточним юзером
+                if (String(moduleAuthor) === String(currentUser?.id)) {
+                    moduleAuthor = { id: currentUser.id, username: currentUser.username, avatar: currentUser.avatar };
+                } else {
+                    moduleAuthor = { id: moduleAuthor, username: "User" };
+                }
+            } else if (!moduleAuthor && currentUser) {
+                moduleAuthor = { id: currentUser.id, username: currentUser.username, avatar: currentUser.avatar };
+            }
+
+            return {
+                ...m,
+                rating: m.avg_rate,
+                flagFrom: getFlagUrl(m.lang_from?.flag),
+                flagTo: getFlagUrl(m.lang_to?.flag),
+                user: moduleAuthor,
+                topic: m.topic,
+                cards_count: m.cards ? m.cards.length : (m.cards_count || 0),
+                collaborators: m.collaborators || [],
+                is_saved: source === "saves" ? true : m.is_saved,
+                visible: resolveVisibility(m),
+                pinned: m.pinned
+            };
+        });
+    }, [source]);
+
     const loadData = useCallback(async () => {
         if (!user || !user.id) { setLoading(false); return; }
 
+        // Якщо дані передані з батьківського компонента (Library.js)
+        if (source === "library" && preloadedModules) {
+            if (loadingParent) {
+                setLoading(true);
+                return;
+            }
+            try {
+                const mapped = mapModulesData(preloadedModules, user);
+                setModules(mapped);
+
+                // Також завантажуємо топіки (це легкий запит, можна залишити тут або теж винести)
+                const topicsResp = await getTopics();
+                setTopics(topicsResp.data || []);
+                setLoading(false);
+            } catch (err) {
+                console.error("Mapping error", err);
+                setLoading(false);
+            }
+            return;
+        }
+
+        // Стара логіка для "Saves" або якщо немає прелоаду
         try {
             setLoading(true);
             let userModules = [];
@@ -73,47 +129,18 @@ export default function Modules({ source = "library" }) {
                 const savedResp = await getSavedModules(user.id);
                 userModules = savedResp.data.results || savedResp.data || [];
             } else {
+                // Фолбек, якщо використовується як окрема сторінка без прелоаду
                 const userResp = await getUserDetails(user.id);
                 const data = userResp.data;
                 userModules = data.modules || [];
                 setFolders(data.folders || []);
-
-                profileOwner = {
-                    id: data.id,
-                    username: data.username,
-                    avatar: data.avatar
-                };
+                profileOwner = data;
             }
 
             const topicsResp = await getTopics();
+            const mapped = mapModulesData(userModules, profileOwner);
 
-            const mappedModules = userModules.map(m => {
-                let moduleAuthor = m.user;
-                if (typeof moduleAuthor === "number" || typeof moduleAuthor === "string") {
-                    if (String(moduleAuthor) === String(profileOwner.id)) {
-                        moduleAuthor = profileOwner;
-                    } else {
-                        moduleAuthor = { id: moduleAuthor, username: "User" };
-                    }
-                } else if (!moduleAuthor) {
-                    moduleAuthor = { id: user.id, username: user.username, avatar: user.avatar };
-                }
-
-                return {
-                    ...m,
-                    rating: m.avg_rate,
-                    flagFrom: getFlagUrl(m.lang_from?.flag),
-                    flagTo: getFlagUrl(m.lang_to?.flag),
-                    user: moduleAuthor,
-                    topic: m.topic,
-                    cards_count: m.cards ? m.cards.length : (m.cards_count || 0),
-                    collaborators: m.collaborators || [],
-                    is_saved: source === "saves" ? true : m.is_saved,
-                    visible: resolveVisibility(m) // Використовуємо надійну перевірку
-                };
-            });
-
-            setModules(mappedModules);
+            setModules(mapped);
             setTopics(topicsResp.data || []);
             setError(null);
         } catch (err) {
@@ -122,11 +149,11 @@ export default function Modules({ source = "library" }) {
         } finally {
             setLoading(false);
         }
-    }, [user, source]);
+    }, [user, source, preloadedModules, loadingParent, mapModulesData]);
 
     useEffect(() => { loadData(); }, [loadData]);
 
-    const merge = useMergeModules(loadData);
+    const merge = useMergeModules(onRefresh || loadData);
 
     useEffect(() => {
         if (loading) return;
@@ -153,10 +180,18 @@ export default function Modules({ source = "library" }) {
         });
     };
 
+    // Всі дії, що змінюють дані, тепер мають викликати onRefresh, якщо він є
+    const refreshParentOrLocal = () => {
+        if (onRefresh) onRefresh();
+        else loadData();
+    };
+
     const handleSaveModule = async (id) => {
         try {
             await saveModule(id);
+            // Optimistic update
             setModules(prev => prev.map(m => m.id === id ? { ...m, is_saved: true } : m));
+            // Не обов'язково рефрешити все, але можна
         } catch (err) {
             setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to save module." });
         }
@@ -170,8 +205,31 @@ export default function Modules({ source = "library" }) {
             } else {
                 setModules(prev => prev.map(m => m.id === id ? { ...m, is_saved: false } : m));
             }
+            if (source !== "saves") refreshParentOrLocal(); // Оновити статус в бібліотеці
         } catch (err) {
             setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to unsave module." });
+        }
+    };
+
+    const handlePinModule = async (id) => {
+        setModules(prev => prev.map(m => m.id === id ? { ...m, pinned: true } : m));
+        try {
+            await pinModule(id);
+            refreshParentOrLocal();
+        } catch (err) {
+            setModules(prev => prev.map(m => m.id === id ? { ...m, pinned: false } : m));
+            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to pin module." });
+        }
+    };
+
+    const handleUnpinModule = async (id) => {
+        setModules(prev => prev.map(m => m.id === id ? { ...m, pinned: false } : m));
+        try {
+            await unpinModule(id);
+            refreshParentOrLocal();
+        } catch (err) {
+            setModules(prev => prev.map(m => m.id === id ? { ...m, pinned: true } : m));
+            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to unpin module." });
         }
     };
 
@@ -179,7 +237,7 @@ export default function Modules({ source = "library" }) {
         if (!window.confirm("Delete this module?")) return;
         try {
             await deleteModule(id);
-            setModules(prev => prev.filter(m => m.id !== id));
+            refreshParentOrLocal();
         } catch (err) {
             setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to delete module." });
         }
@@ -187,12 +245,11 @@ export default function Modules({ source = "library" }) {
 
     const handleVisibility = async (module) => {
         const newStatus = module.visible === "private" ? "public" : "private";
-        // Оптимістичне оновлення
         setModules(prev => prev.map(m => m.id === module.id ? { ...m, visible: newStatus } : m));
         try {
             await toggleModuleVisibility(module.id, newStatus);
+            // Тут не обов'язково рефрешити весь список, локального оновлення досить
         } catch (err) {
-            // Відкат
             const oldStatus = module.visible;
             setModules(prev => prev.map(m => m.id === module.id ? { ...m, visible: oldStatus } : m));
             setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to change visibility." });
@@ -256,7 +313,10 @@ export default function Modules({ source = "library" }) {
 
     const handleFinishMerge = () => {
         merge.executeMerge(
-            () => setModalInfo({ open: true, type: "success", title: "Success", message: "Modules merged successfully!" }),
+            () => {
+                setModalInfo({ open: true, type: "success", title: "Success", message: "Modules merged successfully!" });
+                refreshParentOrLocal();
+            },
             () => setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to merge modules." })
         );
     };
@@ -312,6 +372,8 @@ export default function Modules({ source = "library" }) {
 
                             onSave={handleSaveModule}
                             onUnsave={handleUnsaveModule}
+                            onPin={handlePinModule}
+                            onUnpin={handleUnpinModule}
 
                             onMerge={merge.handleMergeToggle}
                             isMergeMode={merge.isMergeMode}
@@ -322,7 +384,7 @@ export default function Modules({ source = "library" }) {
                 </div>
             )}
 
-            {/* Модалки (мердж, пермішени) */}
+            {/* Модалки та інші елементи інтерфейсу залишаються без змін, крім використання new state */}
             {merge.isMergeModalOpen && (
                 <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
                     <div style={{ background: "white", padding: "30px", borderRadius: "20px", width: "380px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
@@ -355,7 +417,7 @@ export default function Modules({ source = "library" }) {
                     <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 301 }} onClick={() => setAddToFolderTarget(null)} />
                     <div className="dropdown-menu" style={{ position: "fixed", left: addToFolderTarget.anchor?.left || "50%", top: addToFolderTarget.anchor?.top || "50%", zIndex: 302, background: "white", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", padding: "8px 0", minWidth: "200px", maxHeight: "300px", overflowY: "auto" }}>
                         <div style={{ padding: "8px 16px", fontWeight: "bold", borderBottom: "1px solid #eee", fontSize: "14px", color: "#666" }}>Add "{addToFolderTarget.module.name}" to:</div>
-                        {folders.length === 0 ? <div style={{ padding: "12px", textAlign: "center", color: "gray", fontSize: "13px" }}>No folders found.</div> : folders.map(folder => (
+                        {folders.length === 0 ? <div style={{ padding: "12px", textAlign: "center", color: "gray", fontSize: "13px" }}>No folders available.</div> : folders.map(folder => (
                             <div key={folder.id} onClick={() => handleAddToFolder(folder)} style={{ padding: "10px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", transition: "background 0.2s" }}>
                                 <ColoredIcon icon={FolderIcon} color={folder.color || "#6366f1"} size={18} />
                                 <span style={{ fontSize: "14px", color: "#333" }}>{folder.name}</span>

@@ -26,4 +26,8 @@ export const unsaveFolder = (id) => axiosClient.delete(endpoints.folders.saves(i
 
 export const getSavedFolders = (userId) => axiosClient.get(endpoints.folders.saved(userId));
 
-export const toggleFolderPin = (id) => axiosClient.post(endpoints.folders.pins(id), {});
+// PINS
+export const pinFolder = (id) => axiosClient.post(endpoints.folders.pins(id), {});
+export const unpinFolder = (id) => axiosClient.delete(endpoints.folders.pins(id));
+// Отримання списку закріплених папок
+export const getPinnedFolders = (userId) => axiosClient.get(endpoints.folders.pinned(userId));

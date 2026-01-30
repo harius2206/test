@@ -9,7 +9,9 @@ import {
     toggleFolderVisibility,
     getSavedFolders,
     saveFolder,
-    unsaveFolder
+    unsaveFolder,
+    pinFolder,
+    unpinFolder
 } from "../../../api/foldersApi";
 
 import EditableField from "../../../components/editableField/editableField";
@@ -26,11 +28,12 @@ import { ReactComponent as RenameIcon } from "../../../images/rename.svg";
 import { ReactComponent as DeleteIcon } from "../../../images/delete.svg";
 import { ReactComponent as ExportIcon } from "../../../images/export.svg";
 import { ReactComponent as SaveIcon } from "../../../images/save.svg";
-// Імпортуємо нові іконки очей
 import { ReactComponent as EyeOpenedIcon } from "../../../images/eyeOpened.svg";
 import { ReactComponent as EyeClosedIcon } from "../../../images/eyeClosed.svg";
+import { ReactComponent as PinIcon } from "../../../images/pin.svg";
 
-export default function Folders({ addFolder, setAddFolder, source = "library" }) {
+// Додано пропси: preloadedFolders, loadingParent, onRefresh
+export default function Folders({ addFolder, setAddFolder, source = "library", preloadedFolders, loadingParent, onRefresh }) {
     const navigate = useNavigate();
     const { user } = useAuth();
 
@@ -48,6 +51,25 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
     const loadFolders = useCallback(async () => {
         if (!user?.id) { setLoading(false); return; }
 
+        // Якщо дані передані з батьківського компонента
+        if (source === "library" && preloadedFolders) {
+            if (loadingParent) {
+                setLoading(true);
+                return;
+            }
+            // Мапінг пропсів
+            setFolders(preloadedFolders.map(f => ({
+                ...f,
+                modules: f.modules_count || 0,
+                pinned: f.pinned,
+                private: f.visible === "private",
+                is_saved: f.saved // бекенд повертає saved, фронт юзає is_saved іноді
+            })));
+            setLoading(false);
+            return;
+        }
+
+        // Стара логіка
         try {
             setLoading(true);
             let response;
@@ -70,9 +92,14 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
         } finally {
             setLoading(false);
         }
-    }, [user, source]);
+    }, [user, source, preloadedFolders, loadingParent]);
 
     useEffect(() => { loadFolders(); }, [loadFolders]);
+
+    const refreshParentOrLocal = () => {
+        if (onRefresh) onRefresh();
+        else loadFolders();
+    };
 
     const handleSaveToggle = async (folder) => {
         try {
@@ -92,11 +119,27 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
         }
     };
 
+    const handlePinToggle = async (folder) => {
+        const isPinned = folder.pinned;
+        setFolders(prev => prev.map(f => f.id === folder.id ? { ...f, pinned: !isPinned } : f));
+        try {
+            if (isPinned) {
+                await unpinFolder(folder.id);
+            } else {
+                await pinFolder(folder.id);
+            }
+            refreshParentOrLocal(); // Оновлюємо стан, щоб відобразити зміни
+        } catch (err) {
+            setFolders(prev => prev.map(f => f.id === folder.id ? { ...f, pinned: isPinned } : f));
+            alert("Pin action failed");
+        }
+    };
+
     const handleDeleteFolder = async (id) => {
         if (!window.confirm("Delete this folder?")) return;
         try {
             await deleteFolder(id);
-            setFolders(prev => prev.filter(f => f.id !== id));
+            refreshParentOrLocal();
         } catch (error) {
             alert("Error deleting folder");
         }
@@ -110,6 +153,7 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
             } else {
                 await updateFolder(id, data);
             }
+            // Для перейменування чи зміни видимості достатньо локального апдейту
         } catch (error) { loadFolders(); }
     };
 
@@ -145,7 +189,18 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
                         colorOptions={colors}
                         active={addFolder}
                         onClose={() => setAddFolder(false)}
-                        onCreate={(val) => {}}
+                        onCreate={(val) => {
+                            // Тут треба доробити логіку створення.
+                            // AddUniversalItem повертає дані, але ми маємо викликати createFolder
+                            // і потім refreshParentOrLocal().
+                            // Оскільки в оригінальному коді onCreate було пусте `(val) => {}`,
+                            // я припускаю, що компонент сам робить запит або логіка була не дописана.
+                            // Додамо базову реалізацію:
+                            createFolder(val).then(() => {
+                                setAddFolder(false);
+                                refreshParentOrLocal();
+                            }).catch(() => alert("Error creating folder"));
+                        }}
                     />
                 )}
 
@@ -162,17 +217,19 @@ export default function Folders({ addFolder, setAddFolder, source = "library" })
 
                     const menuItems = [];
 
-                    // Керування (Тільки для власника)
                     if (isOwn) {
                         menuItems.push(
-                            // Логіка видимості (очі)
                             {
                                 label: folder.private ? "Make Public" : "Make Private",
                                 onClick: () => handleUpdate(folder.id, { visible: folder.private ? "public" : "private" }, { private: !folder.private }),
-                                // Якщо папка приватна - показуємо закрите око (стан), якщо публічна - відкрите
                                 icon: <ColoredIcon icon={folder.private ? EyeClosedIcon : EyeOpenedIcon} size={16} />
                             },
                             { label: "Rename", onClick: () => { setRenamingId(folder.id); setRenameValue(folder.name); }, icon: <ColoredIcon icon={RenameIcon} size={16} /> },
+                            {
+                                label: folder.pinned ? "Unpin" : "Pin",
+                                onClick: () => handlePinToggle(folder),
+                                icon: <ColoredIcon icon={PinIcon} size={16} />
+                            },
                             { label: "Delete", onClick: () => handleDeleteFolder(folder.id), icon: <ColoredIcon icon={DeleteIcon} size={16} /> }
                         );
                     }

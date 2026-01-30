@@ -3,8 +3,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getUserDetails } from "../../../api/usersApi";
 import {
     saveModule,
-    unsaveModule
+    unsaveModule,
+    pinModule,
+    unpinModule
 } from "../../../api/modulesApi";
+import {
+    pinFolder,
+    unpinFolder
+} from "../../../api/foldersApi";
 import { useAuth } from "../../../context/AuthContext";
 
 import UserAvatar from "../../../components/avatar/avatar";
@@ -18,6 +24,7 @@ import { ReactComponent as StarIcon } from "../../../images/star.svg";
 import { ReactComponent as FolderIcon } from "../../../images/folder.svg";
 import { ReactComponent as DotsIcon } from "../../../images/dots.svg";
 import { ReactComponent as ExportIcon } from "../../../images/export.svg";
+import { ReactComponent as PinIcon } from "../../../images/pin.svg";
 
 import "./publicProfileLibrary.css";
 
@@ -70,10 +77,7 @@ export default function PublicProfileLibrary() {
             // ============================
 
             // === ПІДРАХУНОК РЕЙТИНГУ ===
-            // Якщо сервер не повернув avg_rate або він 0, рахуємо його на фронті
             let calculatedRating = parseFloat(data.avg_rate || 0);
-
-            // Якщо серверний рейтинг 0, спробуємо порахувати з модулів
             if (calculatedRating === 0 && allowedModules.length > 0) {
                 const ratedModules = allowedModules.filter(m => m.avg_rate && parseFloat(m.avg_rate) > 0);
                 if (ratedModules.length > 0) {
@@ -82,7 +86,6 @@ export default function PublicProfileLibrary() {
                 }
             }
 
-            // Оновлюємо дані користувача з (можливо) новим рейтингом
             setUserData({ ...data, avg_rate: calculatedRating });
 
             // Мапінг модулів
@@ -95,7 +98,8 @@ export default function PublicProfileLibrary() {
                 topic: m.topic,
                 cards_count: m.cards_count !== undefined ? m.cards_count : (m.cards ? m.cards.length : 0),
                 collaborators: m.collaborators || [],
-                is_saved: m.saved
+                is_saved: m.saved,
+                pinned: m.pinned // Якщо бекенд повертає статус піна
             }));
             setModulesList(mappedModules);
 
@@ -104,7 +108,8 @@ export default function PublicProfileLibrary() {
                 ...f,
                 modules_count: f.modules_count || (f.modules ? f.modules.length : 0),
                 user: { id: data.id, username: data.username, avatar: data.avatar },
-                is_saved: f.saved
+                is_saved: f.saved,
+                pinned: f.pinned // Якщо бекенд повертає статус піна
             }));
             setFoldersList(mappedFolders);
 
@@ -141,6 +146,7 @@ export default function PublicProfileLibrary() {
         }
     };
 
+    // --- Module Actions ---
     const handleSaveModule = async (modId) => {
         try {
             await saveModule(modId);
@@ -157,6 +163,42 @@ export default function PublicProfileLibrary() {
             setModulesList(prev => prev.map(m => m.id === modId ? { ...m, is_saved: false } : m));
         } catch (err) {
             setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to unsave module." });
+        }
+    };
+
+    const handlePinModule = async (modId) => {
+        setModulesList(prev => prev.map(m => m.id === modId ? { ...m, pinned: true } : m));
+        try {
+            await pinModule(modId);
+        } catch (err) {
+            setModulesList(prev => prev.map(m => m.id === modId ? { ...m, pinned: false } : m));
+            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to pin module." });
+        }
+    };
+
+    const handleUnpinModule = async (modId) => {
+        setModulesList(prev => prev.map(m => m.id === modId ? { ...m, pinned: false } : m));
+        try {
+            await unpinModule(modId);
+        } catch (err) {
+            setModulesList(prev => prev.map(m => m.id === modId ? { ...m, pinned: true } : m));
+            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to unpin module." });
+        }
+    };
+
+    // --- Folder Actions ---
+    const handlePinFolder = async (folder) => {
+        const isPinned = folder.pinned;
+        setFoldersList(prev => prev.map(f => f.id === folder.id ? { ...f, pinned: !isPinned } : f));
+        try {
+            if (isPinned) {
+                await unpinFolder(folder.id);
+            } else {
+                await pinFolder(folder.id);
+            }
+        } catch (err) {
+            setFoldersList(prev => prev.map(f => f.id === folder.id ? { ...f, pinned: isPinned } : f));
+            setModalInfo({ open: true, type: "error", title: "Error", message: "Pin action failed." });
         }
     };
 
@@ -226,6 +268,8 @@ export default function PublicProfileLibrary() {
                                     module={module}
                                     onSave={handleSaveModule}
                                     onUnsave={handleUnsaveModule}
+                                    onPin={handlePinModule}
+                                    onUnpin={handleUnpinModule}
                                 />
                             ))}
                         </div>
@@ -234,33 +278,43 @@ export default function PublicProfileLibrary() {
                     foldersList.length === 0 ? (
                         <div className="pp-empty">No accessible folders found.</div>
                     ) : (
-                        foldersList.map(folder => (
-                            <div
-                                key={folder.id}
-                                className="module-card"
-                                onClick={() => navigate(`/library/folders/${folder.id}`)}
-                                style={{cursor: "pointer"}}
-                            >
-                                <div className="module-info">
-                                    <div className="top-row">
-                                        <span className="terms-count">{folder.modules_count} modules</span>
+                        foldersList.map(folder => {
+                            // Формуємо меню для папки
+                            const menuItems = [
+                                {
+                                    label: folder.pinned ? "Unpin" : "Pin",
+                                    onClick: () => handlePinFolder(folder),
+                                    icon: <ColoredIcon icon={PinIcon} size={16} />
+                                },
+                                { label: "Export", onClick: () => {}, icon: <ExportIcon width={16} /> }
+                            ];
+
+                            return (
+                                <div
+                                    key={folder.id}
+                                    className="module-card"
+                                    onClick={() => navigate(`/library/folders/${folder.id}`)}
+                                    style={{cursor: "pointer"}}
+                                >
+                                    <div className="module-info">
+                                        <div className="top-row">
+                                            <span className="terms-count">{folder.modules_count} modules</span>
+                                        </div>
+                                        <div className="module-name-row" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                            <ColoredIcon icon={FolderIcon} color={folder.color || "#6366f1"} size={20} />
+                                            <span className="folder-name-text">{folder.name}</span>
+                                        </div>
                                     </div>
-                                    <div className="module-name-row" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                        <ColoredIcon icon={FolderIcon} color={folder.color || "#6366f1"} size={20} />
-                                        <span className="folder-name-text">{folder.name}</span>
+                                    <div className="folder-actions" onClick={e => e.stopPropagation()}>
+                                        <DropdownMenu align="left" width={160} items={menuItems}>
+                                            <button className="btn-icon">
+                                                <DotsIcon width={16} />
+                                            </button>
+                                        </DropdownMenu>
                                     </div>
                                 </div>
-                                <div className="folder-actions" onClick={e => e.stopPropagation()}>
-                                    <DropdownMenu align="left" width={160} items={[
-                                        { label: "Export", onClick: () => {}, icon: <ExportIcon width={16} /> }
-                                    ]}>
-                                        <button className="btn-icon">
-                                            <DotsIcon width={16} />
-                                        </button>
-                                    </DropdownMenu>
-                                </div>
-                            </div>
-                        ))
+                            );
+                        })
                     )
                 )}
             </div>
