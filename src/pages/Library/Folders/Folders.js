@@ -32,7 +32,6 @@ import { ReactComponent as EyeOpenedIcon } from "../../../images/eyeOpened.svg";
 import { ReactComponent as EyeClosedIcon } from "../../../images/eyeClosed.svg";
 import { ReactComponent as PinIcon } from "../../../images/pin.svg";
 
-// Додано пропси: preloadedFolders, loadingParent, onRefresh
 export default function Folders({ addFolder, setAddFolder, source = "library", preloadedFolders, loadingParent, onRefresh }) {
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -51,25 +50,23 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
     const loadFolders = useCallback(async () => {
         if (!user?.id) { setLoading(false); return; }
 
-        // Якщо дані передані з батьківського компонента
         if (source === "library" && preloadedFolders) {
             if (loadingParent) {
                 setLoading(true);
                 return;
             }
-            // Мапінг пропсів
             setFolders(preloadedFolders.map(f => ({
                 ...f,
                 modules: f.modules_count || 0,
                 pinned: f.pinned,
                 private: f.visible === "private",
-                is_saved: f.saved // бекенд повертає saved, фронт юзає is_saved іноді
+                is_saved: f.saved,
+                user: f.user // Переконуємось, що об'єкт користувача зберігся
             })));
             setLoading(false);
             return;
         }
 
-        // Стара логіка
         try {
             setLoading(true);
             let response;
@@ -85,7 +82,8 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                 modules: f.modules_count || 0,
                 pinned: f.pinned,
                 private: f.visible === "private",
-                is_saved: source === "saves" ? true : f.is_saved
+                is_saved: source === "saves" ? true : f.is_saved,
+                user: f.user // Зберігаємо дані автора з відповіді API
             })));
         } catch (error) {
             console.error("Failed to load folders", error);
@@ -128,7 +126,7 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
             } else {
                 await pinFolder(folder.id);
             }
-            refreshParentOrLocal(); // Оновлюємо стан, щоб відобразити зміни
+            refreshParentOrLocal();
         } catch (err) {
             setFolders(prev => prev.map(f => f.id === folder.id ? { ...f, pinned: isPinned } : f));
             alert("Pin action failed");
@@ -153,7 +151,6 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
             } else {
                 await updateFolder(id, data);
             }
-            // Для перейменування чи зміни видимості достатньо локального апдейту
         } catch (error) { loadFolders(); }
     };
 
@@ -190,12 +187,6 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                         active={addFolder}
                         onClose={() => setAddFolder(false)}
                         onCreate={(val) => {
-                            // Тут треба доробити логіку створення.
-                            // AddUniversalItem повертає дані, але ми маємо викликати createFolder
-                            // і потім refreshParentOrLocal().
-                            // Оскільки в оригінальному коді onCreate було пусте `(val) => {}`,
-                            // я припускаю, що компонент сам робить запит або логіка була не дописана.
-                            // Додамо базову реалізацію:
                             createFolder(val).then(() => {
                                 setAddFolder(false);
                                 refreshParentOrLocal();
@@ -211,7 +202,11 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                 )}
 
                 {folders.map(folder => {
-                    const isOwn = folder.user?.id === user?.id || !folder.user;
+                    // Визначаємо власника: якщо folder.user — це об'єкт, беремо id, інакше порівнюємо як значення
+                    const folderUserId = typeof folder.user === 'object' ? folder.user?.id : folder.user;
+                    const isOwn = folderUserId === user?.id || !folderUserId;
+
+                    // Дані автора
                     const authorName = folder.user?.username || "User";
                     const authorAvatar = folder.user?.avatar;
 
@@ -252,6 +247,7 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                             <div className="module-info">
                                 <div className="top-row">
                                     <span className="terms-count">{folder.modules} modules</span>
+                                    {/* Відображаємо автора, тільки якщо папка не належить поточному юзеру */}
                                     {!isOwn && (
                                         <>
                                             <span className="separator">|</span>

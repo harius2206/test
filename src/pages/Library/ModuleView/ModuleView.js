@@ -360,9 +360,7 @@ export default function ModuleView() {
                                                     >
                                                         <SaveIcon className="save-icon" width="20px" height="20px" />
                                                     </button>
-                                                    <DropdownMenu align="left" items={[{ label: "На весь екран", icon: <FullscreenIcon width={16} />, onClick: () => { } }]} >
-                                                        <button className="mv-btn-icon"><DotsIcon width={20} /></button>
-                                                    </DropdownMenu>
+
                                                 </div>
                                             </div>
                                         </div>
