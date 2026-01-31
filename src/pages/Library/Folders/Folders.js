@@ -21,6 +21,7 @@ import AddUniversalItem from "../../../components/addUniversalItem";
 import DropdownMenu from "../../../components/dropDownMenu/dropDownMenu";
 import Button from "../../../components/button/button";
 import UserAvatar from "../../../components/avatar/avatar";
+import Loader from "../../../components/loader/loader";
 
 import { ReactComponent as FolderIcon } from "../../../images/folder.svg";
 import { ReactComponent as DotsIcon } from "../../../images/dots.svg";
@@ -61,7 +62,7 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                 pinned: f.pinned,
                 private: f.visible === "private",
                 is_saved: f.saved,
-                user: f.user // Переконуємось, що об'єкт користувача зберігся
+                user: f.user
             })));
             setLoading(false);
             return;
@@ -83,7 +84,7 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                 pinned: f.pinned,
                 private: f.visible === "private",
                 is_saved: source === "saves" ? true : f.is_saved,
-                user: f.user // Зберігаємо дані автора з відповіді API
+                user: f.user
             })));
         } catch (error) {
             console.error("Failed to load folders", error);
@@ -100,19 +101,18 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
     };
 
     const handleSaveToggle = async (folder) => {
+        const wasSaved = folder.is_saved;
+        setFolders(prev =>
+            source === "saves" && wasSaved
+                ? prev.filter(f => f.id !== folder.id)
+                : prev.map(f => f.id === folder.id ? { ...f, is_saved: !wasSaved } : f)
+        );
+
         try {
-            if (folder.is_saved) {
-                await unsaveFolder(folder.id);
-                if (source === "saves") {
-                    setFolders(prev => prev.filter(f => f.id !== folder.id));
-                } else {
-                    setFolders(prev => prev.map(f => f.id === folder.id ? { ...f, is_saved: false } : f));
-                }
-            } else {
-                await saveFolder(folder.id);
-                setFolders(prev => prev.map(f => f.id === folder.id ? { ...f, is_saved: true } : f));
-            }
+            if (wasSaved) await unsaveFolder(folder.id);
+            else await saveFolder(folder.id);
         } catch (err) {
+            loadFolders();
             alert("Action failed");
         }
     };
@@ -121,12 +121,8 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
         const isPinned = folder.pinned;
         setFolders(prev => prev.map(f => f.id === folder.id ? { ...f, pinned: !isPinned } : f));
         try {
-            if (isPinned) {
-                await unpinFolder(folder.id);
-            } else {
-                await pinFolder(folder.id);
-            }
-            refreshParentOrLocal();
+            if (isPinned) await unpinFolder(folder.id);
+            else await pinFolder(folder.id);
         } catch (err) {
             setFolders(prev => prev.map(f => f.id === folder.id ? { ...f, pinned: isPinned } : f));
             alert("Pin action failed");
@@ -137,13 +133,14 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
         if (!window.confirm("Delete this folder?")) return;
         try {
             await deleteFolder(id);
-            refreshParentOrLocal();
+            setFolders(prev => prev.filter(f => f.id !== id));
         } catch (error) {
             alert("Error deleting folder");
         }
     };
 
     const handleUpdate = async (id, data, uiUpdate) => {
+        const oldFolders = [...folders];
         setFolders(prev => prev.map(f => f.id === id ? { ...f, ...uiUpdate } : f));
         try {
             if (data.visible !== undefined) {
@@ -151,7 +148,9 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
             } else {
                 await updateFolder(id, data);
             }
-        } catch (error) { loadFolders(); }
+        } catch (error) {
+            setFolders(oldFolders);
+        }
     };
 
     const handleSort = (type) => {
@@ -169,7 +168,7 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
         setRenamingId(null);
     };
 
-    if (loading) return <div style={{ padding: 20, textAlign: "center", width: "100%" }}>Loading folders...</div>;
+    if (loading) return <Loader />;
 
     return (
         <div className="folders-page">
@@ -202,11 +201,8 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                 )}
 
                 {folders.map(folder => {
-                    // Визначаємо власника: якщо folder.user — це об'єкт, беремо id, інакше порівнюємо як значення
                     const folderUserId = typeof folder.user === 'object' ? folder.user?.id : folder.user;
                     const isOwn = folderUserId === user?.id || !folderUserId;
-
-                    // Дані автора
                     const authorName = folder.user?.username || "User";
                     const authorAvatar = folder.user?.avatar;
 
@@ -247,7 +243,6 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                             <div className="module-info">
                                 <div className="top-row">
                                     <span className="terms-count">{folder.modules} modules</span>
-                                    {/* Відображаємо автора, тільки якщо папка не належить поточному юзеру */}
                                     {!isOwn && (
                                         <>
                                             <span className="separator">|</span>
@@ -262,7 +257,9 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                                     <ColoredIcon icon={FolderIcon} color={folder.color} size={20} />
                                     {renamingId === folder.id ? (
                                         <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }} onClick={e => e.stopPropagation()}>
-                                            <EditableField value={renameValue} onSave={setRenameValue} editable={true} autosave={true} />
+                                            <span style={{ flex: 1 }}>
+                                                <EditableField value={renameValue} onSave={setRenameValue} editable={true} autosave={true} />
+                                            </span>
                                             <Button variant="static" width={70} height={30} onClick={() => saveRename(folder.id)}>Save</Button>
                                             <Button variant="hover" width={70} height={30} onClick={() => setRenamingId(null)}>Cancel</Button>
                                         </div>

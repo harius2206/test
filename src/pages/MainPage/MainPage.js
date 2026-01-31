@@ -24,6 +24,7 @@ import { ReactComponent as FolderIcon } from "../../images/folder.svg";
 import ColoredIcon from "../../components/coloredIcon";
 import UserAvatar from "../../components/avatar/avatar";
 import DiagonalFlagRect from "../../components/diagonalFlagRect43";
+import Loader from "../../components/loader/loader"; // Імпорт лоадера
 
 import "./mainPage.css";
 
@@ -90,7 +91,6 @@ export default function MainPage() {
                     const modules = (userDetails.data.modules || []).map(m => ({ ...m, type: 'module' }));
                     const folders = (userDetails.data.folders || []).map(f => ({ ...f, type: 'folder' }));
 
-                    // Об'єднуємо та сортуємо за ID (новіші зверху)
                     const mixed = [...modules, ...folders].sort((a, b) => b.id - a.id);
                     myRecent = mixed.slice(0, 10);
                 }
@@ -101,7 +101,6 @@ export default function MainPage() {
                 const allModules = modulesResp.data.results || modulesResp.data || [];
                 const popular = allModules
                     .filter(m => {
-                        // Фільтр: рейтинг >= 4.3 + це не мій модуль
                         const isHighRated = m.avg_rate && parseFloat(m.avg_rate) >= 4.3;
                         const isNotMine = user ? String(typeof m.user === 'object' ? m.user.id : m.user) !== String(user.id) : true;
                         return isHighRated && isNotMine;
@@ -113,11 +112,9 @@ export default function MainPage() {
                 // C. Best Authors
                 const authorsResp = await getUsersRatings();
                 const authors = authorsResp.data.results || authorsResp.data || [];
-
-                // Фільтр: прибираємо себе зі списку авторів
                 const filteredAuthors = authors.filter(a => String(a.id) !== String(user?.id));
 
-                setBestAuthors(filteredAuthors.slice(0, 100)); // Завантажуємо 100 авторів
+                setBestAuthors(filteredAuthors.slice(0, 100));
 
             } catch (error) {
                 console.error("Failed to load main page data:", error);
@@ -135,6 +132,11 @@ export default function MainPage() {
         768: { slidesPerView: 3 },
         1000: { slidesPerView: 4 },
     };
+
+    // Замість напису "Loading..." на початку
+    if (loading && latestViewed.length === 0 && popularModules.length === 0) {
+        return <Loader fullscreen />;
+    }
 
     return (
         <div className="mp-wrapper">
@@ -164,13 +166,10 @@ export default function MainPage() {
                             >
                                 {latestViewed.map((item) => {
                                     const isFolder = item.type === 'folder';
-
                                     const itemUserId = typeof item.user === 'object' ? item.user?.id : item.user;
                                     const isMyItem = String(itemUserId) === String(user?.id);
                                     const authorName = typeof item.user === 'object' ? item.user?.username : "User";
-
                                     const topicName = item.topic?.name || (typeof item.topic === 'string' ? item.topic : "");
-
                                     const countText = isFolder
                                         ? `${item.modules_count || 0} modules`
                                         : `${item.cards_count || (item.cards ? item.cards.length : 0)} terms`;
@@ -326,7 +325,6 @@ export default function MainPage() {
                                     <SwiperSlide key={a.id}>
                                         <div
                                             className="mp-author-card"
-                                            // Змінено посилання на паблік профіль
                                             onClick={() => navigate(`/profile/public/${a.id}`)}
                                             style={{cursor: "pointer"}}
                                         >

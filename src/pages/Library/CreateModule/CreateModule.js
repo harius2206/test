@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import ModuleForm from "./ModuleForm";
 import { createModule, updateModule, getModuleById } from "../../../api/modulesApi";
 import { addModuleToFolder } from "../../../api/foldersApi";
+import Loader from "../../../components/loader/loader";
 
 const LANG_MAP = {
     "Polish": 1,
@@ -130,15 +131,21 @@ export default function CreateModule() {
         }
     };
 
-    if (loading && !initialData && mode === "edit") return <div style={{padding: 40, textAlign: 'center'}}>Loading...</div>;
+    if (loading && !initialData && mode === "edit") {
+        return <Loader fullscreen />;
+    }
 
     return (
-        <ModuleForm
-            mode={mode}
-            initialData={initialData}
-            loading={loading}
-            onSubmit={handleFormSubmit}
-            onSubmitAndPractice={() => console.log("Practice feature coming soon")}
-        />
+        <>
+            {loading && mode === "create" && <Loader fullscreen />}
+
+            <ModuleForm
+                mode={mode}
+                initialData={initialData}
+                loading={loading}
+                onSubmit={handleFormSubmit}
+                onSubmitAndPractice={() => console.log("Practice feature coming soon")}
+            />
+        </>
     );
 }

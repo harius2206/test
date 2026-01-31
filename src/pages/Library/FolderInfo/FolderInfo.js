@@ -3,10 +3,10 @@ import { useParams, useNavigate } from "react-router-dom";
 
 import {
     getFolder, updateFolder, deleteFolder, toggleFolderVisibility,
-    removeModuleFromFolder, addModuleToFolder
+    removeModuleFromFolder, addModuleToFolder, pinFolder, unpinFolder
 } from "../../../api/foldersApi";
-import { getUserDetails } from "../../../api/usersApi";
-import { addModulePermission, removeModulePermission, getTopics, toggleModuleVisibility } from "../../../api/modulesApi";
+import { getTopics, toggleModuleVisibility } from "../../../api/modulesApi";
+import { addModulePermission, removeModulePermission } from "../../../api/modulesApi";
 import { useAuth } from "../../../context/AuthContext";
 
 import ModuleCard from "../../../components/ModuleCard/moduleCard";
@@ -17,6 +17,7 @@ import PermissionsMenu from "../../../components/permissionMenu/permissionsMenu"
 import EditableField from "../../../components/editableField/editableField";
 import Button from "../../../components/button/button";
 import ModalMessage from "../../../components/ModalMessage/ModalMessage";
+import Loader from "../../../components/loader/loader";
 
 import { ReactComponent as CloseIcon } from "../../../images/close.svg";
 import { ReactComponent as DotsIcon } from "../../../images/dots.svg";
@@ -42,13 +43,10 @@ const getFlagUrl = (url) => {
     return `${cleanBase}${cleanUrl}`;
 };
 
-// Допоміжна функція для визначення видимості
 const resolveVisibility = (item) => {
-    // Якщо явно прийшло "private" або boolean private=true
     if (item.visible === "private" || item.private === true || item.is_private === true) {
         return "private";
     }
-    // В інших випадках (включно з "public" або відсутністю поля)
     return "public";
 };
 
@@ -85,8 +83,6 @@ export default function FolderPage() {
             ]);
 
             const data = folderRes.data;
-
-            // Мапимо модулі, додаючи правильний visible статус
             const mappedModules = (data.modules || []).map(m => ({
                 ...m,
                 rating: m.avg_rate,
@@ -96,24 +92,22 @@ export default function FolderPage() {
                 topic: m.topic,
                 cards_count: m.cards_count || (m.cards ? m.cards.length : 0),
                 collaborators: m.collaborators || [],
-                // Визначаємо видимість надійно
                 visible: resolveVisibility(m)
             }));
 
-            // Визначаємо статус самої папки
             const folderVisibility = resolveVisibility(data);
 
             setFolderState({
                 ...data,
                 visible: folderVisibility,
-                private: folderVisibility === "private"
+                private: folderVisibility === "private",
+                pinned: data.pinned
             });
             setModules(mappedModules);
             setTopics(topicsRes.data || []);
 
-            if (user?.id) {
-                const userRes = await getUserDetails(user.id);
-                setUserFolders(userRes.data.folders || []);
+            if (data.user && Array.isArray(data.user.folders)) {
+                setUserFolders(data.user.folders);
             }
 
         } catch (err) {
@@ -122,7 +116,7 @@ export default function FolderPage() {
         } finally {
             setLoading(false);
         }
-    }, [id, user]);
+    }, [id]);
 
     useEffect(() => {
         loadData();
@@ -171,14 +165,10 @@ export default function FolderPage() {
         if (!folderState) return;
         const currentIsPrivate = folderState.private;
         const newStatus = currentIsPrivate ? "public" : "private";
-
-        // Оптимістичне оновлення інтерфейсу
         setFolderState(prev => ({ ...prev, private: !currentIsPrivate, visible: newStatus }));
-
         try {
             await toggleFolderVisibility(id, newStatus);
         } catch (err) {
-            // Відкат у разі помилки
             setFolderState(prev => ({ ...prev, private: currentIsPrivate, visible: currentIsPrivate ? "private" : "public" }));
             setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to change visibility" });
         }
@@ -187,20 +177,27 @@ export default function FolderPage() {
     const handleModuleVisibility = async (module) => {
         const currentStatus = module.visible;
         const newStatus = currentStatus === "private" ? "public" : "private";
-
-        // Оптимістичне оновлення
         setModules(prev => prev.map(m => m.id === module.id ? { ...m, visible: newStatus } : m));
-
         try {
             await toggleModuleVisibility(module.id, newStatus);
         } catch (err) {
-            // Відкат
             setModules(prev => prev.map(m => m.id === module.id ? { ...m, visible: currentStatus } : m));
             setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to change module visibility" });
         }
     };
 
-    const handlePin = async () => {}; // Реалізація пінгу, якщо є бекенд
+    const handlePin = async () => {
+        if (!folderState) return;
+        const isPinned = folderState.pinned;
+        setFolderState(prev => ({ ...prev, pinned: !isPinned }));
+        try {
+            if (isPinned) await unpinFolder(id);
+            else await pinFolder(id);
+        } catch (err) {
+            setFolderState(prev => ({ ...prev, pinned: isPinned }));
+            setModalInfo({ open: true, type: "error", title: "Error", message: "Pin action failed" });
+        }
+    };
 
     const startRename = () => { setRenaming(true); setRenameValue(folderState.name); };
     const cancelRename = () => { setRenaming(false); setRenameValue(""); };
@@ -212,8 +209,6 @@ export default function FolderPage() {
             setRenaming(false);
         } catch (err) {}
     };
-
-    const handleExport = () => {};
 
     const handleEditModule = (module) => {
         navigate("/library/create-module", {
@@ -298,20 +293,19 @@ export default function FolderPage() {
         );
     };
 
-    if (loading) return <div className="folder-page" style={{padding: 20}}>Loading...</div>;
+    if (loading) return <Loader fullscreen />;
+
     if (error) return <div className="folder-page" style={{padding: 20, color: 'red'}}>{error}</div>;
     if (!folderState) return null;
 
-    // Визначаємо власника, щоб показати меню керування
-    const isOwnFolder = user && (folderState.user === user.id || folderState.user?.id === user.id);
-    // Для папок, де немає об'єкта user, припускаємо, що це власна папка (якщо API так працює)
+    const isOwnFolder = user && (folderState.user?.id === user.id || folderState.user === user.id);
     const canEditFolder = isOwnFolder || !folderState.user;
 
     return (
         <div className="folder-page" ref={containerRef} style={{ position: "relative" }}>
 
             {merge.isMergeMode && (
-                <div style={{
+                <div className="merge-banner" style={{
                     position: "sticky", top: 10, zIndex: 100, background: "#6366f1", color: "white",
                     padding: "12px 20px", borderRadius: "12px", marginBottom: "20px",
                     display: "flex", justifyContent: "space-between", alignItems: "center",
@@ -354,7 +348,6 @@ export default function FolderPage() {
                     <DropdownMenu
                         align="right" width={220}
                         items={[
-                            // Показуємо кнопки редагування тільки якщо є права
                             ...(canEditFolder ? [
                                 { label: "Rename", onClick: startRename, icon: <EditIcon width={16} height={16} /> },
                                 { label: "Delete", onClick: handleDeleteFolder, icon: <DeleteIcon width={16} height={16} /> },
@@ -365,7 +358,7 @@ export default function FolderPage() {
                                 },
                                 { label: folderState.pinned ? "Unpin" : "Pin", onClick: handlePin, icon: <ColoredIcon icon={folderState.pinned ? TickIcon : UntickIcon} size={16} /> }
                             ] : []),
-                            { label: "Export", onClick: handleExport, icon: <ShareIcon width={16} height={16} /> },
+                            { label: "Export", onClick: () => {}, icon: <ShareIcon width={16} height={16} /> },
                         ]}
                     >
                         <button className="btn-icon"><DotsIcon width={16} height={16} /></button>
@@ -386,7 +379,7 @@ export default function FolderPage() {
                                 onEdit={() => handleEditModule(module)}
                                 onPermissions={(e, trigger) => openModulePermissions(module, e, trigger)}
                                 onAddToFolder={(e, trigger) => openAddToFolderMenu(module, e, trigger)}
-                                onVisibilityToggle={handleModuleVisibility} // Важливо: передаємо функцію
+                                onVisibilityToggle={handleModuleVisibility}
                                 deleteLabel={"Remove from folder"}
                                 onDelete={() => handleRemoveModule(module.id)}
                                 isMergeMode={merge.isMergeMode}
@@ -400,10 +393,9 @@ export default function FolderPage() {
                 )}
             </div>
 
-            {/* Модалки для мерджу, пермішенів і т.д. (без змін) */}
             {merge.isMergeModalOpen && (
-                <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
-                    <div style={{ background: "white", padding: "30px", borderRadius: "20px", width: "380px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
+                <div className="modal-overlay" style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
+                    <div className="modal-content" style={{ background: "white", padding: "30px", borderRadius: "20px", width: "380px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
                         <h3 style={{ marginBottom: "20px" }}>Finalize Merge</h3>
                         <div style={{ marginTop: 15 }}>
                             <input style={{ width: "100%", padding: "10px", marginTop: "5px", borderRadius: "8px", border: "1px solid #ddd" }} type="text" value={merge.mergeForm.name} onChange={(e) => merge.setMergeForm({...merge.mergeForm, name: e.target.value})} placeholder="New Name" />

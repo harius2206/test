@@ -7,6 +7,7 @@ import Folders from "./Folders/Folders";
 import Modules from "./Modules/Modules";
 import FolderInfo from "./FolderInfo/FolderInfo";
 import Button from "../../components/button/button";
+import Loader from "../../components/loader/loader"; // Імпорт лоадера
 import "./library.css";
 
 export default function Library() {
@@ -42,6 +43,11 @@ export default function Library() {
     useEffect(() => {
         fetchLibraryData();
     }, [fetchLibraryData]);
+
+    // Використовуємо фулскрін лоадер для першого завантаження бібліотеки
+    if (loading && !libraryData) {
+        return <Loader fullscreen />;
+    }
 
     return (
         <div className="app-wrapper">

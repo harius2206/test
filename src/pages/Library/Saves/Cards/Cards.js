@@ -3,6 +3,7 @@ import SortMenu from "../../../../components/sortMenu/sortMenu";
 import DropdownMenu from "../../../../components/dropDownMenu/dropDownMenu";
 import { useAuth } from "../../../../context/AuthContext";
 import FullscreenCard from "../../../../components/fullscreenCard/fullscreenCard";
+import Loader from "../../../../components/loader/loader"; // Імпорт лоадера
 import {
     getSavedCards,
     unsaveCard,
@@ -81,36 +82,45 @@ export default function Cards({ source = "saves" }) {
         if (!card) return;
 
         if (type === "learn") {
-            try {
-                const newStatus = !card.is_learned; // true якщо вчимо
+            const newStatus = !card.is_learned;
+            // Оптимістичне оновлення UI
+            setCards(prev => prev.map(c => c.id === cardId ? { ...c, is_learned: newStatus } : c));
 
-                // Передаємо всі необхідні поля.
-                // Якщо newStatus === false (delete), data ігнорується в api
+            try {
                 await updateCardLearnStatus(cardId, newStatus, {
                     original: card.original || "",
                     translation: card.translation || "",
-                    learned: "learned" // Додано поле, яке вимагав бекенд
+                    learned: "learned"
                 });
-
-                setCards(prev => prev.map(c => c.id === cardId ? { ...c, is_learned: newStatus } : c));
             } catch (err) {
+                // Відкат при помилці
+                setCards(prev => prev.map(c => c.id === cardId ? { ...c, is_learned: !newStatus } : c));
                 console.error(err);
                 alert("Error updating learned status");
             }
         } else if (type === "save") {
+            const wasSaved = card.is_saved;
+            // Оптимістично видаляємо зі списку збережених, якщо натиснули unsave
+            if (wasSaved) {
+                setCards(prev => prev.filter(c => c.id !== cardId));
+            }
+
             try {
-                if (card.is_saved) {
+                if (wasSaved) {
                     await unsaveCard(cardId);
-                    setCards(prev => prev.filter(c => c.id !== cardId));
                 } else {
                     await saveCard(cardId);
                     setCards(prev => prev.map(c => c.id === cardId ? { ...c, is_saved: true } : c));
                 }
-            } catch (err) { alert("Action failed"); }
+            } catch (err) {
+                // Відкат (повертаємо картку в список)
+                if (wasSaved) loadSavedCards();
+                alert("Action failed");
+            }
         }
     };
 
-    if (loading) return <div style={{ padding: 20, textAlign: "center" }}>Завантаження...</div>;
+    if (loading) return <Loader />; // Замінено на графічний лоадер
 
     return (
         <div>

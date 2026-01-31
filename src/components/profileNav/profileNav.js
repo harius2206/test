@@ -1,4 +1,3 @@
-// javascript
 import { NavLink, useNavigate } from "react-router-dom";
 import "./profileNav.css";
 import { useEffect, useRef, useState, useLayoutEffect } from "react";
@@ -12,7 +11,7 @@ export default function ProfileNav() {
     const navigate = useNavigate();
 
     const [avatar, setAvatar] = useState(() => getUserAvatar() || getUserData()?.avatar || null);
-    const [profile, setProfile] = useState(() => getUserData() || { username: "Guest", date_joined: null });
+    const [profile, setProfile] = useState(() => getUserData() || { username: "Guest", date_joined: null, id: null });
 
     const [cutName, setCutName] = useState("");
     const nameRef = useRef(null);
@@ -21,7 +20,7 @@ export default function ProfileNav() {
     useEffect(() => {
         const onStorage = () => {
             const storedProfile = getUserData();
-            setProfile(storedProfile || { username: "Guest", date_joined: null });
+            setProfile(storedProfile || { username: "Guest", date_joined: null, id: null });
             setAvatar(getUserAvatar() || storedProfile?.avatar || null);
         };
 
@@ -81,10 +80,8 @@ export default function ProfileNav() {
         document.body.removeChild(tester);
     };
 
-    // Use useLayoutEffect to measure after DOM updates but before paint
     useLayoutEffect(() => {
         fitName();
-        // also try again on next animation frame to be safe (fonts/layout)
         requestAnimationFrame(fitName);
     }, [profile]);
 
@@ -96,7 +93,6 @@ export default function ProfileNav() {
         return () => window.removeEventListener("resize", onResize);
     }, [profile]);
 
-    /* === LOGOUT === */
     const handleLogout = () => {
         logout?.();
         clearAllExceptTheme();
@@ -104,7 +100,6 @@ export default function ProfileNav() {
         navigate("/");
     };
 
-    /* === DATE FORMAT === */
     const joinedRaw = profile?.date_joined ?? profile?.created_at ?? null;
     const joined =
         joinedRaw && !isNaN(new Date(joinedRaw).getTime())
@@ -129,9 +124,14 @@ export default function ProfileNav() {
             </div>
 
             <nav className="profile-links">
-                <NavLink to="/profile/public-library" className={({ isActive }) => (isActive ? "active" : "")}>
+                {/* Змінено посилання на реальний публічний профіль з використанням ID користувача */}
+                <NavLink
+                    to={profile?.id ? `/profile/public/${profile.id}` : "/profile/public-library"}
+                    className={({ isActive }) => (isActive ? "active" : "")}
+                >
                     Public profile
                 </NavLink>
+
                 <NavLink to="/profile/private" className={({ isActive }) => (isActive ? "active" : "")}>
                     Private profile
                 </NavLink>

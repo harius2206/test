@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../../components/button/button";
 import ClickOutsideWrapper from "../../../components/clickOutsideWrapper";
+import Loader from "../../../components/loader/loader"; // Імпорт лоадера
 import { getLanguages, getTopics } from "../../../api/modulesApi";
 
 import { ReactComponent as CloseIcon } from "../../../images/close.svg";
@@ -158,20 +159,17 @@ export default function ModuleForm({
             <main className="create-module-page container">
 
                 <div className="create-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    {/* Ліва частина: Заголовок */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <h2 className="create-title">{mode === "edit" ? "Edit module" : "Create new module"}</h2>
                     </div>
 
-                    {/* Права частина: Кнопка збереження + Хрестик */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div className="create-actions">
                             <Button variant="static" width={120} height={39} onClick={handleSubmit} disabled={loading}>
-                                {loading ? "Saving..." : (mode === "edit" ? "Save" : "Create")}
+                                {loading ? <div style={{ transform: 'scale(0.5)' }}><Loader /></div> : (mode === "edit" ? "Save" : "Create")}
                             </Button>
                         </div>
 
-                        {/* Хрестик тепер тут — як звичайний елемент, що не налізе на кнопку */}
                         <button
                             onClick={() => navigate(-1)}
                             style={{
@@ -312,7 +310,9 @@ export default function ModuleForm({
 
                 <div className="card-actions"><Button variant="hover" width={140} height={39} onClick={handleAddCard}>+ Add card</Button></div>
                 <div className="bottom-actions">
-                    <Button variant="static" width={100} height={33} onClick={handleSubmit} disabled={loading}>{mode === "edit" ? "Save" : "Create"}</Button>
+                    <Button variant="static" width={100} height={33} onClick={handleSubmit} disabled={loading}>
+                        {loading ? <div style={{ transform: 'scale(0.5)' }}><Loader /></div> : (mode === "edit" ? "Save" : "Create")}
+                    </Button>
                 </div>
             </main>
         </div>

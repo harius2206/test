@@ -8,6 +8,7 @@ import DiagonalFlag43 from "../../../components/diagonalFlagRect43";
 import { useAuth } from "../../../context/AuthContext";
 import PermissionsMenu from "../../../components/permissionMenu/permissionsMenu";
 import FullscreenCard from "../../../components/fullscreenCard/fullscreenCard";
+import Loader from "../../../components/loader/loader"; // Імпорт лоадера
 
 import {
     getModuleById,
@@ -237,7 +238,7 @@ export default function ModuleView() {
         return () => clearInterval(autoplayRef.current);
     }, [autoplay, cards.length]);
 
-    if (loading) return <div className="mv-loading">Завантаження...</div>;
+    if (loading) return <Loader fullscreen />; // Замінено на компонент Loader
     if (error) return <div className="mv-error">{error}</div>;
     if (!module) return null;
 

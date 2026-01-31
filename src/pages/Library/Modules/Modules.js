@@ -13,7 +13,7 @@ import {
     pinModule,
     unpinModule
 } from "../../../api/modulesApi";
-import { addModuleToFolder } from "../../../api/foldersApi";
+import { addModuleToFolder, getFolders } from "../../../api/foldersApi";
 import { useAuth } from "../../../context/AuthContext";
 
 import ModuleCard from "../../../components/ModuleCard/moduleCard";
@@ -21,6 +21,7 @@ import SortMenu from "../../../components/sortMenu/sortMenu";
 import PermissionsMenu from "../../../components/permissionMenu/permissionsMenu";
 import ColoredIcon from "../../../components/coloredIcon";
 import ModalMessage from "../../../components/ModalMessage/ModalMessage";
+import Loader from "../../../components/loader/loader";
 
 import { ReactComponent as FolderIcon } from "../../../images/folder.svg";
 import { useMergeModules } from "../../../hooks/useMergeModules";
@@ -41,14 +42,13 @@ const resolveVisibility = (item) => {
     return "public";
 };
 
-// Додано пропси: preloadedModules, loadingParent, onRefresh
-export default function Modules({ source = "library", preloadedModules, loadingParent, onRefresh }) {
+export default function Modules({ source = "library", preloadedModules, preloadedFolders, loadingParent, onRefresh }) {
     const navigate = useNavigate();
     const containerRef = useRef(null);
     const { user } = useAuth();
 
     const [modules, setModules] = useState([]);
-    const [folders, setFolders] = useState([]); // Для меню "Add to folder"
+    const [folders, setFolders] = useState([]);
     const [topics, setTopics] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -63,13 +63,10 @@ export default function Modules({ source = "library", preloadedModules, loadingP
 
     const handleCloseModal = () => setModalInfo((prev) => ({ ...prev, open: false }));
 
-    // Функція мапінгу сирих даних у формат для відображення
     const mapModulesData = useCallback((rawModules, currentUser) => {
         return rawModules.map(m => {
             let moduleAuthor = m.user;
-            // Нормалізація автора
             if (typeof moduleAuthor === "number" || typeof moduleAuthor === "string") {
-                // Якщо id автора співпадає з поточним юзером
                 if (String(moduleAuthor) === String(currentUser?.id)) {
                     moduleAuthor = { id: currentUser.id, username: currentUser.username, avatar: currentUser.avatar };
                 } else {
@@ -98,58 +95,40 @@ export default function Modules({ source = "library", preloadedModules, loadingP
     const loadData = useCallback(async () => {
         if (!user || !user.id) { setLoading(false); return; }
 
-        // Якщо дані передані з батьківського компонента (Library.js)
-        if (source === "library" && preloadedModules) {
-            if (loadingParent) {
-                setLoading(true);
-                return;
-            }
-            try {
-                const mapped = mapModulesData(preloadedModules, user);
-                setModules(mapped);
-
-                // Також завантажуємо топіки (це легкий запит, можна залишити тут або теж винести)
-                const topicsResp = await getTopics();
-                setTopics(topicsResp.data || []);
-                setLoading(false);
-            } catch (err) {
-                console.error("Mapping error", err);
-                setLoading(false);
-            }
-            return;
-        }
-
-        // Стара логіка для "Saves" або якщо немає прелоаду
         try {
             setLoading(true);
-            let userModules = [];
-            let profileOwner = user;
 
-            if (source === "saves") {
+            // 1. Завантажуємо модулі
+            if (source === "library" && preloadedModules) {
+                setModules(mapModulesData(preloadedModules, user));
+            } else if (source === "saves") {
                 const savedResp = await getSavedModules(user.id);
-                userModules = savedResp.data.results || savedResp.data || [];
+                setModules(mapModulesData(savedResp.data.results || savedResp.data || [], user));
             } else {
-                // Фолбек, якщо використовується як окрема сторінка без прелоаду
                 const userResp = await getUserDetails(user.id);
-                const data = userResp.data;
-                userModules = data.modules || [];
-                setFolders(data.folders || []);
-                profileOwner = data;
+                setModules(mapModulesData(userResp.data.modules || [], userResp.data));
             }
 
-            const topicsResp = await getTopics();
-            const mapped = mapModulesData(userModules, profileOwner);
+            // 2. Завантажуємо папки (для меню "Add to folder")
+            if (preloadedFolders) {
+                setFolders(preloadedFolders);
+            } else {
+                const foldersResp = await getFolders();
+                setFolders(foldersResp.data.results || foldersResp.data || []);
+            }
 
-            setModules(mapped);
+            // 3. Завантажуємо топіки
+            const topicsResp = await getTopics();
             setTopics(topicsResp.data || []);
+
             setError(null);
         } catch (err) {
-            console.error("Failed to load modules", err);
+            console.error("Failed to load modules/folders", err);
             setError("Failed to load your modules.");
         } finally {
             setLoading(false);
         }
-    }, [user, source, preloadedModules, loadingParent, mapModulesData]);
+    }, [user, source, preloadedModules, preloadedFolders, mapModulesData]);
 
     useEffect(() => { loadData(); }, [loadData]);
 
@@ -180,7 +159,6 @@ export default function Modules({ source = "library", preloadedModules, loadingP
         });
     };
 
-    // Всі дії, що змінюють дані, тепер мають викликати onRefresh, якщо він є
     const refreshParentOrLocal = () => {
         if (onRefresh) onRefresh();
         else loadData();
@@ -189,9 +167,7 @@ export default function Modules({ source = "library", preloadedModules, loadingP
     const handleSaveModule = async (id) => {
         try {
             await saveModule(id);
-            // Optimistic update
             setModules(prev => prev.map(m => m.id === id ? { ...m, is_saved: true } : m));
-            // Не обов'язково рефрешити все, але можна
         } catch (err) {
             setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to save module." });
         }
@@ -205,30 +181,32 @@ export default function Modules({ source = "library", preloadedModules, loadingP
             } else {
                 setModules(prev => prev.map(m => m.id === id ? { ...m, is_saved: false } : m));
             }
-            if (source !== "saves") refreshParentOrLocal(); // Оновити статус в бібліотеці
+            if (source !== "saves") refreshParentOrLocal();
         } catch (err) {
             setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to unsave module." });
         }
     };
 
     const handlePinModule = async (id) => {
+        const oldModules = [...modules];
         setModules(prev => prev.map(m => m.id === id ? { ...m, pinned: true } : m));
         try {
             await pinModule(id);
             refreshParentOrLocal();
         } catch (err) {
-            setModules(prev => prev.map(m => m.id === id ? { ...m, pinned: false } : m));
+            setModules(oldModules);
             setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to pin module." });
         }
     };
 
     const handleUnpinModule = async (id) => {
+        const oldModules = [...modules];
         setModules(prev => prev.map(m => m.id === id ? { ...m, pinned: false } : m));
         try {
             await unpinModule(id);
             refreshParentOrLocal();
         } catch (err) {
-            setModules(prev => prev.map(m => m.id === id ? { ...m, pinned: true } : m));
+            setModules(oldModules);
             setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to unpin module." });
         }
     };
@@ -248,7 +226,6 @@ export default function Modules({ source = "library", preloadedModules, loadingP
         setModules(prev => prev.map(m => m.id === module.id ? { ...m, visible: newStatus } : m));
         try {
             await toggleModuleVisibility(module.id, newStatus);
-            // Тут не обов'язково рефрешити весь список, локального оновлення досить
         } catch (err) {
             const oldStatus = module.visible;
             setModules(prev => prev.map(m => m.id === module.id ? { ...m, visible: oldStatus } : m));
@@ -321,7 +298,7 @@ export default function Modules({ source = "library", preloadedModules, loadingP
         );
     };
 
-    if (loading) return <div style={{ padding: 20, textAlign: "center" }}>Loading library...</div>;
+    if (loading) return <Loader />;
 
     return (
         <div className="modules-page" ref={containerRef} style={{ position: "relative", minHeight: "200px" }}>
@@ -384,16 +361,15 @@ export default function Modules({ source = "library", preloadedModules, loadingP
                 </div>
             )}
 
-            {/* Модалки та інші елементи інтерфейсу залишаються без змін, крім використання new state */}
             {merge.isMergeModalOpen && (
                 <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
                     <div style={{ background: "white", padding: "30px", borderRadius: "20px", width: "380px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
                         <h3 style={{ marginBottom: "20px" }}>Finalize Merge</h3>
                         <div style={{ marginBottom: "15px" }}>
-                            <input style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }} type="text" value={merge.mergeForm.name} onChange={(e) => merge.setMergeForm({...merge.mergeForm, name: e.target.value})} placeholder="New Module Name" />
+                            <input style={{ width: "100%", padding: "10px", marginTop: "5px", borderRadius: "8px", border: "1px solid #ddd" }} type="text" value={merge.mergeForm.name} onChange={(e) => merge.setMergeForm({...merge.mergeForm, name: e.target.value})} placeholder="New Module Name" />
                         </div>
                         <div style={{ marginBottom: "25px" }}>
-                            <select style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }} value={merge.mergeForm.topic} onChange={(e) => merge.setMergeForm({...merge.mergeForm, topic: e.target.value})}>
+                            <select style={{ width: "100%", padding: "10px", marginTop: "5px", borderRadius: "8px", border: "1px solid #ddd" }} value={merge.mergeForm.topic} onChange={(e) => merge.setMergeForm({...merge.mergeForm, topic: e.target.value})}>
                                 <option value="">Select Topic...</option>
                                 {topics.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                             </select>
@@ -417,8 +393,8 @@ export default function Modules({ source = "library", preloadedModules, loadingP
                     <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 301 }} onClick={() => setAddToFolderTarget(null)} />
                     <div className="dropdown-menu" style={{ position: "fixed", left: addToFolderTarget.anchor?.left || "50%", top: addToFolderTarget.anchor?.top || "50%", zIndex: 302, background: "white", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", padding: "8px 0", minWidth: "200px", maxHeight: "300px", overflowY: "auto" }}>
                         <div style={{ padding: "8px 16px", fontWeight: "bold", borderBottom: "1px solid #eee", fontSize: "14px", color: "#666" }}>Add "{addToFolderTarget.module.name}" to:</div>
-                        {folders.length === 0 ? <div style={{ padding: "12px", textAlign: "center", color: "gray", fontSize: "13px" }}>No folders available.</div> : folders.map(folder => (
-                            <div key={folder.id} onClick={() => handleAddToFolder(folder)} style={{ padding: "10px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", transition: "background 0.2s" }}>
+                        {folders.length === 0 ? <div style={{ padding: "12px", textAlign: "center", color: "gray", fontSize: "13px" }}>No folders found.</div> : folders.map(folder => (
+                            <div key={folder.id} onClick={() => handleAddToFolder(folder)} style={{ padding: "10px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px" }}>
                                 <ColoredIcon icon={FolderIcon} color={folder.color || "#6366f1"} size={18} />
                                 <span style={{ fontSize: "14px", color: "#333" }}>{folder.name}</span>
                             </div>

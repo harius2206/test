@@ -19,6 +19,7 @@ import ModuleCard from "../../../components/ModuleCard/moduleCard";
 import ColoredIcon from "../../../components/coloredIcon";
 import DropdownMenu from "../../../components/dropDownMenu/dropDownMenu";
 import ModalMessage from "../../../components/ModalMessage/ModalMessage";
+import Loader from "../../../components/loader/loader"; // Імпорт лоадера
 
 import { ReactComponent as StarIcon } from "../../../images/star.svg";
 import { ReactComponent as FolderIcon } from "../../../images/folder.svg";
@@ -99,7 +100,7 @@ export default function PublicProfileLibrary() {
                 cards_count: m.cards_count !== undefined ? m.cards_count : (m.cards ? m.cards.length : 0),
                 collaborators: m.collaborators || [],
                 is_saved: m.saved,
-                pinned: m.pinned // Якщо бекенд повертає статус піна
+                pinned: m.pinned
             }));
             setModulesList(mappedModules);
 
@@ -109,7 +110,7 @@ export default function PublicProfileLibrary() {
                 modules_count: f.modules_count || (f.modules ? f.modules.length : 0),
                 user: { id: data.id, username: data.username, avatar: data.avatar },
                 is_saved: f.saved,
-                pinned: f.pinned // Якщо бекенд повертає статус піна
+                pinned: f.pinned
             }));
             setFoldersList(mappedFolders);
 
@@ -202,7 +203,7 @@ export default function PublicProfileLibrary() {
         }
     };
 
-    if (loading) return <div className="pp-container" style={{textAlign:"center", paddingTop:40}}>Loading profile...</div>;
+    if (loading) return <Loader fullscreen />; // Замінено на компонент Loader
     if (error) return <div className="pp-container" style={{textAlign:"center", paddingTop:40, color:"red"}}>{error}</div>;
     if (!userData) return null;
 
@@ -279,7 +280,6 @@ export default function PublicProfileLibrary() {
                         <div className="pp-empty">No accessible folders found.</div>
                     ) : (
                         foldersList.map(folder => {
-                            // Формуємо меню для папки
                             const menuItems = [
                                 {
                                     label: folder.pinned ? "Unpin" : "Pin",
