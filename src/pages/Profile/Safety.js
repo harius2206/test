@@ -1,25 +1,36 @@
-// JavaScript
 import { useState, useEffect } from "react";
 import Button from "../../components/button/button";
 import EditableField from "../../components/editableField/editableField";
-import { getUserData, saveUserData } from "../../utils/storage";
+import { getUserData } from "../../utils/storage";
 import "./profile.css";
 import { changePassword } from "../../api/authApi";
 import { useError } from "../../context/ErrorContext";
 import { requestEmailChange } from "../../api/authApi";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
+import {
+    getDeeplKeys,
+    createDeeplKey,
+    updateDeeplKey,
+    deleteDeeplKey
+} from "../../api/deeplApi";
 
 export default function Safety() {
     const storedInitial = getUserData();
     const { showMessage, showError } = useError();
 
+    // Email & Password states
     const [email, setEmail] = useState(storedInitial?.email || "");
     const [password, setPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [apiKey, setApiKey] = useState(storedInitial?.deeplKey || "");
     const [cooldown, setCooldown] = useState(0);
 
+    // DeepL states
+    const [deeplKey, setDeeplKey] = useState("");
+    const [existingKeyObj, setExistingKeyObj] = useState(null); // Об'єкт ключа з бекенду (id, status, characters...)
+    const [loadingKey, setLoadingKey] = useState(false);
+
+    // Timer for email cooldown
     useEffect(() => {
         if (cooldown > 0) {
             const timer = setInterval(() => setCooldown((prev) => prev - 1), 1000);
@@ -27,18 +38,40 @@ export default function Safety() {
         }
     }, [cooldown]);
 
-    // Sync fields with localStorage changes
+    // Sync email with localStorage changes
     useEffect(() => {
         const onStorage = () => {
             const stored = getUserData();
             setEmail(stored?.email || "");
-            setApiKey(stored?.deeplKey || "");
         };
         window.addEventListener("storage", onStorage);
         return () => window.removeEventListener("storage", onStorage);
     }, []);
 
-    const handleSend = async () => {
+    // Load DeepL Key on mount
+    useEffect(() => {
+        loadDeepLKey();
+    }, []);
+
+    const loadDeepLKey = async () => {
+        try {
+            const res = await getDeeplKeys();
+            if (res.data && res.data.length > 0) {
+                // Беремо перший ключ (якщо логіка передбачає один ключ на юзера)
+                const keyData = res.data[0];
+                setExistingKeyObj(keyData);
+                // Маскуємо ключ для відображення, або показуємо порожнім, якщо з метою безпеки бекенд його не віддає повністю
+                // Тут припускаємо, що ми хочемо редагувати новий, тому поле input спочатку порожнє або заповнене якщо треба
+                setDeeplKey("");
+            } else {
+                setExistingKeyObj(null);
+            }
+        } catch (err) {
+            console.error("Failed to load DeepL key", err);
+        }
+    };
+
+    const handleSendEmail = async () => {
         if (!email) {
             showError("Email cannot be empty.");
             return;
@@ -53,15 +86,60 @@ export default function Safety() {
         }
     };
 
+    const handleSaveApiKey = async () => {
+        if (!deeplKey.trim()) {
+            showError("API key cannot be empty.");
+            return;
+        }
 
-    const handleSaveApiKey = (val) => {
-        setApiKey(val);
-        const updated = { ...getUserData(), deeplKey: val };
-        saveUserData(updated);
-        window.dispatchEvent(new Event("storage"));
+        setLoadingKey(true);
+        try {
+            if (existingKeyObj) {
+                await updateDeeplKey(existingKeyObj.id, deeplKey);
+                showMessage("DeepL key updated successfully.", "success");
+            } else {
+                await createDeeplKey(deeplKey);
+                showMessage("DeepL key created successfully.", "success");
+            }
+            setDeeplKey("");
+            await loadDeepLKey();
+        } catch (err) {
+            showError(err?.response?.data?.detail || "Failed to save DeepL key.");
+        } finally {
+            setLoadingKey(false);
+        }
     };
 
-    const apiKeyStatus = apiKey ? "active key" : "no key";
+
+    const handleDeleteApiKey = async () => {
+        if (!existingKeyObj) return;
+
+        setLoadingKey(true);
+        try {
+            await deleteDeeplKey(existingKeyObj.id);
+            setExistingKeyObj(null);
+            setDeeplKey("");
+            showMessage("DeepL key deleted.", "success");
+        } catch (err) {
+            showError(err, "Failed to delete DeepL key.");
+        } finally {
+            setLoadingKey(false);
+        }
+    };
+
+    // Формуємо статус для відображення
+    let apiKeyStatusText = "No key";
+    if (existingKeyObj) {
+        if (existingKeyObj.status) {
+            // Якщо бекенд повертає статус і ліміти
+            apiKeyStatusText = `${existingKeyObj.status}`;
+            if (existingKeyObj.remaining_characters !== undefined) {
+                apiKeyStatusText += ` (${existingKeyObj.remaining_characters} chars left)`;
+            }
+        } else {
+            apiKeyStatusText = "Active key";
+        }
+    }
 
     return (
         <div className="profile-content">
@@ -87,7 +165,7 @@ export default function Safety() {
                     <Button
                         variant="static"
                         color="var(--accent)"
-                        onClick={handleSend}
+                        onClick={handleSendEmail}
                         disabled={cooldown > 0}
                         width="170px"
                         height="46px"
@@ -149,7 +227,6 @@ export default function Safety() {
                                 showError(err, "Failed to change password.");
                             }
                         }}
-
                     >
                         Change password
                     </Button>
@@ -165,13 +242,20 @@ export default function Safety() {
 
                 <label>
                     Your DeepL API key status
-                    <EditableField type="text" value={apiKeyStatus} editable={false} />
+                    <EditableField type="text" value={apiKeyStatusText} editable={false} />
                 </label>
 
                 <label>
-                    New DeepL API key
-                    <EditableField type="text" value={apiKey} onSave={handleSaveApiKey} />
+                    {existingKeyObj ? "Update DeepL API key" : "Add DeepL API key"}
+                    <EditableField
+                        type="text"
+                        value={deeplKey}
+                        autosave
+                        onSave={setDeeplKey}
+                        placeholder={existingKeyObj ? "Enter new key to update" : "Enter key"}
+                    />
                 </label>
+
 
                 <div className="button-wrapper">
                     <Button
@@ -179,26 +263,28 @@ export default function Safety() {
                         color="var(--accent)"
                         width="170px"
                         height="46px"
+                        disabled={loadingKey}
                         onClick={() => {
-                            handleSaveApiKey(apiKey);
-                            showMessage("DeepL key saved.", "success");
+                            document.activeElement.blur();
+                            setTimeout(handleSaveApiKey, 0);
                         }}
+
                     >
-                        Save key
+                        {loadingKey ? "Saving..." : (existingKeyObj ? "Update key" : "Save key")}
                     </Button>
 
-                    <Button
-                        variant="toggle"
-                        color="var(--danger)"
-                        width="170px"
-                        height="46px"
-                        onClick={() => {
-                            handleSaveApiKey("");
-                            showMessage("DeepL key deleted.", "success");
-                        }}
-                    >
-                        Delete DeepL key
-                    </Button>
+                    {existingKeyObj && (
+                        <Button
+                            variant="toggle"
+                            color="var(--danger)"
+                            width="170px"
+                            height="46px"
+                            disabled={loadingKey}
+                            onClick={handleDeleteApiKey}
+                        >
+                            {loadingKey ? "Deleting..." : "Delete DeepL key"}
+                        </Button>
+                    )}
                 </div>
             </div>
         </div>

@@ -5,6 +5,7 @@ import ClickOutsideWrapper from "../../../components/clickOutsideWrapper";
 import Loader from "../../../components/loader/loader";
 import { getLanguages, getTopics } from "../../../api/modulesApi";
 import ModuleImportExportModal from "../../../components/ModuleImportExportModal/ModuleImportExportModal";
+import { translateWords } from "../../../api/deeplApi"; // NEW IMPORT
 
 import { ReactComponent as CloseIcon } from "../../../images/close.svg";
 import { ReactComponent as TrashIcon } from "../../../images/delete.svg";
@@ -47,6 +48,9 @@ export default function ModuleForm({
     const [showImportModal, setShowImportModal] = useState(false);
 
     const [cards, setCards] = useState([{ id: Date.now(), term: "", definition: "" }]);
+
+    // State for translation loading (track which card is loading)
+    const [translatingCardId, setTranslatingCardId] = useState(null);
 
     // --- 1. Fetch Data ---
     useEffect(() => {
@@ -142,20 +146,49 @@ export default function ModuleForm({
         onSubmit?.(moduleObj);
     };
 
-    // --- CALLBACK IMPORT ---
-    // Ця функція викликається, коли ModuleImportExportModal повернув масив карток
+    const handleDeeplTranslate = async (cardId, term) => {
+        if (!term) return;
+        if (!selectedLangRight) {
+            alert("Please select a target language (Right) first.");
+            return;
+        }
+
+        setTranslatingCardId(cardId);
+
+        try {
+            const targetLang = selectedLangRight.id;
+
+            const response = await translateWords(
+                [term],
+                targetLang
+            );
+
+            const translatedData = response.data.translations[0];
+            const translatedText = typeof translatedData === 'string' ? translatedData : translatedData?.text;
+
+            if (translatedText) {
+                handleCardChange(cardId, "definition", translatedText);
+            }
+
+        } catch (err) {
+            console.error("Translation failed", err);
+            const errorMsg = err.response?.data?.lang_to
+                ? "Translation error: " + err.response.data.lang_to
+                : "Translation failed. Check if your API key is valid in Safety settings.";
+            alert(errorMsg);
+        } finally {
+            setTranslatingCardId(null);
+        }
+    };
+
+
     const handleImportedCards = (importedCards) => {
         if (!importedCards || importedCards.length === 0) return;
 
         setCards(prev => {
-            // Якщо у списку була лише одна порожня картка, прибираємо її перед додаванням нових
             const existingNotEmpty = prev.filter(c => c.term.trim() !== "" || c.definition.trim() !== "");
-
-            // Додаємо нові картки до існуючих (або до пустих)
             return [...existingNotEmpty, ...importedCards];
         });
-
-        // Можна показати коротке повідомлення або просто закрити модалку (вона сама закривається)
     };
 
     return (
@@ -191,7 +224,6 @@ export default function ModuleForm({
                     </div>
                 </div>
 
-                {/* --- Languages Select --- */}
                 <div className="global-lang-row">
                     <ClickOutsideWrapper onClickOutside={() => setOpenLeft(false)}>
                         <div className="lang-dropdown">
@@ -230,7 +262,6 @@ export default function ModuleForm({
                     </ClickOutsideWrapper>
                 </div>
 
-                {/* --- Inputs --- */}
                 <div className="module-inputs">
                     <input className="module-input" placeholder="Name" value={name} onChange={e => setName(e.target.value)} />
 
@@ -264,7 +295,6 @@ export default function ModuleForm({
                 </div>
 
                 {/* --- Cards List --- */}
-                {/* Завжди відображаємо список карток, незалежно від імпорту */}
                 <div className="cards-list">
                     {cards.map((card, idx) => (
                         <div className="card-row" key={card.id}>
@@ -284,9 +314,24 @@ export default function ModuleForm({
                                         <input className="card-input" placeholder="Definition" value={card.definition} onChange={(e) => handleCardChange(card.id, "definition", e.target.value)} />
                                         <div className="field-label">Definition</div>
                                     </div>
+
+                                    {/* DEEPL INTEGRATION */}
                                     <div className="deepl-link">
-                                        <a href="https://www.deepl.com/" target="_blank" rel="noreferrer"><DeeplIcon className="deepl-icon" /><span>DeepL</span></a>
+                                        <button
+                                            type="button"
+                                            className="deepl-btn" // Ви можете додати стилі для .deepl-btn в CSS, наприклад background: none; border: none; cursor: pointer;
+                                            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', padding: 0 }}
+                                            onClick={() => handleDeeplTranslate(card.id, card.term)}
+                                            disabled={translatingCardId === card.id || !card.term}
+                                            title="Translate with DeepL"
+                                        >
+                                            <DeeplIcon className="deepl-icon" style={{ opacity: translatingCardId === card.id ? 0.5 : 1 }}/>
+                                            <span style={{ color: 'var(--text-color)', fontSize: '12px' }}>
+                                                {translatingCardId === card.id ? "Loading..." : "DeepL"}
+                                            </span>
+                                        </button>
                                     </div>
+
                                 </div>
                             </div>
                             <div className="card-actions-col">
@@ -321,3 +366,4 @@ export default function ModuleForm({
         </div>
     );
 }
+

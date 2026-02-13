@@ -9,6 +9,7 @@ const endpoints = {
         detail: (id) => `/api/v1/users/${id}/`,
         ratings: "/api/v1/users/ratings/",
     },
+
     modules: {
         list: "/api/v1/modules/",
         detail: (id) => `/api/v1/modules/${id}/`,
@@ -55,6 +56,7 @@ const endpoints = {
         list: "/api/v1/topics/",
         detail: (id) => `/api/v1/topics/${id}/`,
     },
+
 };
 
 export default endpoints;
