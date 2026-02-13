@@ -16,6 +16,7 @@ import { ReactComponent as FolderIcon } from "../../images/folder.svg";
 import { ReactComponent as MergeIcon } from "../../images/merge.svg";
 import { ReactComponent as SaveIcon } from "../../images/save.svg";
 import { ReactComponent as PinIcon } from "../../images/pin.svg";
+import { ReactComponent as ExportIcon } from "../../images/export.svg"; // NEW IMPORT
 
 import "./moduleCard.css";
 
@@ -36,7 +37,8 @@ export default function ModuleCard({
                                        onSave,
                                        onUnsave,
                                        onPin,
-                                       onUnpin
+                                       onUnpin,
+                                       onExport // NEW PROP
                                    }) {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -119,6 +121,15 @@ export default function ModuleCard({
             label: "Add to folder",
             onClick: (e, trigger) => onAddToFolder(module, e, trigger),
             icon: <FolderIcon width={16} height={16} />
+        });
+    }
+
+    // NEW: Export / Import menu item
+    if (onExport) {
+        menuItems.push({
+            label: "Export / Import",
+            onClick: () => onExport(module),
+            icon: <ExportIcon width={16} height={16} />
         });
     }
 

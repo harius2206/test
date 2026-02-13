@@ -29,6 +29,9 @@ const endpoints = {
         tagsDetail: (id, tagName) => `/api/v1/modules/${id}/tags/${tagName}/`,
 
         saved: (userId) => `/api/v1/modules/saves/users/${userId}/`,
+
+        export: (id) => `/api/v1/modules/${id}/export/`,
+        import: (id) => `/api/v1/modules/${id}/import/`,
     },
     cards: {
         list: "/api/v1/cards/",

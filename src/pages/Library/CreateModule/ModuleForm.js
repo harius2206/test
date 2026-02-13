@@ -2,8 +2,9 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../../components/button/button";
 import ClickOutsideWrapper from "../../../components/clickOutsideWrapper";
-import Loader from "../../../components/loader/loader"; // Імпорт лоадера
+import Loader from "../../../components/loader/loader";
 import { getLanguages, getTopics } from "../../../api/modulesApi";
+import ModuleImportExportModal from "../../../components/ModuleImportExportModal/ModuleImportExportModal";
 
 import { ReactComponent as CloseIcon } from "../../../images/close.svg";
 import { ReactComponent as TrashIcon } from "../../../images/delete.svg";
@@ -11,6 +12,7 @@ import { ReactComponent as SwapArrows } from "../../../images/swap.svg";
 import { ReactComponent as ArrowDown } from "../../../images/arrowDown.svg";
 import { ReactComponent as ArrowUp } from "../../../images/arrowUp.svg";
 import { ReactComponent as DeeplIcon } from "../../../images/deepl.svg";
+import { ReactComponent as ReplaceIcon } from "../../../images/replace.svg";
 
 import "../CreateModule/createModule.css";
 
@@ -23,15 +25,12 @@ export default function ModuleForm({
                                    }) {
     const navigate = useNavigate();
 
-    // --- Data Sources (API Lists) ---
+    // --- Data Sources ---
     const [languagesList, setLanguagesList] = useState([]);
     const [topicsList, setTopicsList] = useState([]);
 
     // --- Form State ---
     const [tags, setTags] = useState([]);
-    const [tagInput, setTagInput] = useState("");
-    const tagInputRef = useRef(null);
-
     const [name, setName] = useState("");
     const [selectedTopic, setSelectedTopic] = useState(null);
     const [description, setDescription] = useState("");
@@ -44,9 +43,12 @@ export default function ModuleForm({
     const [openRight, setOpenRight] = useState(false);
     const [openTopicDropdown, setOpenTopicDropdown] = useState(false);
 
+    // Modal state
+    const [showImportModal, setShowImportModal] = useState(false);
+
     const [cards, setCards] = useState([{ id: Date.now(), term: "", definition: "" }]);
 
-    // --- 1. Fetch Data (Langs & Topics) ---
+    // --- 1. Fetch Data ---
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -73,7 +75,7 @@ export default function ModuleForm({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // --- 2. Populate State from initialData ---
+    // --- 2. Populate State ---
     useEffect(() => {
         if (initialData && Object.keys(initialData).length > 0 && languagesList.length > 0) {
             setName(initialData.name || "");
@@ -119,27 +121,13 @@ export default function ModuleForm({
         setSelectedLangRight(temp);
     };
 
-    const handleAddTag = () => {
-        const v = (tagInput || "").trim();
-        if (!v) return;
-        if (!tags.includes(v)) setTags(prev => [...prev, v]);
-        setTagInput("");
-    };
-
-    const handleRemoveTag = (t) => setTags(prev => prev.filter(x => x !== t));
-
-    const handleTagKey = (e) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            handleAddTag();
-        }
-    };
-
     const handleSubmit = () => {
         if (!name.trim()) return alert("Please enter a module name");
+        if (!selectedLangLeft || !selectedLangRight) return alert("Please select languages");
+
+        // Валідація: фільтруємо порожні картки
         const validCards = cards.filter(c => c.term.trim() || c.definition.trim());
         if (validCards.length === 0) return alert("Please add at least one card");
-        if (!selectedLangLeft || !selectedLangRight) return alert("Please select languages");
 
         const moduleObj = {
             id: initialData.id,
@@ -154,6 +142,22 @@ export default function ModuleForm({
         onSubmit?.(moduleObj);
     };
 
+    // --- CALLBACK IMPORT ---
+    // Ця функція викликається, коли ModuleImportExportModal повернув масив карток
+    const handleImportedCards = (importedCards) => {
+        if (!importedCards || importedCards.length === 0) return;
+
+        setCards(prev => {
+            // Якщо у списку була лише одна порожня картка, прибираємо її перед додаванням нових
+            const existingNotEmpty = prev.filter(c => c.term.trim() !== "" || c.definition.trim() !== "");
+
+            // Додаємо нові картки до існуючих (або до пустих)
+            return [...existingNotEmpty, ...importedCards];
+        });
+
+        // Можна показати коротке повідомлення або просто закрити модалку (вона сама закривається)
+    };
+
     return (
         <div className="page-with-layout">
             <main className="create-module-page container">
@@ -164,26 +168,24 @@ export default function ModuleForm({
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div className="create-actions">
+                        <div className="create-actions" style={{ display: 'flex', gap: '10px' }}>
+                            <Button
+                                variant="hover"
+                                width={130}
+                                height={39}
+                                onClick={() => setShowImportModal(true)}
+                                title="Import CSV/XLSX to fill cards"
+                            >
+                                <ReplaceIcon style={{ marginRight: 6, width: 16, height: 16 }} />
+                                Import
+                            </Button>
+
                             <Button variant="static" width={120} height={39} onClick={handleSubmit} disabled={loading}>
                                 {loading ? <div style={{ transform: 'scale(0.5)' }}><Loader /></div> : (mode === "edit" ? "Save" : "Create")}
                             </Button>
                         </div>
 
-                        <button
-                            onClick={() => navigate(-1)}
-                            style={{
-                                background: "none",
-                                border: "none",
-                                cursor: "pointer",
-                                padding: 4,
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                color: "var(--text-primary, #333)"
-                            }}
-                            title="Close"
-                        >
+                        <button onClick={() => navigate(-1)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }} title="Close">
                             <CloseIcon width={28} height={28} />
                         </button>
                     </div>
@@ -235,17 +237,12 @@ export default function ModuleForm({
                     <div style={{ width: "100%" }}>
                         <ClickOutsideWrapper onClickOutside={() => setOpenTopicDropdown(false)}>
                             <div className="lang-dropdown" style={{ width: '100%' }}>
-                                <div
-                                    className="module-input"
-                                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
-                                    onClick={() => setOpenTopicDropdown(!openTopicDropdown)}
-                                >
+                                <div className="module-input" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }} onClick={() => setOpenTopicDropdown(!openTopicDropdown)}>
                                     <span style={{ color: selectedTopic ? 'inherit' : '#757575' }}>
                                         {selectedTopic ? selectedTopic.name : "Select Topic"}
                                     </span>
                                     {openTopicDropdown ? <ArrowUp width={14} height={14} /> : <ArrowDown width={14} height={14} />}
                                 </div>
-
                                 {openTopicDropdown && (
                                     <div className="dropdown" style={{ width: '100%', top: '100%', maxHeight: '200px', overflowY: 'auto' }}>
                                         {topicsList.length > 0 ? (
@@ -266,7 +263,8 @@ export default function ModuleForm({
                     <input className="module-input" placeholder="Description (optional)" value={description} onChange={e => setDescription(e.target.value)} />
                 </div>
 
-                {/* --- Cards --- */}
+                {/* --- Cards List --- */}
+                {/* Завжди відображаємо список карток, незалежно від імпорту */}
                 <div className="cards-list">
                     {cards.map((card, idx) => (
                         <div className="card-row" key={card.id}>
@@ -276,9 +274,7 @@ export default function ModuleForm({
                                     <span className="lang-left">{selectedLangLeft?.name}</span>
                                     <span className="lang-right">{selectedLangRight?.name}</span>
                                 </div>
-
                                 <div className="card-separator" />
-
                                 <div className="card-fields">
                                     <div className="field-with-label">
                                         <input className="card-input" placeholder="Term" value={card.term} onChange={(e) => handleCardChange(card.id, "term", e.target.value)} />
@@ -293,14 +289,8 @@ export default function ModuleForm({
                                     </div>
                                 </div>
                             </div>
-
                             <div className="card-actions-col">
-                                <button
-                                    className="icon-top-btn delete-card-btn"
-                                    onClick={(e) => handleRemoveCard(e, card.id)}
-                                    disabled={cards.length <= 1}
-                                    title="Remove card"
-                                >
+                                <button className="icon-top-btn delete-card-btn" onClick={(e) => handleRemoveCard(e, card.id)} disabled={cards.length <= 1} title="Remove card">
                                     <TrashIcon width={16} height={16} />
                                 </button>
                             </div>
@@ -314,6 +304,19 @@ export default function ModuleForm({
                         {loading ? <div style={{ transform: 'scale(0.5)' }}><Loader /></div> : (mode === "edit" ? "Save" : "Create")}
                     </Button>
                 </div>
+
+                {/* --- Import Modal --- */}
+                <ModuleImportExportModal
+                    open={showImportModal}
+                    onClose={() => setShowImportModal(false)}
+                    moduleId={initialData?.id}
+                    moduleName={name}
+                    isLocal={mode !== "edit"}
+                    onLocalImport={handleImportedCards}
+                    onSuccess={() => {
+                        if (mode === "edit") window.location.reload();
+                    }}
+                />
             </main>
         </div>
     );

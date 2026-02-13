@@ -5,23 +5,6 @@ import { createModule, updateModule, getModuleById } from "../../../api/modulesA
 import { addModuleToFolder } from "../../../api/foldersApi";
 import Loader from "../../../components/loader/loader";
 
-const LANG_MAP = {
-    "Polish": 1,
-    "English": 2,
-    "Ukrainian": 3,
-    "German": 4,
-    "Spanish": 5
-};
-
-const getLangId = (langObj) => langObj?.id || 1;
-
-const getLangName = (langData) => {
-    if (!langData) return "Polish";
-    if (typeof langData === 'object' && langData.name) return langData.name;
-    const foundName = Object.keys(LANG_MAP).find(key => LANG_MAP[key] === langData);
-    return foundName || "Polish";
-};
-
 export default function CreateModule() {
     const location = useLocation();
     const navigate = useNavigate();
@@ -84,11 +67,13 @@ export default function CreateModule() {
     const handleFormSubmit = async (formData) => {
         setLoading(true);
 
-        const processedCards = formData.cards.map(c => {
+        const processedCards = (formData.cards || []).map(c => {
             const cardData = {
                 original: c.term,
                 translation: c.definition
             };
+            // Зберігаємо ID тільки для старих карток (які прийшли з бекенду)
+            // Нові картки (додані вручну або імпортовані) матимуть тимчасові великі ID (Date.now()), їх ми не шлемо
             if (c.id && c.id < 1700000000000) {
                 cardData.id = c.id;
             }

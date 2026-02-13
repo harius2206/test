@@ -56,3 +56,17 @@ export const getSavedCardsByModule = (moduleId, userId) => axiosClient.get(endpo
 // --- Other ---
 export const getLanguages = () => axiosClient.get(endpoints.languages);
 export const getTopics = () => axiosClient.get(endpoints.topics.list);
+
+// --- Import / Export ---
+export const exportModule = (id, format) => axiosClient.get(endpoints.modules.export(id), {
+    params: { file_format: format },
+    responseType: 'blob'
+});
+
+export const importModule = (id, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return axiosClient.post(endpoints.modules.import(id), formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+    });
+};

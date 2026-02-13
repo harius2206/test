@@ -22,6 +22,7 @@ import PermissionsMenu from "../../../components/permissionMenu/permissionsMenu"
 import ColoredIcon from "../../../components/coloredIcon";
 import ModalMessage from "../../../components/ModalMessage/ModalMessage";
 import Loader from "../../../components/loader/loader";
+import ModuleImportExportModal from "../../../components/ModuleImportExportModal/ModuleImportExportModal"; // NEW IMPORT
 
 import { ReactComponent as FolderIcon } from "../../../images/folder.svg";
 import { useMergeModules } from "../../../hooks/useMergeModules";
@@ -57,6 +58,7 @@ export default function Modules({ source = "library", preloadedModules, preloade
     const [visibleCount, setVisibleCount] = useState(3);
 
     const [permissionsTarget, setPermissionsTarget] = useState(null);
+    const [importExportTarget, setImportExportTarget] = useState(null); // NEW STATE
     const [sortType, setSortType] = useState("date");
     const [addToFolderTarget, setAddToFolderTarget] = useState(null);
     const [modalInfo, setModalInfo] = useState({ open: false, type: "info", title: "", message: "" });
@@ -347,6 +349,9 @@ export default function Modules({ source = "library", preloadedModules, preloade
                             onAddToFolder={source === "saves" ? null : openAddToFolderMenu}
                             onVisibilityToggle={source === "saves" ? null : handleVisibility}
 
+                            // NEW: Pass export handler
+                            onExport={source === "saves" ? null : () => setImportExportTarget(module)}
+
                             onSave={handleSaveModule}
                             onUnsave={handleUnsaveModule}
                             onPin={handlePinModule}
@@ -401,6 +406,20 @@ export default function Modules({ source = "library", preloadedModules, preloade
                         ))}
                     </div>
                 </>
+            )}
+
+            {/* NEW: Import/Export Modal */}
+            {importExportTarget && (
+                <ModuleImportExportModal
+                    open={true}
+                    onClose={() => setImportExportTarget(null)}
+                    moduleId={importExportTarget.id}
+                    moduleName={importExportTarget.name}
+                    onSuccess={() => {
+                        setImportExportTarget(null);
+                        refreshParentOrLocal();
+                    }}
+                />
             )}
 
             <ModalMessage open={modalInfo.open} type={modalInfo.type} title={modalInfo.title} message={modalInfo.message} onClose={handleCloseModal} />

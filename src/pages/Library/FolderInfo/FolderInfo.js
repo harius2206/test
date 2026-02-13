@@ -18,12 +18,12 @@ import EditableField from "../../../components/editableField/editableField";
 import Button from "../../../components/button/button";
 import ModalMessage from "../../../components/ModalMessage/ModalMessage";
 import Loader from "../../../components/loader/loader";
+import ModuleImportExportModal from "../../../components/ModuleImportExportModal/ModuleImportExportModal"; // Додано імпорт
 
 import { ReactComponent as CloseIcon } from "../../../images/close.svg";
 import { ReactComponent as DotsIcon } from "../../../images/dots.svg";
 import { ReactComponent as EditIcon } from "../../../images/editImg.svg";
 import { ReactComponent as DeleteIcon } from "../../../images/delete.svg";
-import { ReactComponent as ShareIcon } from "../../../images/share.svg";
 import { ReactComponent as TickIcon } from "../../../images/tick.svg";
 import { ReactComponent as UntickIcon } from "../../../images/unTick.svg";
 import { ReactComponent as FolderIcon } from "../../../images/folder.svg";
@@ -70,6 +70,7 @@ export default function FolderPage() {
 
     const [permissionsTarget, setPermissionsTarget] = useState(null);
     const [addToFolderTarget, setAddToFolderTarget] = useState(null);
+    const [importExportTarget, setImportExportTarget] = useState(null); // Стан для модалки
     const [modalInfo, setModalInfo] = useState({ open: false, type: "info", title: "", message: "" });
 
     const handleCloseModal = () => setModalInfo(prev => ({ ...prev, open: false }));
@@ -358,7 +359,7 @@ export default function FolderPage() {
                                 },
                                 { label: folderState.pinned ? "Unpin" : "Pin", onClick: handlePin, icon: <ColoredIcon icon={folderState.pinned ? TickIcon : UntickIcon} size={16} /> }
                             ] : []),
-                            { label: "Export", onClick: () => {}, icon: <ShareIcon width={16} height={16} /> },
+                            // Кнопка експорту видалена з меню папки
                         ]}
                     >
                         <button className="btn-icon"><DotsIcon width={16} height={16} /></button>
@@ -380,6 +381,10 @@ export default function FolderPage() {
                                 onPermissions={(e, trigger) => openModulePermissions(module, e, trigger)}
                                 onAddToFolder={(e, trigger) => openAddToFolderMenu(module, e, trigger)}
                                 onVisibilityToggle={handleModuleVisibility}
+
+                                // Передаємо функцію експорту для відображення в меню картки
+                                onExport={() => setImportExportTarget(module)}
+
                                 deleteLabel={"Remove from folder"}
                                 onDelete={() => handleRemoveModule(module.id)}
                                 isMergeMode={merge.isMergeMode}
@@ -433,6 +438,20 @@ export default function FolderPage() {
                         ))}
                     </div>
                 </>
+            )}
+
+            {/* Модальне вікно імпорту/експорту */}
+            {importExportTarget && (
+                <ModuleImportExportModal
+                    open={true}
+                    onClose={() => setImportExportTarget(null)}
+                    moduleId={importExportTarget.id}
+                    moduleName={importExportTarget.name}
+                    onSuccess={() => {
+                        setImportExportTarget(null);
+                        loadData(); // Оновлюємо дані папки після імпорту
+                    }}
+                />
             )}
 
             <ModalMessage open={modalInfo.open} type={modalInfo.type} title={modalInfo.title} message={modalInfo.message} onClose={handleCloseModal} />

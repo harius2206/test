@@ -27,7 +27,7 @@ import { ReactComponent as FolderIcon } from "../../../images/folder.svg";
 import { ReactComponent as DotsIcon } from "../../../images/dots.svg";
 import { ReactComponent as RenameIcon } from "../../../images/rename.svg";
 import { ReactComponent as DeleteIcon } from "../../../images/delete.svg";
-import { ReactComponent as ExportIcon } from "../../../images/export.svg";
+// ExportIcon removed
 import { ReactComponent as SaveIcon } from "../../../images/save.svg";
 import { ReactComponent as EyeOpenedIcon } from "../../../images/eyeOpened.svg";
 import { ReactComponent as EyeClosedIcon } from "../../../images/eyeClosed.svg";
@@ -231,7 +231,7 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                         icon: <SaveIcon width={16} height={16} />
                     });
 
-                    menuItems.push({ label: "Export", onClick: () => {}, icon: <ColoredIcon icon={ExportIcon} size={16} /> });
+                    // Export item removed here
 
                     return (
                         <div
