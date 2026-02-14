@@ -9,62 +9,67 @@
     --accent-light: #2563eb;
     --accent-alpha: rgba(37, 99, 235, 0.2);
 }
-
 .lang-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.7); /* Темніший фон для кращого акценту */
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 10000;
-    backdrop-filter: blur(5px);
-}
-.lang-modal-content {
-    background: var(--bg-secondary); /* використовуйте ваші змінні теми */
-    padding: 24px;
-    border-radius: 16px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    z-index: 100000; /* Дуже високий індекс */
+    backdrop-filter: blur(8px);
 }
 
-.lang-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+.lang-modal-content {
+    background: var(--bg-secondary);
+    padding: 30px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 550px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    position: relative;
+    z-index: 100001;
 }
 
 .lang-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 колонки */
-    gap: 12px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 20px;
 }
 
 .lang-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 12px;
+    padding: 15px;
     border-radius: 12px;
     cursor: pointer;
-    transition: all 0.2s;
-    border: 1px solid transparent;
     background: var(--bg-primary);
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
 }
 
 .lang-item:hover {
-    background: var(--accent-light);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+    background: var(--accent-light, #f0f0f0);
 }
 
 .lang-item.active {
     border-color: var(--accent);
-    background: var(--accent-alpha);
+    background: var(--accent-alpha, rgba(0,0,0,0.05));
+}
+
+
+
+.lang-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
 }
 
 .lang-flag {
