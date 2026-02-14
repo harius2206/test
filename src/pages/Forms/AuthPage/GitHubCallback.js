@@ -1,27 +1,28 @@
-// javascript
 import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { githubLogin } from "../../../api/authApi";
 import { setTokens, saveUserData } from "../../../utils/storage";
 import { useAuth } from "../../../context/AuthContext";
 import ModalMessage from "../../../components/ModalMessage/ModalMessage";
+import { useI18n } from "../../../i18n";
 
 export default function GitHubCallback() {
     const [params] = useSearchParams();
     const navigate = useNavigate();
     const { setUser } = useAuth();
     const handledRef = useRef(false);
+    const { t } = useI18n();
 
     const [modal, setModal] = useState({
         open: true,
         type: "info",
-        message: "Processing GitHub authorization..."
+        message: t("ghProcessing")
     });
 
     useEffect(() => {
         const code = params.get("code");
         if (!code) {
-            setModal({ open: true, type: "error", message: "No authorization code. Redirecting to login..." });
+            setModal({ open: true, type: "error", message: t("ghNoCode") });
             setTimeout(() => navigate("/login"), 1000);
             return;
         }
@@ -40,15 +41,15 @@ export default function GitHubCallback() {
                 saveUserData(user);
                 setUser(user);
 
-                setModal({ open: true, type: "success", message: "Logged in successfully. Redirecting..." });
+                setModal({ open: true, type: "success", message: t("ghSuccess") });
                 setTimeout(() => navigate("/"), 800);
             })
             .catch((err) => {
                 console.error("GitHub login failed:", err);
-                setModal({ open: true, type: "error", message: "GitHub authorization failed. Redirecting to login..." });
+                setModal({ open: true, type: "error", message: t("ghFailed") });
                 setTimeout(() => navigate("/login"), 1200);
             });
-    }, [params, navigate, setUser]);
+    }, [params, navigate, setUser, t]);
 
     return (
         <ModalMessage

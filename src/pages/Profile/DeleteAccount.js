@@ -1,20 +1,22 @@
+import React from "react";
 import Button from "../../components/button/button";
+import { useI18n } from "../../i18n";
 import "./profile.css";
 
 export default function DeleteAccount() {
+    const { t } = useI18n();
+
     return (
         <div className="profile-content">
-            <h1 className={"profile-title"}>Delete account</h1>
-            <h2 className={"profile-tile-description"}>Permanent deleting of account</h2>
+            <h1 className="profile-title">{t("daDeleteAccountTitle")}</h1>
+            <h2 className="profile-tile-description">{t("daDeleteAccountSubtitle")}</h2>
 
-            <div className={"profile-form"}>
-                <p className={"attention"}>
-                    Attention!
+            <div className="profile-form">
+                <p className="attention">
+                    {t("daAttentionText")}
                 </p>
-                <p className={"attention-description"}>
-                    If you close your account you will permanently lose access to your account
-                    and the data associated with it, even if you decide to create a new account
-                    using the same email address in the future.
+                <p className="attention-description">
+                    {t("daAttentionDescription")}
                 </p>
 
                 <Button
@@ -23,7 +25,7 @@ export default function DeleteAccount() {
                     width="170px"
                     height="46px"
                 >
-                    Delete
+                    {t("daDeleteAccountBtn")}
                 </Button>
             </div>
         </div>

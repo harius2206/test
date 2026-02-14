@@ -1,4 +1,3 @@
-// src/pages/Forms/AuthPage/LoginPage.js
 import React, { useState, useContext, useEffect } from "react";
 import "./loginPage.css";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
@@ -13,19 +12,18 @@ import { setTokens } from "../../../utils/storage";
 import { fetchCurrentUser } from "../../../api/profileApi";
 import { ReactComponent as EyeOpen } from "../../../images/eyeOpened.svg";
 import { ReactComponent as EyeClosed } from "../../../images/eyeClosed.svg";
+import { useI18n } from "../../../i18n";
 
 export default function LoginPage() {
     const navigate = useNavigate();
     const { login, setUser } = useContext(AuthContext);
     const [searchParams, setSearchParams] = useSearchParams();
+    const { t } = useI18n();
 
     const [form, setForm] = useState({ username: "", password: "" });
     const [modal, setModal] = useState({ open: false, type: "error", message: "" });
     const [showPassword, setShowPassword] = useState(false);
 
-    /* ===========================
-       OAuth Callback Logic
-    ============================ */
     useEffect(() => {
         const code = searchParams.get("code");
         if (!code) return;
@@ -35,21 +33,15 @@ export default function LoginPage() {
 
         (async () => {
             try {
-                // 1. Exchange code → tokens
                 const res = isGitHub
                     ? await githubLogin(code)
                     : await googleLogin(code);
 
                 const { access, refresh } = res.data;
-
-                // 2. Зберігаємо токени
                 setTokens(access, refresh);
 
-                // 3. тягнемо деталі профілю
                 const userResp = await fetchCurrentUser();
                 const fullUser = userResp.data;
-
-                // 4. зберігаємо у контекст
                 setUser(fullUser);
 
                 navigate("/", { replace: true });
@@ -58,15 +50,13 @@ export default function LoginPage() {
                 setModal({
                     open: true,
                     type: "error",
-                    message: isGoogle
-                        ? "Google authorization failed. Please try again."
-                        : "GitHub authorization failed. Please try again."
+                    message: isGoogle ? t("LoginGoogleFailed") : t("githubFailed")
                 });
             } finally {
                 setSearchParams({});
             }
         })();
-    }, [searchParams, navigate, setUser, setSearchParams]);
+    }, [searchParams, navigate, setUser, setSearchParams, t]);
 
 
     /* ===========================
@@ -82,25 +72,24 @@ export default function LoginPage() {
                 setModal({
                     open: true,
                     type: "success",
-                    message: "Your account has been successfully verified!"
+                    message: t("emailVerified")
                 });
             } catch (err) {
                 setModal({
                     open: true,
                     type: "error",
-                    message: "Account verification failed. Please try again."
+                    message: t("emailVerifyFailed")
                 });
             } finally {
                 setSearchParams({});
             }
         })();
-    }, [searchParams, setSearchParams]);
+    }, [searchParams, setSearchParams, t]);
 
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
-
 
     /* ===========================
        Regular Login
@@ -110,13 +99,13 @@ export default function LoginPage() {
             setModal({
                 open: true,
                 type: "error",
-                message: "Please enter your username and password."
+                message: t("enterUsernamePassword")
             });
             return;
         }
 
         try {
-            await login(form); // <-- ТУТ ВЖЕ ВСЕ РОБИТЬСЯ АВТОМАТИЧНО
+            await login(form);
             navigate("/", { replace: true });
         } catch (err) {
             console.error("Login error:", err);
@@ -126,7 +115,7 @@ export default function LoginPage() {
                 setModal({
                     open: true,
                     type: "error",
-                    message: "Incorrect username or password."
+                    message: t("incorrectUsernamePassword")
                 });
             } else {
                 const parsed = parseApiErrors(apiErrors);
@@ -135,12 +124,11 @@ export default function LoginPage() {
                 setModal({
                     open: true,
                     type: "error",
-                    message: message || "An unexpected error occurred. Please try again."
+                    message: message || t("unexpectedError")
                 });
             }
         }
     };
-
 
     /* ===========================
        OAuth Buttons
@@ -169,12 +157,12 @@ export default function LoginPage() {
 
     return (
         <div className="login-container">
-            <h2 className="login-title">Log in</h2>
+            <h2 className="login-title">{t("loginTitle")}</h2>
 
             <input
                 className="login-input"
                 name="username"
-                placeholder="Username"
+                placeholder={t("username")}
                 value={form.username}
                 onChange={handleChange}
             />
@@ -184,7 +172,7 @@ export default function LoginPage() {
                     className="login-input"
                     type={showPassword ? "text" : "password"}
                     name="password"
-                    placeholder="Password"
+                    placeholder={t("password")}
                     value={form.password}
                     onChange={handleChange}
                 />
@@ -198,7 +186,7 @@ export default function LoginPage() {
 
             <p className="reset-footer">
                 <Link to="/reset-password" className="login-link">
-                    Forgot password?
+                    {t("forgotPassword")}
                 </Link>
             </p>
 
@@ -208,11 +196,11 @@ export default function LoginPage() {
                 width="340px"
                 height="40px"
             >
-                Log in
+                {t("loginBtn")}
             </Button>
 
             <div className="login-divider">
-                <span>or</span>
+                <span>{t("or")}</span>
             </div>
 
             <div className="login-socials">
@@ -226,9 +214,9 @@ export default function LoginPage() {
             </div>
 
             <p className="login-footer">
-                Don’t have an account?{" "}
+                {t("noAccount")}{" "}
                 <span className="login-link" onClick={() => navigate("/register")}>
-                    Register
+                    {t("register")}
                 </span>
             </p>
 

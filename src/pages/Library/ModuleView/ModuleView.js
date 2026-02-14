@@ -8,7 +8,8 @@ import DiagonalFlag43 from "../../../components/diagonalFlagRect43";
 import { useAuth } from "../../../context/AuthContext";
 import PermissionsMenu from "../../../components/permissionMenu/permissionsMenu";
 import FullscreenCard from "../../../components/fullscreenCard/fullscreenCard";
-import Loader from "../../../components/loader/loader"; // Імпорт лоадера
+import Loader from "../../../components/loader/loader";
+import { useI18n } from "../../../i18n";
 
 import {
     getModuleById,
@@ -49,43 +50,41 @@ const getFlagUrl = (url) => {
 
 export default function ModuleView() {
     const { user } = useAuth();
+    const { t } = useI18n();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const location = useLocation();
 
-    const moduleId = searchParams.get("id");
-    const initialModule = location.state?.module;
+    const mvModuleId = searchParams.get("id");
+    const mvInitialModule = location.state?.module;
 
-    const [module, setModule] = useState(initialModule || null);
-    const [loading, setLoading] = useState(!initialModule || !initialModule.cards);
-    const [error, setError] = useState(null);
+    const [mvModule, mvSetModule] = useState(mvInitialModule || null);
+    const [mvLoading, mvSetLoading] = useState(!mvInitialModule || !mvInitialModule.cards);
+    const [mvError, mvSetError] = useState(null);
 
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [flipped, setFlipped] = useState(false);
-    const [learned, setLearned] = useState(new Set());
-    const [saved, setSaved] = useState(new Set());
-    const [rating, setRating] = useState(0);
+    const [mvCurrentIndex, mvSetCurrentIndex] = useState(0);
+    const [mvFlipped, mvSetFlipped] = useState(false);
+    const [mvLearned, mvSetLearned] = useState(new Set());
+    const [mvSaved, mvSetSaved] = useState(new Set());
+    const [mvRating, mvSetRating] = useState(0);
 
-    // Вбудований автоплей
-    const [autoplay, setAutoplay] = useState(false);
-    const autoplayRef = useRef(null);
-    const autoplayInterval = 3000;
+    const [mvAutoplay, mvSetAutoplay] = useState(false);
+    const mvAutoplayRef = useRef(null);
+    const mvAutoplayInterval = 3000;
 
-    // Відкриття Fullscreen компонента
-    const [showFullscreen, setShowFullscreen] = useState(false);
-
-    const [showPermissions, setShowPermissions] = useState(false);
+    const [mvShowFullscreen, mvSetShowFullscreen] = useState(false);
+    const [mvShowPermissions, mvSetShowPermissions] = useState(false);
 
     useEffect(() => {
-        if (!moduleId) {
-            if (!initialModule) navigate("/library");
+        if (!mvModuleId) {
+            if (!mvInitialModule) navigate("/library");
             return;
         }
 
-        const fetchModule = async () => {
+        const mvFetchModule = async () => {
             try {
-                setLoading(true);
-                const response = await getModuleById(moduleId);
+                mvSetLoading(true);
+                const response = await getModuleById(mvModuleId);
                 const data = response.data;
 
                 const learnedSet = new Set();
@@ -97,8 +96,8 @@ export default function ModuleView() {
                         if (c.saved === true) savedSet.add(c.id);
                     });
                 }
-                setLearned(learnedSet);
-                setSaved(savedSet);
+                mvSetLearned(learnedSet);
+                mvSetSaved(savedSet);
 
                 const adaptedModule = {
                     ...data,
@@ -116,50 +115,50 @@ export default function ModuleView() {
                     collaborators: data.collaborators || []
                 };
 
-                setModule(adaptedModule);
-                setRating(Math.round(adaptedModule.rating * 10) / 10);
+                mvSetModule(adaptedModule);
+                mvSetRating(Math.round(adaptedModule.rating * 10) / 10);
             } catch (err) {
                 console.error("Failed to load module:", err);
-                setError("Не вдалося завантажити модуль.");
+                mvSetError(t("mvErrorLoadModule"));
             } finally {
-                setLoading(false);
+                mvSetLoading(false);
             }
         };
-        fetchModule();
-    }, [moduleId, navigate, initialModule]);
+        mvFetchModule();
+    }, [mvModuleId, navigate, mvInitialModule, t]);
 
-    const cards = module?.cards || [];
-    const hasPrev = currentIndex > 0;
-    const hasNext = currentIndex < cards.length - 1;
-    const isOwnModule = user?.username === module?.author;
+    const mvCards = mvModule?.cards || [];
+    const mvHasPrev = mvCurrentIndex > 0;
+    const mvHasNext = mvCurrentIndex < mvCards.length - 1;
+    const mvIsOwnModule = user?.username === mvModule?.author;
 
-    const handleUpdateCardStatus = async (cardId, type) => {
+    const mvHandleUpdateCardStatus = async (cardId, type) => {
         if (type === 'learn') {
-            const isCurrentlyLearned = learned.has(cardId);
-            setLearned(prev => {
+            const isCurrentlyLearned = mvLearned.has(cardId);
+            mvSetLearned(prev => {
                 const next = new Set(prev);
                 isCurrentlyLearned ? next.delete(cardId) : next.add(cardId);
                 return next;
             });
             try {
-                const card = cards.find(c => c.id === cardId);
+                const card = mvCards.find(c => c.id === cardId);
                 if (card) {
                     await updateCardLearnStatus(cardId, !isCurrentlyLearned, {
                         original: card.term || "",
                         translation: card.definition || "",
-                        learned: "learned" // Додаємо обов'язкове поле
+                        learned: "learned"
                     });
                 }
             } catch (err) {
-                setLearned(prev => {
+                mvSetLearned(prev => {
                     const next = new Set(prev);
                     isCurrentlyLearned ? next.add(cardId) : next.delete(cardId);
                     return next;
                 });
             }
         } else if (type === 'save') {
-            const isCurrentlySaved = saved.has(cardId);
-            setSaved(prev => {
+            const isCurrentlySaved = mvSaved.has(cardId);
+            mvSetSaved(prev => {
                 const next = new Set(prev);
                 isCurrentlySaved ? next.delete(cardId) : next.add(cardId);
                 return next;
@@ -168,91 +167,91 @@ export default function ModuleView() {
                 if (isCurrentlySaved) await unsaveCard(cardId);
                 else await saveCard(cardId);
             } catch (err) {
-                setSaved(prev => {
+                mvSetSaved(prev => {
                     const next = new Set(prev);
                     isCurrentlySaved ? next.add(cardId) : next.delete(cardId);
                     return next;
                 });
-                alert("Дія не вдалася.");
+                alert(t("mvFailedAction"));
             }
         }
     };
 
-    const toggleCardLearned = (cardId, e) => {
+    const mvToggleCardLearned = (cardId, e) => {
         if (e) e.stopPropagation();
-        handleUpdateCardStatus(cardId, 'learn');
+        mvHandleUpdateCardStatus(cardId, 'learn');
     };
 
-    const toggleCardSave = (cardId, e) => {
+    const mvToggleCardSave = (cardId, e) => {
         if (e) e.stopPropagation();
-        handleUpdateCardStatus(cardId, 'save');
+        mvHandleUpdateCardStatus(cardId, 'save');
     };
 
-    const handleDelete = async () => {
-        if (!window.confirm("Видалити цей модуль?")) return;
+    const mvHandleDelete = async () => {
+        if (!window.confirm(t("mvDeleteModuleConfirm"))) return;
         try {
-            await deleteModule(module.id);
+            await deleteModule(mvModule.id);
             navigate("/library");
-        } catch (err) { alert("Failed to delete."); }
+        } catch (err) { alert(t("mvDeleteModuleFailed")); }
     };
 
-    const handleRatingChange = async (event, newValue) => {
-        if (isOwnModule || newValue === null) return;
-        setRating(newValue);
-        try { await rateModule(module.id, newValue); } catch (err) { alert("Failed to rate."); }
+    const mvHandleRatingChange = async (event, newValue) => {
+        if (mvIsOwnModule || newValue === null) return;
+        mvSetRating(newValue);
+        try { await rateModule(mvModule.id, newValue); } catch (err) { alert(t("mvFailedRate")); }
     };
 
-    const handleAddPermission = async (userObj) => {
+    const mvHandleAddPermission = async (userObj) => {
         try {
-            await addModulePermission(module.id, userObj.id);
-            setModule(prev => ({ ...prev, collaborators: [...(prev.collaborators || []), userObj] }));
-        } catch (err) { alert("Failed to add permission."); }
+            await addModulePermission(mvModule.id, userObj.id);
+            mvSetModule(prev => ({ ...prev, collaborators: [...(prev.collaborators || []), userObj] }));
+        } catch (err) { alert(t("mvFailedAction")); }
     };
 
-    const handleRemovePermission = async (userId) => {
+    const mvHandleRemovePermission = async (userId) => {
         try {
-            await removeModulePermission(module.id, userId);
-            setModule(prev => ({ ...prev, collaborators: (prev.collaborators || []).filter(u => u.id !== userId) }));
-        } catch (err) { alert("Failed to remove permission."); }
+            await removeModulePermission(mvModule.id, userId);
+            mvSetModule(prev => ({ ...prev, collaborators: (prev.collaborators || []).filter(u => u.id !== userId) }));
+        } catch (err) { alert(t("mvFailedAction")); }
     };
 
-    const prevCard = () => { setCurrentIndex((i) => (i > 0 ? i - 1 : cards.length - 1)); setFlipped(false); };
-    const nextCard = () => { setCurrentIndex((i) => (i < cards.length - 1 ? i + 1 : 0)); setFlipped(false); };
-    const flipCard = () => setFlipped((v) => !v);
+    const mvPrevCard = () => { mvSetCurrentIndex((i) => (i > 0 ? i - 1 : mvCards.length - 1)); mvSetFlipped(false); };
+    const mvNextCard = () => { mvSetCurrentIndex((i) => (i < mvCards.length - 1 ? i + 1 : 0)); mvSetFlipped(false); };
+    const mvFlipCard = () => mvSetFlipped((v) => !v);
 
-    const openFullscreen = () => {
-        setAutoplay(false);
-        setShowFullscreen(true);
+    const mvOpenFullscreen = () => {
+        mvSetAutoplay(false);
+        mvSetShowFullscreen(true);
     };
 
     useEffect(() => {
-        if (autoplay) {
-            autoplayRef.current = setInterval(() => {
-                setCurrentIndex((i) => (i < cards.length - 1 ? i + 1 : 0));
-                setFlipped(false);
-            }, autoplayInterval);
+        if (mvAutoplay) {
+            mvAutoplayRef.current = setInterval(() => {
+                mvSetCurrentIndex((i) => (i < mvCards.length - 1 ? i + 1 : 0));
+                mvSetFlipped(false);
+            }, mvAutoplayInterval);
         } else {
-            clearInterval(autoplayRef.current);
-            autoplayRef.current = null;
+            clearInterval(mvAutoplayRef.current);
+            mvAutoplayRef.current = null;
         }
-        return () => clearInterval(autoplayRef.current);
-    }, [autoplay, cards.length]);
+        return () => clearInterval(mvAutoplayRef.current);
+    }, [mvAutoplay, mvCards.length]);
 
-    if (loading) return <Loader fullscreen />; // Замінено на компонент Loader
-    if (error) return <div className="mv-error">{error}</div>;
-    if (!module) return null;
+    if (mvLoading) return <Loader fullscreen />;
+    if (mvError) return <div className="mv-error">{mvError}</div>;
+    if (!mvModule) return null;
 
-    const actionIconsOverlay = (cardId) => (
+    const mvActionIconsOverlay = (cardId) => (
         <div className="card-actions-overlay">
             <button
-                className={`mv-card-book ${learned.has(cardId) ? "mv-active" : ""}`}
-                onClick={(e) => toggleCardLearned(cardId, e)}
+                className={`mv-card-book ${mvLearned.has(cardId) ? "mv-active" : ""}`}
+                onClick={(e) => mvToggleCardLearned(cardId, e)}
             >
                 <BookSvg className="book-icon" />
             </button>
             <button
-                className={`mv-card-save ${saved.has(cardId) ? "mv-active" : ""}`}
-                onClick={(e) => toggleCardSave(cardId, e)}
+                className={`mv-card-save ${mvSaved.has(cardId) ? "mv-active" : ""}`}
+                onClick={(e) => mvToggleCardSave(cardId, e)}
                 style={{ top: '55px', position: 'absolute' }}
             >
                 <SaveIcon className="save-icon" />
@@ -266,67 +265,67 @@ export default function ModuleView() {
                 <div className="mv-module-header-row">
                     <div className="mv-module-left-row">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                            <h1 className="mv-module-title">{module.topicName ? `${module.name} - ${module.topicName}` : module.name}</h1>
-                            {(module.flagFrom || module.flagTo) && <DiagonalFlag43 flag1={module.flagFrom} flag2={module.flagTo} width={40} height={28} />}
+                            <h1 className="mv-module-title">{mvModule.topicName ? `${mvModule.name} - ${mvModule.topicName}` : mvModule.name}</h1>
+                            {(mvModule.flagFrom || mvModule.flagTo) && <DiagonalFlag43 flag1={mvModule.flagFrom} flag2={mvModule.flagTo} width={40} height={28} />}
                         </div>
                         <div className="mv-module-rating">
                             <Rating
                                 name="module-rating"
-                                value={rating}
+                                value={mvRating}
                                 precision={1}
-                                readOnly={isOwnModule}
-                                onChange={handleRatingChange}
+                                readOnly={mvIsOwnModule}
+                                onChange={mvHandleRatingChange}
                                 icon={<StarSvg className="mv-star-icon mv-active" />}
                                 emptyIcon={<StarSvg className="mv-star-icon" />}
                             />
                         </div>
                     </div>
                     <div className="mv-header-controls">
-                        {isOwnModule && (
+                        {mvIsOwnModule && (
                             <DropdownMenu align="right" width={180} items={[
-                                { label: "Редагувати", onClick: () => navigate("/library/create-module", { state: { mode: "edit", moduleId: module.id, moduleData: module } }), icon: <EditIcon width={16} /> },
-                                { label: "Співавтори", onClick: () => setShowPermissions(true), icon: <ShareIcon width={16} /> },
-                                { label: "Видалити", onClick: handleDelete, icon: <DeleteIcon width={16} /> }
+                                { label: t("mvEditLabel"), onClick: () => navigate("/library/create-module", { state: { mode: "edit", moduleId: mvModule.id, moduleData: mvModule } }), icon: <EditIcon width={16} /> },
+                                { label: t("mvCollaboratorsLabel"), onClick: () => mvSetShowPermissions(true), icon: <ShareIcon width={16} /> },
+                                { label: t("mvDeleteLabel"), onClick: mvHandleDelete, icon: <DeleteIcon width={16} /> }
                             ]}>
                                 <button className="mv-btn-icon"><DotsIcon width={24} height={24} /></button>
                             </DropdownMenu>
                         )}
-                        <button onClick={() => navigate(-1)} className="mv-btn-icon" title="Закрити"><CloseIcon width={28} height={28} /></button>
+                        <button onClick={() => navigate(-1)} className="mv-btn-icon" title={t("mvCloseTitle")}><CloseIcon width={28} height={28} /></button>
                     </div>
                 </div>
 
                 <div className="mv-view_tags-row">
-                    {(module.tags || []).map((t, i) => <span key={i} className="tag">{t}</span>)}
+                    {(mvModule.tags || []).map((t, i) => <span key={i} className="tag">{t}</span>)}
                 </div>
 
                 <div className="mv-mv-tabs">
-                    <Button variant="toggle" onClick={() => navigate(`/cardscheck?id=${module.id}`, { state: { module } })} width="100%" height={42}>Картки</Button>
-                    <Button variant="toggle" onClick={() => navigate(`/cardstest?id=${module.id}`, { state: { module } })} width="100%" height={42}>Тест</Button>
+                    <Button variant="toggle" onClick={() => navigate(`/cardscheck?id=${mvModule.id}`, { state: { module: mvModule } })} width="100%" height={42}>{t("ccModuleLabel")}</Button>
+                    <Button variant="toggle" onClick={() => navigate(`/cardstest?id=${mvModule.id}`, { state: { module: mvModule } })} width="100%" height={42}>{t("ctModuleDefault")}</Button>
                 </div>
 
                 <div className="mv-flashcard-area">
                     <div className="mv-flashcard-wrapper">
-                        {cards.length > 0 ? (
+                        {mvCards.length > 0 ? (
                             <FlipCard
-                                frontContent={<>{cards[currentIndex]?.term}{actionIconsOverlay(cards[currentIndex]?.id)}</>}
-                                backContent={<>{cards[currentIndex]?.definition}{actionIconsOverlay(cards[currentIndex]?.id)}</>}
-                                flipped={flipped}
-                                onFlip={flipCard}
+                                frontContent={<>{mvCards[mvCurrentIndex]?.term}{mvActionIconsOverlay(mvCards[mvCurrentIndex]?.id)}</>}
+                                backContent={<>{mvCards[mvCurrentIndex]?.definition}{mvActionIconsOverlay(mvCards[mvCurrentIndex]?.id)}</>}
+                                flipped={mvFlipped}
+                                onFlip={mvFlipCard}
                             />
-                        ) : <div className="mv-empty-cards">Тут порожньо</div>}
+                        ) : <div className="mv-empty-cards">{t("mvEmptyMessage")}</div>}
                     </div>
 
-                    {cards.length > 0 && (
+                    {mvCards.length > 0 && (
                         <div className="mv-controls-row">
                             <div className="mv-card-controls">
-                                <button className={`mv-nav-btn ${hasPrev ? "mv-enabled" : ""}`} onClick={hasPrev ? prevCard : undefined}><PrevIcon /></button>
-                                <div className="mv-counter">{currentIndex + 1} / {cards.length}</div>
-                                <button className={`mv-nav-btn ${hasNext ? "mv-enabled" : ""}`} onClick={hasNext ? nextCard : undefined}><NextIcon /></button>
+                                <button className={`mv-nav-btn ${mvHasPrev ? "mv-enabled" : ""}`} onClick={mvHasPrev ? mvPrevCard : undefined}><PrevIcon /></button>
+                                <div className="mv-counter">{mvCurrentIndex + 1} / {mvCards.length}</div>
+                                <button className={`mv-nav-btn ${mvHasNext ? "mv-enabled" : ""}`} onClick={mvHasNext ? mvNextCard : undefined}><NextIcon /></button>
                             </div>
                             <div className="mv-icon-controls">
-                                <button className="mv-icon-btn" onClick={() => setCurrentIndex(0)} title="Restart"><RestartIcon /></button>
-                                <button className="mv-icon-btn" onClick={() => setAutoplay(v => !v)} title="Auto">{autoplay ? <PauseIcon /> : <PlayIcon />}</button>
-                                <button className="mv-icon-btn" onClick={openFullscreen} title="Fullscreen"><FullscreenIcon /></button>
+                                <button className="mv-icon-btn" onClick={() => mvSetCurrentIndex(0)} title={t("mvRestartTitle")}><RestartIcon /></button>
+                                <button className="mv-icon-btn" onClick={() => mvSetAutoplay(v => !v)} title={t("mvAutoTitle")}>{mvAutoplay ? <PauseIcon /> : <PlayIcon />}</button>
+                                <button className="mv-icon-btn" onClick={mvOpenFullscreen} title={t("mvFullscreenTitle")}><FullscreenIcon /></button>
                             </div>
                         </div>
                     )}
@@ -335,11 +334,11 @@ export default function ModuleView() {
                 <div className="mv-cards-lists">
                     {["Вивчені", "Ще в процесі"].map(type => {
                         const isLearnedType = type === "Вивчені";
-                        const filtered = cards.filter(c => isLearnedType ? learned.has(c.id) : !learned.has(c.id));
+                        const filtered = mvCards.filter(c => isLearnedType ? mvLearned.has(c.id) : !mvLearned.has(c.id));
                         return (
                             <React.Fragment key={type}>
-                                <h3>{type} ({filtered.length})</h3>
-                                {filtered.length === 0 ? <div className="mv-row mv-empty-message">Тут порожньо</div> :
+                                <h3>{isLearnedType ? t("mvLearnedTitle") : t("mvInProgressTitle")} ({filtered.length})</h3>
+                                {filtered.length === 0 ? <div className="mv-row mv-empty-message">{t("mvEmptyMessage")}</div> :
                                     filtered.map(c => (
                                         <div key={c.id} className="mv-row">
                                             <div className="mv-row-half mv-row-left">{c.term}</div>
@@ -348,20 +347,19 @@ export default function ModuleView() {
                                                 <span className="mv-row-definition">{c.definition}</span>
                                                 <div style={{ display: 'flex', gap: '8px', position: 'absolute', right: '10px', alignItems: 'center' }}>
                                                     <button
-                                                        className={`mv-row-book-btn ${learned.has(c.id) ? "mv-active" : ""}`}
-                                                        onClick={() => toggleCardLearned(c.id)}
+                                                        className={`mv-row-book-btn ${mvLearned.has(c.id) ? "mv-active" : ""}`}
+                                                        onClick={() => mvToggleCardLearned(c.id)}
                                                         style={{ position: 'static' }}
                                                     >
                                                         <BookSvg className="book-icon" />
                                                     </button>
                                                     <button
-                                                        className={`mv-row-save-btn ${saved.has(c.id) ? "mv-active" : ""}`}
-                                                        onClick={(e) => toggleCardSave(c.id, e)}
+                                                        className={`mv-row-save-btn ${mvSaved.has(c.id) ? "mv-active" : ""}`}
+                                                        onClick={(e) => mvToggleCardSave(c.id, e)}
                                                         style={{ position: 'static' }}
                                                     >
                                                         <SaveIcon className="save-icon" width="20px" height="20px" />
                                                     </button>
-
                                                 </div>
                                             </div>
                                         </div>
@@ -372,21 +370,21 @@ export default function ModuleView() {
                 </div>
             </main>
 
-            {showFullscreen && cards.length > 0 && (
+            {mvShowFullscreen && mvCards.length > 0 && (
                 <FullscreenCard
-                    cards={cards}
-                    initialIndex={currentIndex}
-                    onClose={() => setShowFullscreen(false)}
-                    onUpdateCardStatus={handleUpdateCardStatus}
-                    checkIsLearned={(id) => learned.has(id)}
-                    checkIsSaved={(id) => saved.has(id)}
+                    cards={mvCards}
+                    initialIndex={mvCurrentIndex}
+                    onClose={() => mvSetShowFullscreen(false)}
+                    onUpdateCardStatus={mvHandleUpdateCardStatus}
+                    checkIsLearned={(id) => mvLearned.has(id)}
+                    checkIsSaved={(id) => mvSaved.has(id)}
                 />
             )}
 
-            {showPermissions && (
-                <div className="modal-overlay" onClick={() => setShowPermissions(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", justifyContent: "center", alignItems: "center" }}>
+            {mvShowPermissions && (
+                <div className="modal-overlay" onClick={() => mvSetShowPermissions(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", justifyContent: "center", alignItems: "center" }}>
                     <div onClick={e => e.stopPropagation()}>
-                        <PermissionsMenu moduleId={module.id} users={module.collaborators || []} onAddUser={handleAddPermission} onRemoveUser={handleRemovePermission} onClose={() => setShowPermissions(false)} />
+                        <PermissionsMenu moduleId={mvModule.id} users={mvModule.collaborators || []} onAddUser={mvHandleAddPermission} onRemoveUser={mvHandleRemovePermission} onClose={() => mvSetShowPermissions(false)} />
                     </div>
                 </div>
             )}

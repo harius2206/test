@@ -1,142 +1,127 @@
-// src/pages/Forms/AuthPage/PasswordReset.js
 import React, { useState, useEffect } from "react";
 import "./loginPage.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import Button from "../../../components/button/button";
 import { requestPasswordReset, confirmPasswordReset } from "../../../api/authApi";
 import { useError } from "../../../context/ErrorContext";
-
-import {
-    savePendingEmail,
-    getPendingEmail
-} from "../../../utils/storage";
+import { savePendingEmail, getPendingEmail } from "../../../utils/storage";
+import { useI18n } from "../../../i18n";
 
 export default function PasswordReset() {
     const navigate = useNavigate();
     const location = useLocation();
     const { showError, showMessage, showApiErrors } = useError();
+    const { t } = useI18n();
 
-    const [step, setStep] = useState(1);
-    const [form, setForm] = useState({
+    // === State
+    const [pr_step, pr_setStep] = useState(1);
+    const [pr_form, pr_setForm] = useState({
         email: getPendingEmail() || "",
         password: "",
         confirm: ""
     });
+    const [pr_uid, pr_setUid] = useState("");
+    const [pr_token, pr_setToken] = useState("");
+    const [pr_loading, pr_setLoading] = useState(false);
 
-    const [uid, setUid] = useState("");
-    const [token, setToken] = useState("");
-    const [loading, setLoading] = useState(false);
+    // === Handlers
+    const pr_handleChange = (e) =>
+        pr_setForm({ ...pr_form, [e.target.name]: e.target.value });
 
-    const handleChange = (e) =>
-        setForm({ ...form, [e.target.name]: e.target.value });
-
-    /* ==========================
-       CHECK IF OPENED FROM EMAIL
-    =========================== */
+    // === Check if opened via email link
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const uidParam = params.get("uid");
         const tokenParam = params.get("token");
 
         if (uidParam && tokenParam) {
-            setUid(uidParam);
-            setToken(tokenParam);
-            setStep(2);
+            pr_setUid(uidParam);
+            pr_setToken(tokenParam);
+            pr_setStep(2);
         }
     }, [location.search]);
 
-    /* ==========================
-       SEND RESET EMAIL
-    =========================== */
-    const handleSend = async () => {
-        if (!form.email.trim()) {
-            showError("Please enter your registered email address");
+    // === Send reset email
+    const pr_handleSend = async () => {
+        if (!pr_form.email.trim()) {
+            showError(t("enterRegisteredEmail"));
             return;
         }
 
-        setLoading(true);
+        pr_setLoading(true);
 
         try {
-            const res = await requestPasswordReset(form.email);
+            const res = await requestPasswordReset(pr_form.email);
+            savePendingEmail(pr_form.email);
 
-            savePendingEmail(form.email);
+            showMessage(res?.data?.detail || t("checkYourEmail"), "success");
 
-            showMessage(res?.data?.detail || "Check your email!", "success");
-
-            // Move to next step ONLY if not opened via email link
-            if (!uid && !token) setStep(2);
+            if (!pr_uid && !pr_token) pr_setStep(2);
         } catch (err) {
-            showApiErrors(err, "Failed to send password reset email.");
+            showApiErrors(err, t("sendResetFailed"));
         } finally {
-            setLoading(false);
+            pr_setLoading(false);
         }
     };
 
-    /* ==========================
-       APPLY NEW PASSWORD
-    =========================== */
-    const handleApply = async () => {
-        if (!form.password.trim() || !form.confirm.trim()) {
-            showError("Please fill in both fields");
+    // === Apply new password
+    const pr_handleApply = async () => {
+        if (!pr_form.password.trim() || !pr_form.confirm.trim()) {
+            showError(t("fillBothFields"));
             return;
         }
 
-        if (form.password !== form.confirm) {
-            showError("Passwords do not match");
+        if (pr_form.password !== pr_form.confirm) {
+            showError(t("passwordsDoNotMatch"));
             return;
         }
 
-        setLoading(true);
+        pr_setLoading(true);
 
         try {
             const payload = {
-                uid,
-                token,
-                new_password1: form.password,
-                new_password2: form.confirm,
+                uid: pr_uid,
+                token: pr_token,
+                new_password1: pr_form.password,
+                new_password2: pr_form.confirm,
             };
 
             const res = await confirmPasswordReset(payload);
+            showMessage(res?.data?.detail || t("passwordResetSuccess"), "success");
 
-            showMessage(res?.data?.detail || "Password successfully reset!", "success");
-
-            // 💾 Clear saved email after success
             savePendingEmail(null);
-
             navigate("/");
         } catch (err) {
-            showApiErrors(err, "Password reset failed.");
+            showApiErrors(err, t("passwordResetFailed"));
         } finally {
-            setLoading(false);
+            pr_setLoading(false);
         }
     };
 
     return (
         <div className="login-container">
-            <h2 className="login-title">Password reset</h2>
+            <h2 className="login-title">{t("passwordReset")}</h2>
 
-            {step === 1 ? (
+            {pr_step === 1 ? (
                 <>
-                    <p className="reset-description">
-                        Enter the registered email address to which the password reset link will be sent.
-                    </p>
+                    <p className="reset-description">{t("enterEmailForReset")}</p>
 
                     <input
                         className="login-input"
                         name="email"
-                        placeholder="Email address"
-                        value={form.email}
-                        onChange={handleChange}
+                        placeholder={t("emailAddress")}
+                        value={pr_form.email}
+                        onChange={pr_handleChange}
                     />
 
                     <Button
-                        onClick={handleSend}
+                        onClick={pr_handleSend}
                         variant="static"
                         width="340px"
                         height="40px"
-                        disabled={loading}
+                        disabled={pr_loading}
                     >
-                        {loading ? "Sending..." : "Send"}
+                        {pr_loading ? t("sending") : t("send")}
                     </Button>
                 </>
             ) : (
@@ -145,34 +130,34 @@ export default function PasswordReset() {
                         className="login-input"
                         type="password"
                         name="password"
-                        placeholder="Enter new password"
-                        value={form.password}
-                        onChange={handleChange}
+                        placeholder={t("enterNewPassword")}
+                        value={pr_form.password}
+                        onChange={pr_handleChange}
                     />
 
                     <input
                         className="login-input"
                         type="password"
                         name="confirm"
-                        placeholder="Confirm new password"
-                        value={form.confirm}
-                        onChange={handleChange}
+                        placeholder={t("confirmNewPassword")}
+                        value={pr_form.confirm}
+                        onChange={pr_handleChange}
                     />
 
                     <Button
-                        onClick={handleApply}
+                        onClick={pr_handleApply}
                         variant="static"
                         width="340px"
                         height="40px"
-                        disabled={loading}
+                        disabled={pr_loading}
                     >
-                        {loading ? "Saving..." : "Apply"}
+                        {pr_loading ? t("saving") : t("apply")}
                     </Button>
 
                     <p className="reset-footer">
-                        Didn’t receive the email?{" "}
-                        <span className="login-link" onClick={handleSend}>
-                            Send again
+                        {t("didntReceiveEmail")}{" "}
+                        <span className="login-link" onClick={pr_handleSend}>
+                            {t("sendAgain")}
                         </span>
                     </p>
                 </>

@@ -47,7 +47,7 @@ export default function Button({
                 border: "none",
                 textDecoration: "none",
             },
-            hover: { // ← re-added: New card / + Import in dark use purple border/text on dark surface
+            hover: {
                 backgroundColor: "var(--clr-card-bg)",
                 color: purple,
                 border: `2px solid ${purple}`,
@@ -72,9 +72,9 @@ export default function Button({
                 textDecoration: "none",
             },
             hover: {
-                backgroundColor: "white",        // light background for hover variant
-                color: color,                    // colored text
-                border: `2px solid ${color}`,    // colored border
+                backgroundColor: "white",
+                color: color,
+                border: `2px solid ${color}`,
             }
         };
         if (variant && variantStyles[variant]) {

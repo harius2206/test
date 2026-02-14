@@ -3,69 +3,70 @@ import { useState, useEffect, useRef } from "react";
 import { updateUser } from "../../api/authApi";
 import { getUserData, saveUserData } from "../../utils/storage";
 import { useAuth } from "../../context/AuthContext";
+import { useI18n } from "../../i18n";
 import Button from "../../components/button/button";
-import UserAvatar from "../../components/avatar/avatar";
 
 export default function ChangePhoto() {
-    const fileInputRef = useRef(null);
+    const cpFileInputRef = useRef(null);
+    const { t } = useI18n();
 
-    const { user: ctxUser, setUser } = useAuth();
-    const [profile, setProfile] = useState(() => getUserData() || ctxUser || {});
+    const { user: cpCtxUser, setUser: cpSetUser } = useAuth();
+    const [cpProfile, cpSetProfile] = useState(() => getUserData() || cpCtxUser || {});
 
-    const [preview, setPreview] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [imgBroken, setImgBroken] = useState(false);
+    const [cpPreview, cpSetPreview] = useState(null);
+    const [cpLoading, cpSetLoading] = useState(false);
+    const [cpImgBroken, cpSetImgBroken] = useState(false);
 
-    const [refreshKey, setRefreshKey] = useState(0);
+    const [cpRefreshKey, cpSetRefreshKey] = useState(0);
 
     useEffect(() => {
-        if (ctxUser) {
-            setProfile((prev) => ({ ...prev, ...ctxUser }));
+        if (cpCtxUser) {
+            cpSetProfile((prev) => ({ ...prev, ...cpCtxUser }));
         }
-    }, [ctxUser]);
+    }, [cpCtxUser]);
 
     useEffect(() => {
         return () => {
-            if (preview && preview.startsWith && preview.startsWith("blob:")) {
-                URL.revokeObjectURL(preview);
+            if (cpPreview && cpPreview.startsWith && cpPreview.startsWith("blob:")) {
+                URL.revokeObjectURL(cpPreview);
             }
         };
-    }, [preview]);
+    }, [cpPreview]);
 
     useEffect(() => {
-        setImgBroken(false);
-    }, [preview, profile.avatar]);
+        cpSetImgBroken(false);
+    }, [cpPreview, cpProfile.avatar]);
 
-    const handleSelectPhoto = () => {
-        fileInputRef.current?.click();
+    const cpHandleSelectPhoto = () => {
+        cpFileInputRef.current?.click();
     };
 
-    const handleChangeFile = (e) => {
+    const cpHandleChangeFile = (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        if (preview && preview.startsWith && preview.startsWith("blob:")) {
-            URL.revokeObjectURL(preview);
+        if (cpPreview && cpPreview.startsWith && cpPreview.startsWith("blob:")) {
+            URL.revokeObjectURL(cpPreview);
         }
 
         const url = URL.createObjectURL(file);
-        setPreview(url);
+        cpSetPreview(url);
     };
 
-    const withTs = (url) => {
+    const cpWithTs = (url) => {
         if (!url) return url;
         const sep = url.includes("?") ? "&" : "?";
         return `${url}${sep}ts=${Date.now()}`;
     };
 
-    const handleUpload = async () => {
-        const file = fileInputRef.current?.files?.[0];
+    const cpHandleUpload = async () => {
+        const file = cpFileInputRef.current?.files?.[0];
         if (!file) return;
 
         const formData = new FormData();
         formData.append("avatar", file);
 
-        setLoading(true);
+        cpSetLoading(true);
 
         try {
             const res = await updateUser(formData);
@@ -79,56 +80,55 @@ export default function ChangePhoto() {
             };
 
             if (serverAvatar !== null) {
-                normalized.avatar = withTs(serverAvatar);
+                normalized.avatar = cpWithTs(serverAvatar);
             } else {
                 normalized.avatar = null;
             }
 
             saveUserData(normalized);
-            setUser?.(normalized);
-            setProfile(normalized);
+            cpSetUser?.(normalized);
+            cpSetProfile(normalized);
 
-            if (preview && preview.startsWith && preview.startsWith("blob:")) {
-                URL.revokeObjectURL(preview);
+            if (cpPreview && cpPreview.startsWith && cpPreview.startsWith("blob:")) {
+                URL.revokeObjectURL(cpPreview);
             }
-            setPreview(null);
-            if (fileInputRef.current) fileInputRef.current.value = null;
+            cpSetPreview(null);
+            if (cpFileInputRef.current) cpFileInputRef.current.value = null;
 
-            setRefreshKey((k) => k + 1);
+            cpSetRefreshKey((k) => k + 1);
 
             window.dispatchEvent(new Event("storage"));
         } catch (err) {
             console.error("Avatar upload failed:", err);
         } finally {
-            setLoading(false);
+            cpSetLoading(false);
         }
     };
 
-    const handleDelete = () => {
-        const normalized = { ...getUserData(), ...profile, avatar: null };
+    const cpHandleDelete = () => {
+        const normalized = { ...getUserData(), ...cpProfile, avatar: null };
         saveUserData(normalized);
-        setUser?.(normalized);
-        setProfile(normalized);
+        cpSetUser?.(normalized);
+        cpSetProfile(normalized);
 
-        if (preview && preview.startsWith && preview.startsWith("blob:")) {
-            URL.revokeObjectURL(preview);
+        if (cpPreview && cpPreview.startsWith && cpPreview.startsWith("blob:")) {
+            URL.revokeObjectURL(cpPreview);
         }
-        setPreview(null);
-        if (fileInputRef.current) fileInputRef.current.value = null;
+        cpSetPreview(null);
+        if (cpFileInputRef.current) cpFileInputRef.current.value = null;
 
-        setRefreshKey((k) => k + 1);
+        cpSetRefreshKey((k) => k + 1);
 
         window.dispatchEvent(new Event("storage"));
     };
 
-    const hasImageSource = !!(preview || profile.avatar);
-    const shouldShowImage = hasImageSource && !imgBroken;
-    const imgSrc = preview ? preview : profile.avatar ? profile.avatar : null;
+    const cpHasImageSource = !!(cpPreview || cpProfile.avatar);
+    const cpShouldShowImage = cpHasImageSource && !cpImgBroken;
+    const cpImgSrc = cpPreview ? cpPreview : cpProfile.avatar ? cpProfile.avatar : null;
 
-    const avatarUrl =
-        imgSrc || null;
+    const cpAvatarUrl = cpImgSrc || null;
 
-    const avatarBoxStyle = {
+    const cpAvatarBoxStyle = {
         width: 250,
         height: 250,
         borderRadius: 8,
@@ -141,7 +141,7 @@ export default function ChangePhoto() {
         marginBottom: 16,
     };
 
-    const avatarImgStyle = {
+    const cpAvatarImgStyle = {
         width: "100%",
         height: "100%",
         objectFit: "cover",
@@ -150,19 +150,19 @@ export default function ChangePhoto() {
 
     return (
         <div className="profile-content">
-            <h1 className="profile-title">Change photo</h1>
-            <h2 className="profile-tile-description">Upload a new avatar</h2>
+            <h1 className="profile-title">{t("cpChangePhotoTitle")}</h1>
+            <h2 className="profile-tile-description">{t("cpChangePhotoSubtitle")}</h2>
 
             <div className="change-photo-wrapper">
-                <div style={avatarBoxStyle} className="avatar-box">
-                    {shouldShowImage ? (
+                <div style={cpAvatarBoxStyle} className="avatar-box">
+                    {cpShouldShowImage ? (
                         <img
-                            key={refreshKey}
-                            src={avatarUrl}
+                            key={cpRefreshKey}
+                            src={cpAvatarUrl}
                             alt="avatar"
-                            style={avatarImgStyle}
+                            style={cpAvatarImgStyle}
                             onError={(e) => {
-                                setImgBroken(true);
+                                cpSetImgBroken(true);
                                 const img = e.currentTarget;
                                 img.onerror = null;
                                 img.src = "/placeholder-avatar.png";
@@ -170,15 +170,15 @@ export default function ChangePhoto() {
                             }}
                         />
                     ) : (
-                        <>none</>
+                        <>{t("cpNoAvatarText")}</>
                     )}
                 </div>
 
                 <input
                     type="file"
                     accept="image/*"
-                    ref={fileInputRef}
-                    onChange={handleChangeFile}
+                    ref={cpFileInputRef}
+                    onChange={cpHandleChangeFile}
                     style={{ display: "none" }}
                 />
 
@@ -187,33 +187,33 @@ export default function ChangePhoto() {
                         variant="hover"
                         width={130}
                         height={40}
-                        onClick={handleSelectPhoto}
-                        disabled={loading}
+                        onClick={cpHandleSelectPhoto}
+                        disabled={cpLoading}
                     >
-                        Choose photo
+                        {t("cpChoosePhotoBtn")}
                     </Button>
 
-                    {preview && (
+                    {cpPreview && (
                         <Button
                             variant="static"
                             width={130}
                             height={40}
-                            onClick={handleUpload}
-                            disabled={loading}
+                            onClick={cpHandleUpload}
+                            disabled={cpLoading}
                         >
-                            {loading ? "Uploading..." : "Save"}
+                            {cpLoading ? t("cpUploadingPhotoBtn") : t("cpSavePhotoBtn")}
                         </Button>
                     )}
 
-                    {!preview && profile.avatar && (
+                    {!cpPreview && cpProfile.avatar && (
                         <Button
                             variant="toggle"
                             width={130}
                             height={40}
-                            onClick={handleDelete}
-                            disabled={loading}
+                            onClick={cpHandleDelete}
+                            disabled={cpLoading}
                         >
-                            Delete
+                            {t("cpDeletePhotoBtn")}
                         </Button>
                     )}
                 </div>

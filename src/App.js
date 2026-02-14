@@ -9,6 +9,7 @@ import SidePanel from "./components/sidePanel/sidePanel";
 import { AuthProvider } from "./context/AuthContext";
 import { ErrorProvider } from "./context/ErrorContext";
 import AuthGuard from "./components/Auth/AuthGuard";
+import { I18nProvider } from "./i18n";
 
 function AppLayout() {
     const location = useLocation();
@@ -57,14 +58,16 @@ export default function App() {
     }, []);
 
     return (
-        <Router>
-            <ThemeProvider>
-                <AuthProvider>
-                    <ErrorProvider>
-                        <AppLayout />
-                    </ErrorProvider>
-                </AuthProvider>
-            </ThemeProvider>
-        </Router>
+        <I18nProvider>
+            <Router>
+                <ThemeProvider>
+                    <AuthProvider>
+                        <ErrorProvider>
+                            <AppLayout />
+                        </ErrorProvider>
+                    </AuthProvider>
+                </ThemeProvider>
+            </Router>
+        </I18nProvider>
     );
 }

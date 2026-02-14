@@ -1,5 +1,3 @@
-// javascript
-// File: `src/pages/Profile/PrivateProfile.js`
 import "./profile.css";
 import { useState, useEffect } from "react";
 import EditableField from "../../components/editableField/editableField";
@@ -7,12 +5,14 @@ import { getUserData, saveUserData } from "../../utils/storage";
 import { useAuth } from "../../context/AuthContext";
 import { updateUser } from "../../api/authApi";
 import { useError } from "../../context/ErrorContext";
+import { useI18n } from "../../i18n";
 
 export default function PrivateProfile() {
-    const { user: ctxUser, setUser } = useAuth();
+    const { user: ppCtxUser, setUser: ppSetUser } = useAuth();
     const { showMessage, showApiErrors } = useError();
+    const { t } = useI18n();
 
-    const [profile, setProfile] = useState(() => getUserData() || ctxUser || {
+    const [ppProfile, ppSetProfile] = useState(() => getUserData() || ppCtxUser || {
         username: "",
         first_name: "",
         last_name: "",
@@ -20,54 +20,54 @@ export default function PrivateProfile() {
     });
 
     useEffect(() => {
-        if (ctxUser) setProfile((prev) => ({ ...prev, ...ctxUser }));
-    }, [ctxUser]);
+        if (ppCtxUser) ppSetProfile((prev) => ({ ...prev, ...ppCtxUser }));
+    }, [ppCtxUser]);
 
     useEffect(() => {
-        const onStorage = () => {
-            const stored = getUserData();
-            setProfile(stored || ctxUser || {
+        const ppOnStorage = () => {
+            const ppStored = getUserData();
+            ppSetProfile(ppStored || ppCtxUser || {
                 username: "",
                 first_name: "",
                 last_name: "",
                 description: "",
             });
         };
-        window.addEventListener("storage", onStorage);
-        return () => window.removeEventListener("storage", onStorage);
-    }, [ctxUser]);
+        window.addEventListener("storage", ppOnStorage);
+        return () => window.removeEventListener("storage", ppOnStorage);
+    }, [ppCtxUser]);
 
-    const handleSaveField = async (key, value) => {
-        const payloadKey = key === "description" ? "bio" : key;
-        const payload = { [payloadKey]: value };
+    const ppHandleSaveField = async (key, value) => {
+        const ppPayloadKey = key === "description" ? "bio" : key;
+        const ppPayload = { [ppPayloadKey]: value };
 
-        const updatedLocal = { ...profile, [key]: value };
-        setProfile(updatedLocal);
+        const ppUpdatedLocal = { ...ppProfile, [key]: value };
+        ppSetProfile(ppUpdatedLocal);
 
         try {
-            const res = await updateUser(payload);
-            const updatedUserFromServer = res.data || updatedLocal;
+            const ppRes = await updateUser(ppPayload);
+            const ppUpdatedUserFromServer = ppRes.data || ppUpdatedLocal;
 
-            const normalized = {
+            const ppNormalized = {
                 ...getUserData(),
-                ...updatedUserFromServer,
+                ...ppUpdatedUserFromServer,
             };
 
-            if (normalized.bio !== undefined) {
-                normalized.description = normalized.bio;
-                delete normalized.bio;
+            if (ppNormalized.bio !== undefined) {
+                ppNormalized.description = ppNormalized.bio;
+                delete ppNormalized.bio;
             }
 
-            saveUserData(normalized);
-            setUser?.(normalized);
-            setProfile((prev) => ({ ...prev, ...normalized }));
+            saveUserData(ppNormalized);
+            ppSetUser?.(ppNormalized);
+            ppSetProfile((prev) => ({ ...prev, ...ppNormalized }));
             window.dispatchEvent(new Event("storage"));
 
-            showMessage("Profile updated successfully.", "success");
+            showMessage(t("ppProfileUpdatedMsg"), "success");
         } catch (err) {
             // revert local optimistic update
-            const stored = getUserData();
-            setProfile(stored || ctxUser || {
+            const ppStored = getUserData();
+            ppSetProfile(ppStored || ppCtxUser || {
                 username: "",
                 first_name: "",
                 last_name: "",
@@ -75,65 +75,63 @@ export default function PrivateProfile() {
             });
 
             console.error("Failed to update user:", err);
-
-            // Use global error helper to show API errors
             showApiErrors(err);
         }
     };
 
-    const handleTrySave = (key, value) => {
+    const ppHandleTrySave = (key, value) => {
         if (key === "username" && value.length > 20) {
-            showMessage("Username must be 20 characters or less.", "error");
+            showMessage(t("ppUsernameLengthError"), "error");
             return;
         }
 
-        handleSaveField(key, value);
+        ppHandleSaveField(key, value);
     };
 
     return (
         <div className="profile-content">
-            <h1 className="profile-title">Private profile</h1>
-            <h2 className="profile-tile-description">Add some information about you</h2>
+            <h1 className="profile-title">{t("ppPrivateProfileTitle")}</h1>
+            <h2 className="profile-tile-description">{t("ppPrivateProfileSubtitle")}</h2>
 
             <form className="profile-form" onSubmit={(e) => e.preventDefault()}>
                 <label>
-                    username
+                    {t("ppUsernameLabel")}
                     <EditableField
-                        value={profile.username}
+                        value={ppProfile.username}
                         autosave
                         showEditIconWhenAutosave
-                        onSave={(val) => handleTrySave("username", val)}
+                        onSave={(val) => ppHandleTrySave("username", val)}
                     />
                 </label>
 
                 <label>
-                    first name
+                    {t("ppFirstNameLabel")}
                     <EditableField
-                        value={profile.first_name}
+                        value={ppProfile.first_name}
                         autosave
                         showEditIconWhenAutosave
-                        onSave={(val) => handleTrySave("first_name", val)}
+                        onSave={(val) => ppHandleTrySave("first_name", val)}
                     />
                 </label>
 
                 <label>
-                    last name
+                    {t("ppLastNameLabel")}
                     <EditableField
-                        value={profile.last_name}
+                        value={ppProfile.last_name}
                         autosave
                         showEditIconWhenAutosave
-                        onSave={(val) => handleTrySave("last_name", val)}
+                        onSave={(val) => ppHandleTrySave("last_name", val)}
                     />
                 </label>
 
                 <label>
-                    description
+                    {t("ppDescriptionLabel")}
                     <EditableField
                         type="textarea"
-                        value={profile.description}
+                        value={ppProfile.description}
                         autosave
                         showEditIconWhenAutosave
-                        onSave={(val) => handleTrySave("description", val)}
+                        onSave={(val) => ppHandleTrySave("description", val)}
                     />
                 </label>
             </form>

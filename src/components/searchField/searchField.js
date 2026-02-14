@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./searchField.css";
 import searchIcon from "./searchIcon.svg";
+import { useI18n } from "../../i18n";
 
 export default function SearchField({
                                         placeholder = "search",
@@ -14,6 +15,8 @@ export default function SearchField({
                                         style = {},
                                         debounceMs = 200
                                     }) {
+    const { t } = useI18n();
+
     const [query, setQuery] = useState(controlledValue ?? "");
     const debRef = useRef(null);
 
@@ -47,14 +50,14 @@ export default function SearchField({
 
     return (
         <div className={`sf-wrapper ${className}`} style={wrapperStyle}>
-            <img src={searchIcon} alt="Search" className="sf-icon" />
+            <img src={searchIcon} alt={t("sfSearch_label")} className="sf-icon" />
             <input
                 type="text"
                 value={query}
                 onChange={handleChange}
                 className="sf-input"
-                placeholder={placeholder}
-                aria-label={placeholder}
+                placeholder={t("sfSearch_label")}
+                aria-label={t("sfSearch_label")}
             />
         </div>
     );

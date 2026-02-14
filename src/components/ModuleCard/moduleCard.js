@@ -4,6 +4,7 @@ import DropdownMenu from "../dropDownMenu/dropDownMenu";
 import { useNavigate } from "react-router-dom";
 import DiagonalFlagRect43 from "../diagonalFlagRect43";
 import { useAuth } from "../../context/AuthContext";
+import { useI18n } from "../../i18n";
 
 import { ReactComponent as DotsIcon } from "../../images/dots.svg";
 import { ReactComponent as StarIcon } from "../../images/star.svg";
@@ -26,7 +27,6 @@ export default function ModuleCard({
                                        expanded,
                                        toggleTags,
                                        onDelete,
-                                       deleteLabel = "Delete",
                                        onEdit,
                                        onPermissions,
                                        onAddToFolder,
@@ -41,6 +41,7 @@ export default function ModuleCard({
                                        onExport
                                    }) {
     const { user } = useAuth();
+    const { t } = useI18n();
     const navigate = useNavigate();
 
     const tags = module.tags || [];
@@ -65,29 +66,31 @@ export default function ModuleCard({
 
     const menuItems = [];
 
+    // EDIT
     if (onEdit) {
         menuItems.push({
-            label: "Edit",
+            label: t("moduleCardEdit_label"),
             onClick: (e, trigger) => onEdit(module, e, trigger),
             icon: <EditIcon width={16} height={16} />
         });
     } else if (isOwnModule) {
         menuItems.push({
-            label: "Edit",
+            label: t("moduleCardEdit_label"),
             onClick: () => navigate("/library/create-module", { state: { mode: "edit", moduleId: module.id, moduleData: module } }),
             icon: <EditIcon width={16} height={16} />
         });
     }
 
+    // SAVE / UNSAVE
     if (module.is_saved && onUnsave) {
         menuItems.push({
-            label: "Unsave",
+            label: t("moduleCardUnsave_label"),
             onClick: () => onUnsave(module.id),
             icon: <SaveIcon width={16} height={16} />
         });
     } else if (!module.is_saved && onSave) {
         menuItems.push({
-            label: "Save",
+            label: t("moduleCardSave_label"),
             onClick: () => onSave(module.id),
             icon: <SaveIcon width={16} height={16} />
         });
@@ -96,53 +99,58 @@ export default function ModuleCard({
     // PIN / UNPIN
     if (module.pinned && onUnpin) {
         menuItems.push({
-            label: "Unpin",
+            label: t("moduleCardUnpin_label"),
             onClick: () => onUnpin(module.id),
             icon: <PinIcon width={16} height={16} />
         });
     } else if (!module.pinned && onPin) {
         menuItems.push({
-            label: "Pin",
+            label: t("moduleCardPin_label"),
             onClick: () => onPin(module.id),
             icon: <PinIcon width={16} height={16} />
         });
     }
 
+    // PERMISSIONS
     if (onPermissions) {
         menuItems.push({
-            label: "Permissions",
+            label: t("moduleCardPermissions_label"),
             onClick: (e, trigger) => onPermissions(module, e, trigger),
             icon: <ShareIcon width={16} height={16} />
         });
     }
 
+    // ADD TO FOLDER
     if (onAddToFolder) {
         menuItems.push({
-            label: "Add to folder",
+            label: t("moduleCardAddToFolder_label"),
             onClick: (e, trigger) => onAddToFolder(module, e, trigger),
             icon: <FolderIcon width={16} height={16} />
         });
     }
 
+    // EXPORT
     if (onExport) {
         menuItems.push({
-            label: "Export / Import",
+            label: t("moduleCardExport_label"),
             onClick: () => onExport(module),
             icon: <ExportIcon width={16} height={16} />
         });
     }
 
+    // MERGE
     if (onMerge) {
         menuItems.push({
-            label: isMergeMode ? "Cancel Merge" : "Merge",
+            label: isMergeMode ? t("moduleCardCancelMerge_label") : t("moduleCardMerge_label"),
             onClick: () => onMerge(module),
             icon: <MergeIcon width={16} height={16} />
         });
     }
 
+    // DELETE
     if (onDelete) {
         menuItems.push({
-            label: deleteLabel,
+            label: t("moduleCardDelete_label"),
             onClick: () => onDelete(module.id),
             icon: <DeleteIcon width={16} height={16} />
         });
@@ -164,7 +172,9 @@ export default function ModuleCard({
             <div className="module-info">
                 {/* Верхній рядок: кількість термінів, автор, рейтинг */}
                 <div className="top-row">
-                    <span className="terms-count">{termsCount} terms</span>
+                    <span className="terms-count">
+                        {`${termsCount} ${t("moduleCardTerms_label")}`}
+                    </span>
 
                     <span className="separator">|</span>
                     <div className="author-block">
@@ -185,7 +195,6 @@ export default function ModuleCard({
                     )}
                 </div>
 
-                {/* Середній рядок: назва, прапорці, опис */}
                 <div className="module-name-row hover-wrapper">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
                         <span className="module-name-text" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -197,10 +206,11 @@ export default function ModuleCard({
                             </div>
                         )}
                     </div>
-                    <span className="hover-hint">{module.description || "No description"}</span>
+                    <span className="hover-hint">
+                        {module.description || t("moduleCardNoDescription_label")}
+                    </span>
                 </div>
 
-                {/* Нижній рядок: ТЕГИ */}
                 {tags.length > 0 && (
                     <div className="mc-tags-wrapper">
                         <div className="mc-tags-row">

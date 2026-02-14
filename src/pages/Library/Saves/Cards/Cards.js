@@ -2,8 +2,9 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import SortMenu from "../../../../components/sortMenu/sortMenu";
 import DropdownMenu from "../../../../components/dropDownMenu/dropDownMenu";
 import { useAuth } from "../../../../context/AuthContext";
+import { useI18n } from "../../../../i18n";
 import FullscreenCard from "../../../../components/fullscreenCard/fullscreenCard";
-import Loader from "../../../../components/loader/loader"; // Імпорт лоадера
+import Loader from "../../../../components/loader/loader";
 import {
     getSavedCards,
     unsaveCard,
@@ -18,73 +19,74 @@ import { ReactComponent as BookSvg } from "../../../../images/book.svg";
 
 export default function Cards({ source = "saves" }) {
     const { user } = useAuth();
-    const storageKey = `cardsSort_${source}`;
+    const { t } = useI18n();
+    const cStorageKey = `cardsSort_${source}`;
 
-    const [cards, setCards] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [sort, setSort] = useState(() => localStorage.getItem(storageKey) || "newest");
+    const [cCards, cSetCards] = useState([]);
+    const [cLoading, cSetLoading] = useState(true);
+    const [cSort, cSetSort] = useState(() => localStorage.getItem(cStorageKey) || "newest");
 
     // State для fullscreen
-    const [fullscreenStartIndex, setFullscreenStartIndex] = useState(null);
+    const [cFullscreenStartIndex, cSetFullscreenStartIndex] = useState(null);
 
-    const loadSavedCards = useCallback(async () => {
+    const cLoadSavedCards = useCallback(async () => {
         if (!user?.id) {
-            setLoading(false);
+            cSetLoading(false);
             return;
         }
         try {
-            setLoading(true);
+            cSetLoading(true);
             const resp = await getSavedCards(user.id);
             const data = resp.data.results || resp.data || [];
 
-            const mappedCards = data.map(c => ({
-                ...c,
-                createdAt: c.created_at || new Date().toISOString(),
+            const mappedCards = data.map(cardItem => ({
+                ...cardItem,
+                createdAt: cardItem.created_at || new Date().toISOString(),
                 is_saved: true,
-                is_learned: c.learned_status === "learned"
+                is_learned: cardItem.learned_status === "learned"
             }));
 
-            setCards(mappedCards);
+            cSetCards(mappedCards);
         } catch (err) {
             console.error("Failed to load saved cards:", err);
         } finally {
-            setLoading(false);
+            cSetLoading(false);
         }
     }, [user]);
 
     useEffect(() => {
-        loadSavedCards();
-    }, [loadSavedCards]);
+        cLoadSavedCards();
+    }, [cLoadSavedCards]);
 
     useEffect(() => {
-        localStorage.setItem(storageKey, sort);
-    }, [sort, storageKey]);
+        localStorage.setItem(cStorageKey, cSort);
+    }, [cSort, cStorageKey]);
 
-    const handleSort = (type) => {
-        if (type === "date") setSort("newest");
-        else if (type === "date_asc") setSort("oldest");
-        else if (type === "name") setSort("title_asc");
-        else if (type === "name_desc") setSort("title_desc");
-        else setSort(type);
+    const cHandleSort = (type) => {
+        if (type === "date") cSetSort("newest");
+        else if (type === "date_asc") cSetSort("oldest");
+        else if (type === "name") cSetSort("title_asc");
+        else if (type === "name_desc") cSetSort("title_desc");
+        else cSetSort(type);
     };
 
-    const sorted = useMemo(() => {
-        const copy = [...cards];
-        if (sort === "newest") copy.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        else if (sort === "oldest") copy.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-        else if (sort === "title_asc") copy.sort((a, b) => (a.original || "").localeCompare(b.original || ""));
-        else if (sort === "title_desc") copy.sort((a, b) => (b.original || "").localeCompare(a.original || ""));
+    const cSorted = useMemo(() => {
+        const copy = [...cCards];
+        if (cSort === "newest") copy.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        else if (cSort === "oldest") copy.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        else if (cSort === "title_asc") copy.sort((a, b) => (a.original || "").localeCompare(b.original || ""));
+        else if (cSort === "title_desc") copy.sort((a, b) => (b.original || "").localeCompare(a.original || ""));
         return copy;
-    }, [cards, sort]);
+    }, [cCards, cSort]);
 
-    const handleCardStatusUpdate = async (cardId, type) => {
-        const card = cards.find(c => c.id === cardId);
+    const cHandleCardStatusUpdate = async (cardId, type) => {
+        const card = cCards.find(c => c.id === cardId);
         if (!card) return;
 
         if (type === "learn") {
             const newStatus = !card.is_learned;
             // Оптимістичне оновлення UI
-            setCards(prev => prev.map(c => c.id === cardId ? { ...c, is_learned: newStatus } : c));
+            cSetCards(prev => prev.map(c => c.id === cardId ? { ...c, is_learned: newStatus } : c));
 
             try {
                 await updateCardLearnStatus(cardId, newStatus, {
@@ -94,15 +96,15 @@ export default function Cards({ source = "saves" }) {
                 });
             } catch (err) {
                 // Відкат при помилці
-                setCards(prev => prev.map(c => c.id === cardId ? { ...c, is_learned: !newStatus } : c));
+                cSetCards(prev => prev.map(c => c.id === cardId ? { ...c, is_learned: !newStatus } : c));
                 console.error(err);
-                alert("Error updating learned status");
+                alert(t("cErrorLearnUpdate"));
             }
         } else if (type === "save") {
             const wasSaved = card.is_saved;
             // Оптимістично видаляємо зі списку збережених, якщо натиснули unsave
             if (wasSaved) {
-                setCards(prev => prev.filter(c => c.id !== cardId));
+                cSetCards(prev => prev.filter(c => c.id !== cardId));
             }
 
             try {
@@ -110,31 +112,31 @@ export default function Cards({ source = "saves" }) {
                     await unsaveCard(cardId);
                 } else {
                     await saveCard(cardId);
-                    setCards(prev => prev.map(c => c.id === cardId ? { ...c, is_saved: true } : c));
+                    cSetCards(prev => prev.map(c => c.id === cardId ? { ...c, is_saved: true } : c));
                 }
             } catch (err) {
                 // Відкат (повертаємо картку в список)
-                if (wasSaved) loadSavedCards();
-                alert("Action failed");
+                if (wasSaved) cLoadSavedCards();
+                alert(t("cErrorActionFailed"));
             }
         }
     };
 
-    if (loading) return <Loader />; // Замінено на графічний лоадер
+    if (cLoading) return <Loader />;
 
     return (
         <div>
             <div className="library-controls" style={{ alignItems: "center" }}>
-                <SortMenu onSort={handleSort} />
+                <SortMenu onSort={cHandleSort} />
             </div>
 
             <div className="library-content" style={{ marginTop: 12 }}>
-                {sorted.length === 0 ? (
+                {cSorted.length === 0 ? (
                     <div className="mv-row mv-empty-message" style={{ textAlign: "center", padding: "20px" }}>
-                        Тут поки порожньо
+                        {t("cEmptyCardsMessage")}
                     </div>
                 ) : (
-                    sorted.map((c, index) => (
+                    cSorted.map((c, index) => (
                         <div key={c.id} className="mv-row">
                             <div className="mv-row-half mv-row-left">
                                 {c.original}
@@ -147,7 +149,7 @@ export default function Cards({ source = "saves" }) {
                                 <div style={{ display: 'flex', gap: '8px', position: 'absolute', right: '10px', alignItems: 'center' }}>
                                     <button
                                         className={`mv-row-book-btn ${c.is_learned ? "mv-active" : ""}`}
-                                        onClick={(e) => { e.stopPropagation(); handleCardStatusUpdate(c.id, 'learn'); }}
+                                        onClick={(e) => { e.stopPropagation(); cHandleCardStatusUpdate(c.id, 'learn'); }}
                                         style={{ position: 'static' }}
                                     >
                                         <BookSvg className="book-icon" />
@@ -155,7 +157,7 @@ export default function Cards({ source = "saves" }) {
 
                                     <button
                                         className={`mv-row-save-btn ${c.is_saved ? "mv-active" : ""}`}
-                                        onClick={(e) => { e.stopPropagation(); handleCardStatusUpdate(c.id, 'save'); }}
+                                        onClick={(e) => { e.stopPropagation(); cHandleCardStatusUpdate(c.id, 'save'); }}
                                         style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', marginTop: '2px' }}
                                     >
                                         <SaveIcon
@@ -167,9 +169,9 @@ export default function Cards({ source = "saves" }) {
                                     <DropdownMenu
                                         align="left"
                                         items={[{
-                                            label: "На весь екран",
+                                            label: t("cFullscreenLabel"),
                                             icon: <FullscreenIcon width={16} />,
-                                            onClick: () => setFullscreenStartIndex(index)
+                                            onClick: () => cSetFullscreenStartIndex(index)
                                         }]}
                                     >
                                         <button className="mv-btn-icon">
@@ -183,14 +185,14 @@ export default function Cards({ source = "saves" }) {
                 )}
             </div>
 
-            {fullscreenStartIndex !== null && sorted.length > 0 && (
+            {cFullscreenStartIndex !== null && cSorted.length > 0 && (
                 <FullscreenCard
-                    cards={sorted}
-                    initialIndex={fullscreenStartIndex}
-                    onClose={() => setFullscreenStartIndex(null)}
-                    onUpdateCardStatus={handleCardStatusUpdate}
-                    checkIsLearned={(id) => cards.find(x => x.id === id)?.is_learned}
-                    checkIsSaved={(id) => cards.find(x => x.id === id)?.is_saved}
+                    cards={cSorted}
+                    initialIndex={cFullscreenStartIndex}
+                    onClose={() => cSetFullscreenStartIndex(null)}
+                    onUpdateCardStatus={cHandleCardStatusUpdate}
+                    checkIsLearned={(id) => cCards.find(x => x.id === id)?.is_learned}
+                    checkIsSaved={(id) => cCards.find(x => x.id === id)?.is_saved}
                 />
             )}
         </div>

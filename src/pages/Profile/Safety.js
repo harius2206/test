@@ -7,6 +7,7 @@ import { changePassword } from "../../api/authApi";
 import { useError } from "../../context/ErrorContext";
 import { requestEmailChange } from "../../api/authApi";
 import { Link } from "react-router-dom";
+import { useI18n } from "../../i18n";
 import {
     getDeeplKeys,
     createDeeplKey,
@@ -15,34 +16,35 @@ import {
 } from "../../api/deeplApi";
 
 export default function Safety() {
-    const storedInitial = getUserData();
+    const sfStoredInitial = getUserData();
     const { showMessage, showError } = useError();
+    const { t } = useI18n();
 
     // Email & Password states
-    const [email, setEmail] = useState(storedInitial?.email || "");
-    const [password, setPassword] = useState("");
-    const [newPassword, setNewPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [cooldown, setCooldown] = useState(0);
+    const [sfEmail, sfSetEmail] = useState(sfStoredInitial?.email || "");
+    const [sfPassword, sfSetPassword] = useState("");
+    const [sfNewPassword, sfSetNewPassword] = useState("");
+    const [sfConfirmPassword, sfSetConfirmPassword] = useState("");
+    const [sfCooldown, sfSetCooldown] = useState(0);
 
     // DeepL states
-    const [deeplKey, setDeeplKey] = useState("");
-    const [existingKeyObj, setExistingKeyObj] = useState(null); // Об'єкт ключа з бекенду (id, status, characters...)
-    const [loadingKey, setLoadingKey] = useState(false);
+    const [sfDeeplKey, sfSetDeeplKey] = useState("");
+    const [sfExistingKeyObj, sfSetExistingKeyObj] = useState(null);
+    const [sfLoadingKey, sfSetLoadingKey] = useState(false);
 
     // Timer for email cooldown
     useEffect(() => {
-        if (cooldown > 0) {
-            const timer = setInterval(() => setCooldown((prev) => prev - 1), 1000);
+        if (sfCooldown > 0) {
+            const timer = setInterval(() => sfSetCooldown((prev) => prev - 1), 1000);
             return () => clearInterval(timer);
         }
-    }, [cooldown]);
+    }, [sfCooldown]);
 
     // Sync email with localStorage changes
     useEffect(() => {
         const onStorage = () => {
             const stored = getUserData();
-            setEmail(stored?.email || "");
+            sfSetEmail(stored?.email || "");
         };
         window.addEventListener("storage", onStorage);
         return () => window.removeEventListener("storage", onStorage);
@@ -50,146 +52,141 @@ export default function Safety() {
 
     // Load DeepL Key on mount
     useEffect(() => {
-        loadDeepLKey();
+        sfLoadDeepLKey();
     }, []);
 
-    const loadDeepLKey = async () => {
+    const sfLoadDeepLKey = async () => {
         try {
             const res = await getDeeplKeys();
             if (res.data && res.data.length > 0) {
-                // Беремо перший ключ (якщо логіка передбачає один ключ на юзера)
                 const keyData = res.data[0];
-                setExistingKeyObj(keyData);
-                // Маскуємо ключ для відображення, або показуємо порожнім, якщо з метою безпеки бекенд його не віддає повністю
-                // Тут припускаємо, що ми хочемо редагувати новий, тому поле input спочатку порожнє або заповнене якщо треба
-                setDeeplKey("");
+                sfSetExistingKeyObj(keyData);
+                sfSetDeeplKey("");
             } else {
-                setExistingKeyObj(null);
+                sfSetExistingKeyObj(null);
             }
         } catch (err) {
             console.error("Failed to load DeepL key", err);
         }
     };
 
-    const handleSendEmail = async () => {
-        if (!email) {
-            showError("Email cannot be empty.");
+    const sfHandleSendEmail = async () => {
+        if (!sfEmail) {
+            showError(t("sfEmailEmptyError"));
             return;
         }
 
         try {
-            await requestEmailChange(email);
-            showMessage("Verification email sent! Check your inbox.", "success");
-            setCooldown(30);
+            await requestEmailChange(sfEmail);
+            showMessage(t("sfVerificationEmailMsg"), "success");
+            sfSetCooldown(30);
         } catch (err) {
-            showError(err?.response?.data || "Failed to send verification email.");
+            showError(err?.response?.data || t("sfEmailActionFailed"));
         }
     };
 
-    const handleSaveApiKey = async () => {
-        if (!deeplKey.trim()) {
-            showError("API key cannot be empty.");
+    const sfHandleSaveApiKey = async () => {
+        if (!sfDeeplKey.trim()) {
+            showError(t("sfApiKeyEmptyError") || "API key cannot be empty.");
             return;
         }
 
-        setLoadingKey(true);
+        sfSetLoadingKey(true);
         try {
-            if (existingKeyObj) {
-                await updateDeeplKey(existingKeyObj.id, deeplKey);
-                showMessage("DeepL key updated successfully.", "success");
+            if (sfExistingKeyObj) {
+                await updateDeeplKey(sfExistingKeyObj.id, sfDeeplKey);
+                showMessage(t("sfApiKeyUpdatedSuccess") || "DeepL key updated successfully.", "success");
             } else {
-                await createDeeplKey(deeplKey);
-                showMessage("DeepL key created successfully.", "success");
+                await createDeeplKey(sfDeeplKey);
+                showMessage(t("sfApiKeyCreatedSuccess") || "DeepL key created successfully.", "success");
             }
-            setDeeplKey("");
-            await loadDeepLKey();
+            sfSetDeeplKey("");
+            await sfLoadDeepLKey();
         } catch (err) {
-            showError(err?.response?.data?.detail || "Failed to save DeepL key.");
+            showError(err?.response?.data?.detail || t("sfApiKeySaveFailed") || "Failed to save DeepL key.");
         } finally {
-            setLoadingKey(false);
+            sfSetLoadingKey(false);
         }
     };
 
+    const sfHandleDeleteApiKey = async () => {
+        if (!sfExistingKeyObj) return;
 
-    const handleDeleteApiKey = async () => {
-        if (!existingKeyObj) return;
-
-        setLoadingKey(true);
+        sfSetLoadingKey(true);
         try {
-            await deleteDeeplKey(existingKeyObj.id);
-            setExistingKeyObj(null);
-            setDeeplKey("");
-            showMessage("DeepL key deleted.", "success");
+            await deleteDeeplKey(sfExistingKeyObj.id);
+            sfSetExistingKeyObj(null);
+            sfSetDeeplKey("");
+            showMessage(t("sfApiKeyDeletedMsg") || "DeepL key deleted.", "success");
         } catch (err) {
-            showError(err, "Failed to delete DeepL key.");
+            showError(err, t("sfApiKeyDeleteFailed") || "Failed to delete DeepL key.");
         } finally {
-            setLoadingKey(false);
+            sfSetLoadingKey(false);
         }
     };
 
     // Формуємо статус для відображення
-    let apiKeyStatusText = "No key";
-    if (existingKeyObj) {
-        if (existingKeyObj.status) {
-            // Якщо бекенд повертає статус і ліміти
-            apiKeyStatusText = `${existingKeyObj.status}`;
-            if (existingKeyObj.remaining_characters !== undefined) {
-                apiKeyStatusText += ` (${existingKeyObj.remaining_characters} chars left)`;
+    let sfApiKeyStatusText = t("sfNoKeyLabel") || "No key";
+    if (sfExistingKeyObj) {
+        if (sfExistingKeyObj.status) {
+            sfApiKeyStatusText = `${sfExistingKeyObj.status}`;
+            if (sfExistingKeyObj.remaining_characters !== undefined) {
+                sfApiKeyStatusText += ` (${sfExistingKeyObj.remaining_characters} ${t("sfCharsLeftLabel") || "chars left"})`;
             }
         } else {
-            apiKeyStatusText = "Active key";
+            sfApiKeyStatusText = t("sfActiveKeyLabel") || "Active key";
         }
     }
 
     return (
         <div className="profile-content">
-            <h1 className="profile-title">Safety</h1>
-            <h2 className="profile-tile-description">Here you can change your email or password</h2>
+            <h1 className="profile-title">{t("sfSafetyTitle")}</h1>
+            <h2 className="profile-tile-description">{t("sfSafetySubtitle")}</h2>
 
             <div className="profile-form">
                 <label>
-                    Your email
+                    {t("sfYourEmailLabel")}
                     <EditableField
                         type="text"
-                        value={email}
+                        value={sfEmail}
                         autosave
-                        onSave={setEmail}
+                        onSave={sfSetEmail}
                     />
                 </label>
 
                 <p className="advice-message">
-                    Enter a new email; a confirmation message will be sent to it. After confirmation, the email will be updated.
+                    {t("sfEmailAdvice")}
                 </p>
 
                 <div className="button-wrapper">
                     <Button
                         variant="static"
                         color="var(--accent)"
-                        onClick={handleSendEmail}
-                        disabled={cooldown > 0}
+                        onClick={sfHandleSendEmail}
+                        disabled={sfCooldown > 0}
                         width="170px"
                         height="46px"
                     >
-                        {cooldown > 0 ? "Wait..." : "Send"}
+                        {sfCooldown > 0 ? t("sfWaitEmailBtn") : t("sfSendEmailBtn")}
                     </Button>
-                    {cooldown > 0 && <span className="cooldown-text">{cooldown}s</span>}
+                    {sfCooldown > 0 && <span className="cooldown-text">{sfCooldown}s</span>}
                 </div>
 
                 <hr />
 
                 <label>
-                    Your password
-                    <EditableField type="password" value={password} onSave={setPassword} />
+                    {t("sfYourPasswordLabel")}
+                    <EditableField type="password" value={sfPassword} onSave={sfSetPassword} />
                 </label>
 
                 <label>
-                    New password
-                    <EditableField type="password" value={newPassword} onSave={setNewPassword} />
+                    {t("sfNewPasswordLabel")}
+                    <EditableField type="password" value={sfNewPassword} onSave={sfSetNewPassword} />
                 </label>
 
                 <label>
-                    Confirm new password
-                    <EditableField type="password" value={confirmPassword} onSave={setConfirmPassword} />
+                    {t("sfConfirmPasswordLabel")}
+                    <EditableField type="password" value={sfConfirmPassword} onSave={sfSetConfirmPassword} />
                 </label>
 
                 <div className="button-wrapper">
@@ -201,39 +198,39 @@ export default function Safety() {
                         onClick={async () => {
                             document.activeElement.blur();
 
-                            if (!password || !newPassword || !confirmPassword) {
-                                showError("All fields must be filled.");
+                            if (!sfPassword || !sfNewPassword || !sfConfirmPassword) {
+                                showError(t("sfAllFieldsError"));
                                 return;
                             }
 
-                            if (newPassword !== confirmPassword) {
-                                showError("Passwords do not match.");
+                            if (sfNewPassword !== sfConfirmPassword) {
+                                showError(t("sfPasswordsMismatchError"));
                                 return;
                             }
 
                             try {
                                 await changePassword({
-                                    old_password: password,
-                                    new_password1: newPassword,
-                                    new_password2: confirmPassword,
+                                    old_password: sfPassword,
+                                    new_password1: sfNewPassword,
+                                    new_password2: sfConfirmPassword,
                                 });
 
-                                showMessage("Password changed successfully!", "success");
+                                showMessage(t("sfPasswordChangedMsg"), "success");
 
-                                setPassword("");
-                                setNewPassword("");
-                                setConfirmPassword("");
+                                sfSetPassword("");
+                                sfSetNewPassword("");
+                                sfSetConfirmPassword("");
                             } catch (err) {
-                                showError(err, "Failed to change password.");
+                                showError(err, t("sfChangePasswordFailed") || "Failed to change password.");
                             }
                         }}
                     >
-                        Change password
+                        {t("sfChangePasswordBtn")}
                     </Button>
 
                     <Link to="/reset-password">
                         <Button variant="toggle" color="var(--accent)" width="170px" height="46px">
-                            Forgot password
+                            {t("sfForgotPasswordBtn")}
                         </Button>
                     </Link>
                 </div>
@@ -241,21 +238,20 @@ export default function Safety() {
                 <hr />
 
                 <label>
-                    Your DeepL API key status
-                    <EditableField type="text" value={apiKeyStatusText} editable={false} />
+                    {t("sfApiKeyStatusLabel")}
+                    <EditableField type="text" value={sfApiKeyStatusText} editable={false} />
                 </label>
 
                 <label>
-                    {existingKeyObj ? "Update DeepL API key" : "Add DeepL API key"}
+                    {sfExistingKeyObj ? t("sfUpdateApiKeyLabel") : t("sfAddApiKeyLabel")}
                     <EditableField
                         type="text"
-                        value={deeplKey}
+                        value={sfDeeplKey}
                         autosave
-                        onSave={setDeeplKey}
-                        placeholder={existingKeyObj ? "Enter new key to update" : "Enter key"}
+                        onSave={sfSetDeeplKey}
+                        placeholder={sfExistingKeyObj ? t("sfEnterNewKeyPlaceholder") : t("sfEnterKeyPlaceholder")}
                     />
                 </label>
-
 
                 <div className="button-wrapper">
                     <Button
@@ -263,26 +259,25 @@ export default function Safety() {
                         color="var(--accent)"
                         width="170px"
                         height="46px"
-                        disabled={loadingKey}
+                        disabled={sfLoadingKey}
                         onClick={() => {
                             document.activeElement.blur();
-                            setTimeout(handleSaveApiKey, 0);
+                            setTimeout(sfHandleSaveApiKey, 0);
                         }}
-
                     >
-                        {loadingKey ? "Saving..." : (existingKeyObj ? "Update key" : "Save key")}
+                        {sfLoadingKey ? t("sfSavingKeyBtn") || "Saving..." : (sfExistingKeyObj ? t("sfUpdateKeyBtn") : t("sfSaveKeyBtn"))}
                     </Button>
 
-                    {existingKeyObj && (
+                    {sfExistingKeyObj && (
                         <Button
                             variant="toggle"
                             color="var(--danger)"
                             width="170px"
                             height="46px"
-                            disabled={loadingKey}
-                            onClick={handleDeleteApiKey}
+                            disabled={sfLoadingKey}
+                            onClick={sfHandleDeleteApiKey}
                         >
-                            {loadingKey ? "Deleting..." : "Delete DeepL key"}
+                            {sfLoadingKey ? t("sfDeletingKeyBtn") : t("sfDeleteKeyBtn") || "Delete DeepL key"}
                         </Button>
                     )}
                 </div>

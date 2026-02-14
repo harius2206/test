@@ -6,28 +6,31 @@ import {
     saveUserData,
     clearAuthData,
 } from "../utils/storage";
+import { useI18n } from "../i18n";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    // 1. Синхронна ініціалізація user (як ми робили раніше)
+    // 1. Синхронна ініціалізація user
     const [user, setUser] = useState(() => getUserData());
 
-    // 2. Додаємо стан "глобального завантаження"
+    // 2. Стан "глобального завантаження"
     const [loading, setLoading] = useState(true);
+
+    const { t } = useI18n();
 
     /* ==== LOGIN ==== */
     const login = async (credentials) => {
         try {
             const res = await loginUser(credentials);
-            const { access, refresh, user } = res.data;
+            const { access, refresh, user: userData } = res.data;
 
             saveAuthTokens(access, refresh);
-            saveUserData(user);
-            setUser(user);
+            saveUserData(userData);
+            setUser(userData);
 
             window.dispatchEvent(new Event("storage"));
-            return user;
+            return userData;
         } catch (err) {
             console.error("Login failed:", err);
             throw err;
@@ -56,13 +59,10 @@ export const AuthProvider = ({ children }) => {
 
     /* ==== INITIALIZATION ==== */
     useEffect(() => {
-        // Тут можна додати перевірку валідності токена на бекенді, якщо потрібно.
-        // Наразі ми просто даємо React час змонтувати все і вимикаємо лоадер.
-        // Це прибере ефект "почергової появи" компонентів.
         const init = () => {
             const storedUser = getUserData();
             if (storedUser) setUser(storedUser);
-            setLoading(false); // Додаток готовий до показу
+            setLoading(false);
         };
 
         init();
@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }) => {
         return () => window.removeEventListener("storage", onStorage);
     }, []);
 
-    // Якщо додаток ще ініціалізується — показуємо спінер або просто порожній екран
+    // Екран завантаження
     if (loading) {
         return (
             <div style={{
@@ -84,10 +84,12 @@ export const AuthProvider = ({ children }) => {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                backgroundColor: "var(--bg-main)" // Використовуємо колір фону теми
+                backgroundColor: "var(--bg-main)",
+                color: "var(--text-main)"
             }}>
-                {/* Можна додати красивий спінер тут */}
-                <span>Loading...</span>
+                <span style={{ fontSize: "1.2rem", fontWeight: 500 }}>
+                    {t("authLoading_label")}
+                </span>
             </div>
         );
     }

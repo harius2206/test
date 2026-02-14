@@ -9,6 +9,7 @@ import { useError } from "../../../context/ErrorContext";
 import { ReactComponent as EyeOpen } from "../../../images/eyeOpened.svg";
 import { ReactComponent as EyeClosed } from "../../../images/eyeClosed.svg";
 import ModalMessage from "../../../components/ModalMessage/ModalMessage";
+import { useI18n } from "../../../i18n";
 
 const PASSWORD_HINT = {
     too_common: "Password must not be too common.",
@@ -20,23 +21,24 @@ const PASSWORD_HINT = {
 
 export default function RegisterPage() {
     const { login } = useContext(AuthContext);
+    const { t } = useI18n();
     const navigate = useNavigate();
     const location = useLocation();
     const { showError, showMessage } = useError();
 
-    const [formData, setFormData] = useState({
+    const [rpForm, rpSetForm] = useState({
         username: "",
         email: "",
         password1: "",
         password2: "",
     });
 
-    const [fieldErrors, setFieldErrors] = useState({});
-    const [loading, setLoading] = useState(false);
-    const [info, setInfo] = useState(null);
-    const [showPasswords, setShowPasswords] = useState(false);
+    const [rpFieldErrors, rpSetFieldErrors] = useState({});
+    const [rpLoading, rpSetLoading] = useState(false);
+    const [rpInfo, rpSetInfo] = useState(null);
+    const [rpShowPasswords, rpSetShowPasswords] = useState(false);
 
-    const [modalError, setModalError] = useState({
+    const [rpModalError, rpSetModalError] = useState({
         open: false,
         message: ""
     });
@@ -47,26 +49,26 @@ export default function RegisterPage() {
 
         if (key) {
             (async () => {
-                setLoading(true);
+                rpSetLoading(true);
                 try {
                     await verifyEmail(key);
-                    setInfo("Account verified successfully");
+                    rpSetInfo(t("rpAccountVerified"));
                 } catch (err) {
                     showError(err);
                 } finally {
-                    setLoading(false);
+                    rpSetLoading(false);
                 }
             })();
         }
-    }, [showError]);
+    }, [showError, t]);
 
-    const handleChange = (e) => {
+    const rpHandleChange = (e) => {
         const { name, value } = e.target;
 
-        setFormData({ ...formData, [name]: value });
+        rpSetForm({ ...rpForm, [name]: value });
 
-        if (fieldErrors[name]) {
-            setFieldErrors((prev) => ({ ...prev, [name]: "" }));
+        if (rpFieldErrors[name]) {
+            rpSetFieldErrors((prev) => ({ ...prev, [name]: "" }));
         }
     };
 
@@ -80,32 +82,32 @@ export default function RegisterPage() {
         return PASSWORD_HINT.invalid;
     };
 
-    const handleSubmit = async (e) => {
+    const rpHandleSubmit = async (e) => {
         e.preventDefault();
-        setFieldErrors({});
+        rpSetFieldErrors({});
 
-        if (formData.username.length > 20) {
-            setModalError({
+        if (rpForm.username.length > 20) {
+            rpSetModalError({
                 open: true,
-                message: "Username must be 20 characters or less."
+                message: t("rpUsernameTooLong")
             });
             return;
         }
 
-        if (formData.password1 !== formData.password2) {
-            setFieldErrors({ password2: "Passwords don’t match" });
+        if (rpForm.password1 !== rpForm.password2) {
+            rpSetFieldErrors({ password2: t("rpPasswordsDoNotMatch") });
             return;
         }
 
         try {
-            setLoading(true);
+            rpSetLoading(true);
             await registerUser({
-                username: formData.username,
-                email: formData.email,
-                password1: formData.password1,
-                password2: formData.password2,
+                username: rpForm.username,
+                email: rpForm.email,
+                password1: rpForm.password1,
+                password2: rpForm.password2,
             });
-            showMessage("Registration successful! Please check your email.", "success");
+            showMessage(t("rpRegistrationSuccess"), "success");
         } catch (err) {
             const data = err?.response?.data || err?.data;
             if (data && typeof data === "object") {
@@ -134,19 +136,19 @@ export default function RegisterPage() {
 
                 if (Object.keys(newErrors).length === 0) {
                     newErrors.general =
-                        data.detail || "Registration failed. Please check your data.";
+                        data.detail || t("rpRegistrationFailed");
                 }
 
-                setFieldErrors(newErrors);
+                rpSetFieldErrors(newErrors);
             } else {
                 showError(err);
             }
         } finally {
-            setLoading(false);
+            rpSetLoading(false);
         }
     };
 
-    const handleGitHubLogin = () => {
+    const rpHandleGitHubLogin = () => {
         const clientId = "Ov23lih0hmDrxiIyvXiN";
         const redirectUri = "http://localhost:3000/github/callback";
         const scope = "read:user user:email";
@@ -162,7 +164,7 @@ export default function RegisterPage() {
             `&prompt=${prompt}`;
     };
 
-    const handleGoogleLogin = () => {
+    const rpHandleGoogleLogin = () => {
         const clientId = "86692327760-lm1rijlk59sbq9hg2jm9o858a6b8ohhn.apps.googleusercontent.com";
         const redirectUri = "http://localhost:3000/google/callback/";
         const scope = "openid profile email";
@@ -175,11 +177,11 @@ export default function RegisterPage() {
 
     return (
         <div className="login-container">
-            <h2 className="login-title">Registration</h2>
+            <h2 className="login-title">{t("rpRegistration")}</h2>
 
             <form
                 className="register-form"
-                onSubmit={handleSubmit}
+                onSubmit={rpHandleSubmit}
                 style={{
                     width: "100%",
                     maxWidth: 340,
@@ -192,78 +194,78 @@ export default function RegisterPage() {
                     className="login-input"
                     type="text"
                     name="username"
-                    placeholder="Username"
-                    value={formData.username}
-                    onChange={handleChange}
+                    placeholder={t("rpUsernamePlaceholder")}
+                    value={rpForm.username}
+                    onChange={rpHandleChange}
                     required
                 />
-                {fieldErrors.username && (
-                    <p className="field-error">{fieldErrors.username}</p>
+                {rpFieldErrors.username && (
+                    <p className="field-error">{rpFieldErrors.username}</p>
                 )}
 
                 <input
                     className="login-input"
                     type="email"
                     name="email"
-                    placeholder="Email (optional)"
-                    value={formData.email}
-                    onChange={handleChange}
+                    placeholder={t("rpEmailPlaceholder")}
+                    value={rpForm.email}
+                    onChange={rpHandleChange}
                 />
-                {fieldErrors.email && (
-                    <p className="field-error">{fieldErrors.email}</p>
+                {rpFieldErrors.email && (
+                    <p className="field-error">{rpFieldErrors.email}</p>
                 )}
 
                 <div className="password-wrapper">
                     <input
                         className="login-input"
-                        type={showPasswords ? "text" : "password"}
+                        type={rpShowPasswords ? "text" : "password"}
                         name="password1"
-                        placeholder="Password"
-                        value={formData.password1}
-                        onChange={handleChange}
+                        placeholder={t("rpPasswordPlaceholder")}
+                        value={rpForm.password1}
+                        onChange={rpHandleChange}
                         required
                     />
                     <span
                         className="password-toggle-icon"
-                        onClick={() => setShowPasswords(!showPasswords)}
+                        onClick={() => rpSetShowPasswords(!rpShowPasswords)}
                     >
-                        {showPasswords ? <EyeOpen /> : <EyeClosed />}
+                        {rpShowPasswords ? <EyeOpen /> : <EyeClosed />}
                     </span>
                 </div>
-                {fieldErrors.password1 && (
-                    <p className="field-error">{fieldErrors.password1}</p>
+                {rpFieldErrors.password1 && (
+                    <p className="field-error">{rpFieldErrors.password1}</p>
                 )}
 
                 <div className="password-wrapper">
                     <input
                         className="login-input"
-                        type={showPasswords ? "text" : "password"}
+                        type={rpShowPasswords ? "text" : "password"}
                         name="password2"
-                        placeholder="Confirm password"
-                        value={formData.password2}
-                        onChange={handleChange}
+                        placeholder={t("rpConfirmPasswordPlaceholder")}
+                        value={rpForm.password2}
+                        onChange={rpHandleChange}
                         required
                     />
                 </div>
-                {fieldErrors.password2 && (
-                    <p className="field-error">{fieldErrors.password2}</p>
+                {rpFieldErrors.password2 && (
+                    <p className="field-error">{rpFieldErrors.password2}</p>
                 )}
 
-                {fieldErrors.general && (
-                    <p className="field-error">{fieldErrors.general}</p>
+                {rpFieldErrors.general && (
+                    <p className="field-error">{rpFieldErrors.general}</p>
                 )}
 
                 <button
                     type="submit"
                     className="login-main-btn"
-                    disabled={loading}
+                    disabled={rpLoading}
                     style={{ width: "100%", maxWidth: 340 }}
                 >
-                    {loading ? "Processing..." : "Register"}
+                    {rpLoading ? t("rpProcessing") : t("rpRegistration")}
                 </button>
             </form>
 
-            {info && (
+            {rpInfo && (
                 <p
                     style={{
                         marginTop: 10,
@@ -272,45 +274,45 @@ export default function RegisterPage() {
                         textAlign: "center",
                     }}
                 >
-                    {info}
+                    {rpInfo}
                 </p>
             )}
 
             <div className="login-divider" style={{ maxWidth: 340 }}>
-                <span>or</span>
+                <span>{t("rpOr")}</span>
             </div>
 
             <div className="login-socials">
                 <button
                     className="login-social-btn"
                     type="button"
-                    aria-label="Sign in with GitHub"
-                    onClick={handleGitHubLogin}
+                    aria-label={t("rpGithubLogin")}
+                    onClick={rpHandleGitHubLogin}
                 >
                     <img src={githubIcon} alt="GitHub" />
                 </button>
                 <button
                     className="login-social-btn"
                     type="button"
-                    aria-label="Sign in with Google"
-                    onClick={handleGoogleLogin}
+                    aria-label={t("rpGoogleLogin")}
+                    onClick={rpHandleGoogleLogin}
                 >
                     <img src={googleIcon} alt="Google" />
                 </button>
             </div>
 
             <p className="login-footer">
-                Already have an account?{" "}
+                {t("rpAlreadyHaveAccount")}{" "}
                 <span className="login-link" onClick={() => navigate("/login")}>
-                    Sign in
+                    {t("rpSignIn")}
                 </span>
             </p>
 
             <ModalMessage
-                open={modalError.open}
+                open={rpModalError.open}
                 type="error"
-                message={modalError.message}
-                onClose={() => setModalError({ open: false, message: "" })}
+                message={rpModalError.message}
+                onClose={() => rpSetModalError({ open: false, message: "" })}
             />
         </div>
     );

@@ -12,6 +12,7 @@ import {
     unpinFolder
 } from "../../../api/foldersApi";
 import { useAuth } from "../../../context/AuthContext";
+import { useI18n } from "../../../i18n";
 
 import UserAvatar from "../../../components/avatar/avatar";
 import SortMenu from "../../../components/sortMenu/sortMenu";
@@ -19,7 +20,7 @@ import ModuleCard from "../../../components/ModuleCard/moduleCard";
 import ColoredIcon from "../../../components/coloredIcon";
 import DropdownMenu from "../../../components/dropDownMenu/dropDownMenu";
 import ModalMessage from "../../../components/ModalMessage/ModalMessage";
-import Loader from "../../../components/loader/loader"; // Імпорт лоадера
+import Loader from "../../../components/loader/loader";
 
 import { ReactComponent as StarIcon } from "../../../images/star.svg";
 import { ReactComponent as FolderIcon } from "../../../images/folder.svg";
@@ -42,28 +43,27 @@ export default function PublicProfileLibrary() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user: currentUser } = useAuth();
+    const { t } = useI18n();
 
-    const [userData, setUserData] = useState(null);
-    const [activeTab, setActiveTab] = useState("modules");
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [modalInfo, setModalInfo] = useState({ open: false, type: "info", title: "", message: "" });
+    const [pplUserData, pplSetUserData] = useState(null);
+    const [pplActiveTab, pplSetActiveTab] = useState("modules");
+    const [pplLoading, pplSetLoading] = useState(true);
+    const [pplError, pplSetError] = useState(null);
+    const [pplModalInfo, pplSetModalInfo] = useState({ open: false, type: "info", title: "", message: "" });
 
-    // Стейт для списків контенту
-    const [modulesList, setModulesList] = useState([]);
-    const [foldersList, setFoldersList] = useState([]);
+    const [pplModulesList, pplSetModulesList] = useState([]);
+    const [pplFoldersList, pplSetFoldersList] = useState([]);
 
-    const handleCloseModal = () => setModalInfo(prev => ({ ...prev, open: false }));
+    const pplHandleCloseModal = () => pplSetModalInfo(prev => ({ ...prev, open: false }));
 
-    const loadProfile = useCallback(async () => {
+    const pplLoadProfile = useCallback(async () => {
         if (!id) return;
-        setLoading(true);
+        pplSetLoading(true);
         try {
             const res = await getUserDetails(id);
             const data = res.data;
 
-            // === ФІЛЬТРАЦІЯ ДОСТУПУ ===
-            const hasAccess = (item) => {
+            const pplHasAccess = (item) => {
                 if (item.visible === "public") return true;
                 if (currentUser && String(currentUser.id) === String(data.id)) return true;
                 if (currentUser && item.collaborators && item.collaborators.some(c => String(c.id) === String(currentUser.id))) {
@@ -73,24 +73,21 @@ export default function PublicProfileLibrary() {
                 return false;
             };
 
-            const allowedModules = (data.modules || []).filter(hasAccess);
-            const allowedFolders = (data.folders || []).filter(hasAccess);
-            // ============================
+            const pplAllowedModules = (data.modules || []).filter(pplHasAccess);
+            const pplAllowedFolders = (data.folders || []).filter(pplHasAccess);
 
-            // === ПІДРАХУНОК РЕЙТИНГУ ===
-            let calculatedRating = parseFloat(data.avg_rate || 0);
-            if (calculatedRating === 0 && allowedModules.length > 0) {
-                const ratedModules = allowedModules.filter(m => m.avg_rate && parseFloat(m.avg_rate) > 0);
-                if (ratedModules.length > 0) {
-                    const sum = ratedModules.reduce((acc, m) => acc + parseFloat(m.avg_rate), 0);
-                    calculatedRating = sum / ratedModules.length;
+            let pplCalculatedRating = parseFloat(data.avg_rate || 0);
+            if (pplCalculatedRating === 0 && pplAllowedModules.length > 0) {
+                const pplRatedModules = pplAllowedModules.filter(m => m.avg_rate && parseFloat(m.avg_rate) > 0);
+                if (pplRatedModules.length > 0) {
+                    const sum = pplRatedModules.reduce((acc, m) => acc + parseFloat(m.avg_rate), 0);
+                    pplCalculatedRating = sum / pplRatedModules.length;
                 }
             }
 
-            setUserData({ ...data, avg_rate: calculatedRating });
+            pplSetUserData({ ...data, avg_rate: pplCalculatedRating });
 
-            // Мапінг модулів
-            const mappedModules = allowedModules.map(m => ({
+            const pplMappedModules = pplAllowedModules.map(m => ({
                 ...m,
                 rating: m.avg_rate,
                 flagFrom: getFlagUrl(m.lang_from?.flag),
@@ -102,35 +99,33 @@ export default function PublicProfileLibrary() {
                 is_saved: m.saved,
                 pinned: m.pinned
             }));
-            setModulesList(mappedModules);
+            pplSetModulesList(pplMappedModules);
 
-            // Мапінг папок
-            const mappedFolders = allowedFolders.map(f => ({
+            const pplMappedFolders = pplAllowedFolders.map(f => ({
                 ...f,
                 modules_count: f.modules_count || (f.modules ? f.modules.length : 0),
                 user: { id: data.id, username: data.username, avatar: getFlagUrl(data.avatar) },
                 is_saved: f.saved,
                 pinned: f.pinned
             }));
-            setFoldersList(mappedFolders);
+            pplSetFoldersList(pplMappedFolders);
 
-            setError(null);
-
+            pplSetError(null);
         } catch (err) {
             console.error("Failed to load profile", err);
-            setError("User not found or connection error.");
+            pplSetError(t("pplUserNotFoundError"));
         } finally {
-            setLoading(false);
+            pplSetLoading(false);
         }
-    }, [id, currentUser]);
+    }, [id, currentUser, t]);
 
     useEffect(() => {
-        loadProfile();
-    }, [loadProfile]);
+        pplLoadProfile();
+    }, [pplLoadProfile]);
 
-    const handleSort = (type) => {
-        if (activeTab === "modules") {
-            setModulesList(prev => {
+    const pplHandleSort = (type) => {
+        if (pplActiveTab === "modules") {
+            pplSetModulesList(prev => {
                 const sorted = [...prev];
                 if (type === "date") sorted.sort((a, b) => b.id - a.id);
                 if (type === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
@@ -138,7 +133,7 @@ export default function PublicProfileLibrary() {
                 return sorted;
             });
         } else {
-            setFoldersList(prev => {
+            pplSetFoldersList(prev => {
                 const sorted = [...prev];
                 if (type === "date") sorted.sort((a, b) => b.id - a.id);
                 if (type === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
@@ -147,146 +142,140 @@ export default function PublicProfileLibrary() {
         }
     };
 
-    // --- Module Actions ---
-    const handleSaveModule = async (modId) => {
+    const pplHandleSaveModule = async (modId) => {
         try {
             await saveModule(modId);
-            setModulesList(prev => prev.map(m => m.id === modId ? { ...m, is_saved: true } : m));
-            setModalInfo({ open: true, type: "success", title: "Saved", message: "Module saved successfully." });
+            pplSetModulesList(prev => prev.map(m => m.id === modId ? { ...m, is_saved: true } : m));
+            pplSetModalInfo({ open: true, type: "success", title: t("pplSavedTitle"), message: t("pplModuleSaveSuccess") });
         } catch (err) {
-            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to save module." });
+            pplSetModalInfo({ open: true, type: "error", title: t("pplErrorTitle"), message: t("pplModuleSaveError") });
         }
     };
 
-    const handleUnsaveModule = async (modId) => {
+    const pplHandleUnsaveModule = async (modId) => {
         try {
             await unsaveModule(modId);
-            setModulesList(prev => prev.map(m => m.id === modId ? { ...m, is_saved: false } : m));
+            pplSetModulesList(prev => prev.map(m => m.id === modId ? { ...m, is_saved: false } : m));
         } catch (err) {
-            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to unsave module." });
+            pplSetModalInfo({ open: true, type: "error", title: t("pplErrorTitle"), message: t("pplModuleUnsaveError") });
         }
     };
 
-    const handlePinModule = async (modId) => {
-        setModulesList(prev => prev.map(m => m.id === modId ? { ...m, pinned: true } : m));
+    const pplHandlePinModule = async (modId) => {
+        pplSetModulesList(prev => prev.map(m => m.id === modId ? { ...m, pinned: true } : m));
         try {
             await pinModule(modId);
         } catch (err) {
-            setModulesList(prev => prev.map(m => m.id === modId ? { ...m, pinned: false } : m));
-            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to pin module." });
+            pplSetModulesList(prev => prev.map(m => m.id === modId ? { ...m, pinned: false } : m));
+            pplSetModalInfo({ open: true, type: "error", title: t("pplErrorTitle"), message: t("pplModulePinError") });
         }
     };
 
-    const handleUnpinModule = async (modId) => {
-        setModulesList(prev => prev.map(m => m.id === modId ? { ...m, pinned: false } : m));
+    const pplHandleUnpinModule = async (modId) => {
+        pplSetModulesList(prev => prev.map(m => m.id === modId ? { ...m, pinned: false } : m));
         try {
             await unpinModule(modId);
         } catch (err) {
-            setModulesList(prev => prev.map(m => m.id === modId ? { ...m, pinned: true } : m));
-            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to unpin module." });
+            pplSetModulesList(prev => prev.map(m => m.id === modId ? { ...m, pinned: true } : m));
+            pplSetModalInfo({ open: true, type: "error", title: t("pplErrorTitle"), message: t("pplModuleUnpinError") });
         }
     };
 
-    // --- Folder Actions ---
-    const handlePinFolder = async (folder) => {
-        const isPinned = folder.pinned;
-        setFoldersList(prev => prev.map(f => f.id === folder.id ? { ...f, pinned: !isPinned } : f));
+    const pplHandlePinFolder = async (folder) => {
+        const pplIsPinned = folder.pinned;
+        pplSetFoldersList(prev => prev.map(f => f.id === folder.id ? { ...f, pinned: !pplIsPinned } : f));
         try {
-            if (isPinned) {
+            if (pplIsPinned) {
                 await unpinFolder(folder.id);
             } else {
                 await pinFolder(folder.id);
             }
         } catch (err) {
-            setFoldersList(prev => prev.map(f => f.id === folder.id ? { ...f, pinned: isPinned } : f));
-            setModalInfo({ open: true, type: "error", title: "Error", message: "Pin action failed." });
+            pplSetFoldersList(prev => prev.map(f => f.id === folder.id ? { ...f, pinned: pplIsPinned } : f));
+            pplSetModalInfo({ open: true, type: "error", title: t("pplErrorTitle"), message: t("pplFolderPinError") });
         }
     };
 
-    if (loading) return <Loader fullscreen />; // Замінено на компонент Loader
-    if (error) return <div className="pp-container" style={{textAlign:"center", paddingTop:40, color:"red"}}>{error}</div>;
-    if (!userData) return null;
+    if (pplLoading) return <Loader fullscreen />;
+    if (pplError) return <div className="pp-container" style={{textAlign:"center", paddingTop:40, color:"red"}}>{pplError}</div>;
+    if (!pplUserData) return null;
 
-    const displayRating = userData.avg_rate
-        ? parseFloat(userData.avg_rate).toFixed(1)
+    const pplDisplayRating = pplUserData.avg_rate
+        ? parseFloat(pplUserData.avg_rate).toFixed(1)
         : "0.0";
 
     return (
         <div className="pp-container">
-            {/* Header */}
             <div className="pp-header">
                 <div className="pp-user-info">
                     <UserAvatar
-                        src={getFlagUrl(userData.avatar)}
-                        name={userData.username}
+                        src={getFlagUrl(pplUserData.avatar)}
+                        name={pplUserData.username}
                         size={80}
                         fontSize={32}
                         disableStrictFallback={true}
                     />
                     <div className="pp-text-info">
                         <div className="pp-username-row">
-                            <h2 className="pp-username">{userData.username}</h2>
+                            <h2 className="pp-username">{pplUserData.username}</h2>
                             <div className="pp-rating-badge">
-                                {displayRating} <StarIcon className="pp-star-icon" />
+                                {pplDisplayRating} <StarIcon className="pp-star-icon" />
                             </div>
                         </div>
-                        <p className="pp-bio">{userData.bio || "No bio provided."}</p>
+                        <p className="pp-bio">{pplUserData.bio || t("pplNoBio")}</p>
                     </div>
                 </div>
             </div>
 
-            {/* Tabs */}
             <div className="pp-tabs">
                 <button
-                    className={`pp-tab ${activeTab === "modules" ? "active" : ""}`}
-                    onClick={() => setActiveTab("modules")}
+                    className={`pp-tab ${pplActiveTab === "modules" ? "active" : ""}`}
+                    onClick={() => pplSetActiveTab("modules")}
                 >
-                    Modules ({modulesList.length})
+                    {t("pplModulesTab")} ({pplModulesList.length})
                 </button>
                 <button
-                    className={`pp-tab ${activeTab === "folders" ? "active" : ""}`}
-                    onClick={() => setActiveTab("folders")}
+                    className={`pp-tab ${pplActiveTab === "folders" ? "active" : ""}`}
+                    onClick={() => pplSetActiveTab("folders")}
                 >
-                    Folders ({foldersList.length})
+                    {t("pplFoldersTab")} ({pplFoldersList.length})
                 </button>
             </div>
 
-            {/* Controls */}
             <div className="pp-controls">
-                <SortMenu onSort={handleSort} />
+                <SortMenu onSort={pplHandleSort} />
             </div>
 
-            {/* Content List */}
             <div className="pp-content-list">
-                {activeTab === "modules" ? (
-                    modulesList.length === 0 ? (
-                        <div className="pp-empty">No accessible modules found.</div>
+                {pplActiveTab === "modules" ? (
+                    pplModulesList.length === 0 ? (
+                        <div className="pp-empty">{t("pplNoModules")}</div>
                     ) : (
                         <div className="module-list">
-                            {modulesList.map((module) => (
+                            {pplModulesList.map((module) => (
                                 <ModuleCard
                                     key={module.id}
                                     module={module}
-                                    onSave={handleSaveModule}
-                                    onUnsave={handleUnsaveModule}
-                                    onPin={handlePinModule}
-                                    onUnpin={handleUnpinModule}
+                                    onSave={pplHandleSaveModule}
+                                    onUnsave={pplHandleUnsaveModule}
+                                    onPin={pplHandlePinModule}
+                                    onUnpin={pplHandleUnpinModule}
                                 />
                             ))}
                         </div>
                     )
                 ) : (
-                    foldersList.length === 0 ? (
-                        <div className="pp-empty">No accessible folders found.</div>
+                    pplFoldersList.length === 0 ? (
+                        <div className="pp-empty">{t("pplNoFolders")}</div>
                     ) : (
-                        foldersList.map(folder => {
-                            const menuItems = [
+                        pplFoldersList.map(folder => {
+                            const pplMenuItems = [
                                 {
-                                    label: folder.pinned ? "Unpin" : "Pin",
-                                    onClick: () => handlePinFolder(folder),
+                                    label: folder.pinned ? t("pplUnpin") : t("pplPin"),
+                                    onClick: () => pplHandlePinFolder(folder),
                                     icon: <ColoredIcon icon={PinIcon} size={16} />
                                 },
-                                { label: "Export", onClick: () => {}, icon: <ExportIcon width={16} /> }
+                                { label: t("pplExport"), onClick: () => {}, icon: <ExportIcon width={16} /> }
                             ];
 
                             return (
@@ -298,7 +287,7 @@ export default function PublicProfileLibrary() {
                                 >
                                     <div className="module-info">
                                         <div className="top-row">
-                                            <span className="terms-count">{folder.modules_count} modules</span>
+                                            <span className="terms-count">{folder.modules_count} {t("mpModulesShort")}</span>
                                         </div>
                                         <div className="module-name-row" style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                             <ColoredIcon icon={FolderIcon} color={folder.color || "#6366f1"} size={20} />
@@ -306,7 +295,7 @@ export default function PublicProfileLibrary() {
                                         </div>
                                     </div>
                                     <div className="folder-actions" onClick={e => e.stopPropagation()}>
-                                        <DropdownMenu align="left" width={160} items={menuItems}>
+                                        <DropdownMenu align="left" width={160} items={pplMenuItems}>
                                             <button className="btn-icon">
                                                 <DotsIcon width={16} />
                                             </button>
@@ -320,11 +309,11 @@ export default function PublicProfileLibrary() {
             </div>
 
             <ModalMessage
-                open={modalInfo.open}
-                type={modalInfo.type}
-                title={modalInfo.title}
-                message={modalInfo.message}
-                onClose={handleCloseModal}
+                open={pplModalInfo.open}
+                type={pplModalInfo.type}
+                title={pplModalInfo.title}
+                message={pplModalInfo.message}
+                onClose={pplHandleCloseModal}
             />
         </div>
     );

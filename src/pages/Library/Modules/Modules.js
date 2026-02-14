@@ -15,6 +15,7 @@ import {
 } from "../../../api/modulesApi";
 import { addModuleToFolder, getFolders } from "../../../api/foldersApi";
 import { useAuth } from "../../../context/AuthContext";
+import { useI18n } from "../../../i18n";
 
 import ModuleCard from "../../../components/ModuleCard/moduleCard";
 import SortMenu from "../../../components/sortMenu/sortMenu";
@@ -22,7 +23,7 @@ import PermissionsMenu from "../../../components/permissionMenu/permissionsMenu"
 import ColoredIcon from "../../../components/coloredIcon";
 import ModalMessage from "../../../components/ModalMessage/ModalMessage";
 import Loader from "../../../components/loader/loader";
-import ModuleImportExportModal from "../../../components/ModuleImportExportModal/ModuleImportExportModal"; // NEW IMPORT
+import ModuleImportExportModal from "../../../components/ModuleImportExportModal/ModuleImportExportModal";
 
 import { ReactComponent as FolderIcon } from "../../../images/folder.svg";
 import { useMergeModules } from "../../../hooks/useMergeModules";
@@ -44,26 +45,27 @@ const resolveVisibility = (item) => {
 };
 
 export default function Modules({ source = "library", preloadedModules, preloadedFolders, loadingParent, onRefresh }) {
+    const { t } = useI18n();
     const navigate = useNavigate();
     const containerRef = useRef(null);
     const { user } = useAuth();
 
-    const [modules, setModules] = useState([]);
-    const [folders, setFolders] = useState([]);
-    const [topics, setTopics] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [mModules, mSetModules] = useState([]);
+    const [mFolders, mSetFolders] = useState([]);
+    const [mTopics, mSetTopics] = useState([]);
+    const [mLoading, mSetLoading] = useState(true);
+    const [mError, mSetError] = useState(null);
 
-    const [expandedTags, setExpandedTags] = useState({});
-    const [visibleCount, setVisibleCount] = useState(3);
+    const [mExpandedTags, mSetExpandedTags] = useState({});
+    const [mVisibleCount, mSetVisibleCount] = useState(3);
 
-    const [permissionsTarget, setPermissionsTarget] = useState(null);
-    const [importExportTarget, setImportExportTarget] = useState(null); // NEW STATE
-    const [sortType, setSortType] = useState("date");
-    const [addToFolderTarget, setAddToFolderTarget] = useState(null);
-    const [modalInfo, setModalInfo] = useState({ open: false, type: "info", title: "", message: "" });
+    const [mPermissionsTarget, mSetPermissionsTarget] = useState(null);
+    const [mImportExportTarget, mSetImportExportTarget] = useState(null);
+    const [mSortType, mSetSortType] = useState("date");
+    const [mAddToFolderTarget, mSetAddToFolderTarget] = useState(null);
+    const [mModalInfo, mSetModalInfo] = useState({ open: false, type: "info", title: "", message: "" });
 
-    const handleCloseModal = () => setModalInfo((prev) => ({ ...prev, open: false }));
+    const handleCloseModal = () => mSetModalInfo((prev) => ({ ...prev, open: false }));
 
     const mapModulesData = useCallback((rawModules, currentUser) => {
         return rawModules.map(m => {
@@ -95,65 +97,62 @@ export default function Modules({ source = "library", preloadedModules, preloade
     }, [source]);
 
     const loadData = useCallback(async () => {
-        if (!user || !user.id) { setLoading(false); return; }
+        if (!user || !user.id) { mSetLoading(false); return; }
 
         try {
-            setLoading(true);
+            mSetLoading(true);
 
-            // 1. Завантажуємо модулі
             if (source === "library" && preloadedModules) {
-                setModules(mapModulesData(preloadedModules, user));
+                mSetModules(mapModulesData(preloadedModules, user));
             } else if (source === "saves") {
                 const savedResp = await getSavedModules(user.id);
-                setModules(mapModulesData(savedResp.data.results || savedResp.data || [], user));
+                mSetModules(mapModulesData(savedResp.data.results || savedResp.data || [], user));
             } else {
                 const userResp = await getUserDetails(user.id);
-                setModules(mapModulesData(userResp.data.modules || [], userResp.data));
+                mSetModules(mapModulesData(userResp.data.modules || [], userResp.data));
             }
 
-            // 2. Завантажуємо папки (для меню "Add to folder")
             if (preloadedFolders) {
-                setFolders(preloadedFolders);
+                mSetFolders(preloadedFolders);
             } else {
                 const foldersResp = await getFolders();
-                setFolders(foldersResp.data.results || foldersResp.data || []);
+                mSetFolders(foldersResp.data.results || foldersResp.data || []);
             }
 
-            // 3. Завантажуємо топіки
             const topicsResp = await getTopics();
-            setTopics(topicsResp.data || []);
+            mSetTopics(topicsResp.data || []);
 
-            setError(null);
+            mSetError(null);
         } catch (err) {
             console.error("Failed to load modules/folders", err);
-            setError("Failed to load your modules.");
+            mSetError(t("mErrorLoadingData") || "Failed to load data");
         } finally {
-            setLoading(false);
+            mSetLoading(false);
         }
-    }, [user, source, preloadedModules, preloadedFolders, mapModulesData]);
+    }, [user, source, preloadedModules, preloadedFolders, mapModulesData, t]);
 
     useEffect(() => { loadData(); }, [loadData]);
 
     const merge = useMergeModules(onRefresh || loadData);
 
     useEffect(() => {
-        if (loading) return;
+        if (mLoading) return;
         const element = containerRef.current;
         if (!element) return;
         const computeVisible = () => {
             const width = element.offsetWidth;
             const count = Math.max(3, Math.floor(width / 80) - 5);
-            setVisibleCount(count);
+            mSetVisibleCount(count);
         };
         computeVisible();
         const observer = new ResizeObserver(computeVisible);
         observer.observe(element);
         return () => observer.disconnect();
-    }, [loading]);
+    }, [mLoading]);
 
     const handleSort = (type) => {
-        setSortType(type);
-        setModules(prev => {
+        mSetSortType(type);
+        mSetModules(prev => {
             const sorted = [...prev];
             if (type === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
             else sorted.sort((a, b) => b.id - a.id);
@@ -169,9 +168,9 @@ export default function Modules({ source = "library", preloadedModules, preloade
     const handleSaveModule = async (id) => {
         try {
             await saveModule(id);
-            setModules(prev => prev.map(m => m.id === id ? { ...m, is_saved: true } : m));
+            mSetModules(prev => prev.map(m => m.id === id ? { ...m, is_saved: true } : m));
         } catch (err) {
-            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to save module." });
+            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mSaveModuleFailed") });
         }
     };
 
@@ -179,63 +178,63 @@ export default function Modules({ source = "library", preloadedModules, preloade
         try {
             await unsaveModule(id);
             if (source === "saves") {
-                setModules(prev => prev.filter(m => m.id !== id));
+                mSetModules(prev => prev.filter(m => m.id !== id));
             } else {
-                setModules(prev => prev.map(m => m.id === id ? { ...m, is_saved: false } : m));
+                mSetModules(prev => prev.map(m => m.id === id ? { ...m, is_saved: false } : m));
             }
             if (source !== "saves") refreshParentOrLocal();
         } catch (err) {
-            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to unsave module." });
+            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mUnsaveModuleFailed") });
         }
     };
 
     const handlePinModule = async (id) => {
-        const oldModules = [...modules];
-        setModules(prev => prev.map(m => m.id === id ? { ...m, pinned: true } : m));
+        const oldModules = [...mModules];
+        mSetModules(prev => prev.map(m => m.id === id ? { ...m, pinned: true } : m));
         try {
             await pinModule(id);
             refreshParentOrLocal();
         } catch (err) {
-            setModules(oldModules);
-            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to pin module." });
+            mSetModules(oldModules);
+            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mPinModuleFailed") });
         }
     };
 
     const handleUnpinModule = async (id) => {
-        const oldModules = [...modules];
-        setModules(prev => prev.map(m => m.id === id ? { ...m, pinned: false } : m));
+        const oldModules = [...mModules];
+        mSetModules(prev => prev.map(m => m.id === id ? { ...m, pinned: false } : m));
         try {
             await unpinModule(id);
             refreshParentOrLocal();
         } catch (err) {
-            setModules(oldModules);
-            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to unpin module." });
+            mSetModules(oldModules);
+            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mUnpinModuleFailed") });
         }
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm("Delete this module?")) return;
+        if (!window.confirm(t("mDeleteModuleConfirm"))) return;
         try {
             await deleteModule(id);
             refreshParentOrLocal();
         } catch (err) {
-            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to delete module." });
+            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mDeleteModuleFailed") });
         }
     };
 
     const handleVisibility = async (module) => {
         const newStatus = module.visible === "private" ? "public" : "private";
-        setModules(prev => prev.map(m => m.id === module.id ? { ...m, visible: newStatus } : m));
+        mSetModules(prev => prev.map(m => m.id === module.id ? { ...m, visible: newStatus } : m));
         try {
             await toggleModuleVisibility(module.id, newStatus);
         } catch (err) {
             const oldStatus = module.visible;
-            setModules(prev => prev.map(m => m.id === module.id ? { ...m, visible: oldStatus } : m));
-            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to change visibility." });
+            mSetModules(prev => prev.map(m => m.id === module.id ? { ...m, visible: oldStatus } : m));
+            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mVisibilityChangeFailed") });
         }
     };
 
-    const toggleTags = (id) => setExpandedTags(prev => ({ ...prev, [id]: !prev[id] }));
+    const toggleTags = (id) => mSetExpandedTags(prev => ({ ...prev, [id]: !prev[id] }));
 
     const openModulePermissions = (module, evt, trigger) => {
         let anchor = null;
@@ -243,28 +242,28 @@ export default function Modules({ source = "library", preloadedModules, preloade
             const rect = trigger.getBoundingClientRect();
             anchor = { left: rect.left, top: rect.bottom };
         }
-        setPermissionsTarget({ moduleId: module.id, users: module.collaborators || [], anchor });
+        mSetPermissionsTarget({ moduleId: module.id, users: module.collaborators || [], anchor });
     };
 
     const handleAddUser = async (userObj) => {
-        if (!permissionsTarget) return;
+        if (!mPermissionsTarget) return;
         try {
-            await addModulePermission(permissionsTarget.moduleId, userObj.id);
-            setModules(prev => prev.map(m => m.id === permissionsTarget.moduleId ? { ...m, collaborators: [...(m.collaborators || []), userObj] } : m));
-            setPermissionsTarget(prev => ({ ...prev, users: [...prev.users, userObj] }));
+            await addModulePermission(mPermissionsTarget.moduleId, userObj.id);
+            mSetModules(prev => prev.map(m => m.id === mPermissionsTarget.moduleId ? { ...m, collaborators: [...(m.collaborators || []), userObj] } : m));
+            mSetPermissionsTarget(prev => ({ ...prev, users: [...prev.users, userObj] }));
         } catch (err) {
-            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to add user." });
+            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mAddUserFailed") });
         }
     };
 
     const handleRemoveUser = async (userId) => {
-        if (!permissionsTarget) return;
+        if (!mPermissionsTarget) return;
         try {
-            await removeModulePermission(permissionsTarget.moduleId, userId);
-            setModules(prev => prev.map(m => m.id === permissionsTarget.moduleId ? { ...m, collaborators: (m.collaborators || []).filter(u => u.id !== userId) } : m));
-            setPermissionsTarget(prev => ({ ...prev, users: prev.users.filter(u => u.id !== userId) }));
+            await removeModulePermission(mPermissionsTarget.moduleId, userId);
+            mSetModules(prev => prev.map(m => m.id === mPermissionsTarget.moduleId ? { ...m, collaborators: (m.collaborators || []).filter(u => u.id !== userId) } : m));
+            mSetPermissionsTarget(prev => ({ ...prev, users: prev.users.filter(u => u.id !== userId) }));
         } catch (err) {
-            setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to remove user." });
+            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mRemoveUserFailed") });
         }
     };
 
@@ -274,33 +273,38 @@ export default function Modules({ source = "library", preloadedModules, preloade
             const rect = trigger.getBoundingClientRect();
             anchor = { left: rect.left - 100, top: rect.bottom + 5 };
         }
-        setAddToFolderTarget({ module, anchor });
+        mSetAddToFolderTarget({ module, anchor });
     };
 
     const handleAddToFolder = async (folder) => {
-        if (!addToFolderTarget) return;
-        const { module } = addToFolderTarget;
+        if (!mAddToFolderTarget) return;
+        const { module } = mAddToFolderTarget;
         try {
             await addModuleToFolder(folder.id, module.id);
-            setModalInfo({ open: true, type: "success", title: "Added", message: `Added "${module.name}" to folder "${folder.name}"` });
+            mSetModalInfo({
+                open: true,
+                type: "success",
+                title: t("mAddedTitle"),
+                message: `${t("mAddedPrefix")} "${module.name}" ${t("mAddedToFolder")} "${folder.name}"`
+            });
         } catch (err) {
-            setModalInfo({ open: true, type: "error", title: "Error", message: "Could not add to folder." });
+            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mAddToFolderFailed") });
         } finally {
-            setAddToFolderTarget(null);
+            mSetAddToFolderTarget(null);
         }
     };
 
     const handleFinishMerge = () => {
         merge.executeMerge(
             () => {
-                setModalInfo({ open: true, type: "success", title: "Success", message: "Modules merged successfully!" });
+                mSetModalInfo({ open: true, type: "success", title: t("mAddedTitle"), message: "Modules merged successfully!" });
                 refreshParentOrLocal();
             },
-            () => setModalInfo({ open: true, type: "error", title: "Error", message: "Failed to merge modules." })
+            () => mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: "Failed to merge modules." })
         );
     };
 
-    if (loading) return <Loader />;
+    if (mLoading) return <Loader />;
 
     return (
         <div className="modules-page" ref={containerRef} style={{ position: "relative", minHeight: "200px" }}>
@@ -313,8 +317,8 @@ export default function Modules({ source = "library", preloadedModules, preloade
                     boxShadow: "0 4px 15px rgba(99, 102, 241, 0.4)"
                 }}>
                     <div>
-                        <strong>Merge Mode:</strong> {merge.selectedForMerge.length} modules selected.
-                        <span style={{ marginLeft: 10, fontSize: "13px" }}>Click cards to select/deselect.</span>
+                        <strong>{t("mMergeModeTitle")}</strong> {merge.selectedForMerge.length} {t("mModulesSelected")}
+                        <span style={{ marginLeft: 10, fontSize: "13px" }}>{t("mMergeClickInstruction")}</span>
                     </div>
                     <div style={{ display: "flex", gap: "10px" }}>
                         <button onClick={merge.openFinalMergeModal} disabled={merge.selectedForMerge.length < 2} style={{ padding: "6px 15px", borderRadius: "8px", border: "none", cursor: "pointer", fontWeight: "bold", opacity: merge.selectedForMerge.length < 2 ? 0.6 : 1 }}>Process</button>
@@ -327,18 +331,18 @@ export default function Modules({ source = "library", preloadedModules, preloade
                 <SortMenu onSort={handleSort} />
             </div>
 
-            {error ? (
-                <div style={{ padding: 20, color: "red", textAlign: "center" }}>{error}</div>
-            ) : modules.length === 0 ? (
-                <div style={{ padding: 40, textAlign: "center", color: "gray" }}>You don't have any modules yet.</div>
+            {mError ? (
+                <div style={{ padding: 20, color: "red", textAlign: "center" }}>{mError}</div>
+            ) : mModules.length === 0 ? (
+                <div style={{ padding: 40, textAlign: "center", color: "gray" }}>{t("mNoModulesYet")}</div>
             ) : (
                 <div className="module-list">
-                    {modules.map((module) => (
+                    {mModules.map((module) => (
                         <ModuleCard
                             key={module.id}
                             module={module}
-                            visibleCount={visibleCount}
-                            expanded={expandedTags[module.id]}
+                            visibleCount={mVisibleCount}
+                            expanded={mExpandedTags[module.id]}
                             toggleTags={toggleTags}
 
                             onEdit={source === "saves" ? null : () => navigate("/library/create-module", { state: { mode: "edit", moduleId: module.id, moduleData: module } })}
@@ -349,8 +353,7 @@ export default function Modules({ source = "library", preloadedModules, preloade
                             onAddToFolder={source === "saves" ? null : openAddToFolderMenu}
                             onVisibilityToggle={source === "saves" ? null : handleVisibility}
 
-                            // NEW: Pass export handler
-                            onExport={source === "saves" ? null : () => setImportExportTarget(module)}
+                            onExport={source === "saves" ? null : () => mSetImportExportTarget(module)}
 
                             onSave={handleSaveModule}
                             onUnsave={handleUnsaveModule}
@@ -375,30 +378,30 @@ export default function Modules({ source = "library", preloadedModules, preloade
                         </div>
                         <div style={{ marginBottom: "25px" }}>
                             <select style={{ width: "100%", padding: "10px", marginTop: "5px", borderRadius: "8px", border: "1px solid #ddd" }} value={merge.mergeForm.topic} onChange={(e) => merge.setMergeForm({...merge.mergeForm, topic: e.target.value})}>
-                                <option value="">Select Topic...</option>
-                                {topics.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                                <option value="">{t("mSelectTopicPlaceholder")}</option>
+                                {mTopics.map(tOption => <option key={tOption.id} value={tOption.id}>{tOption.name}</option>)}
                             </select>
                         </div>
                         <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
-                            <button onClick={() => merge.setIsMergeModalOpen(false)} style={{ padding: "10px 20px", background: "#f0f0f0", border: "none", borderRadius: "8px", cursor: "pointer" }}>Back</button>
-                            <button onClick={handleFinishMerge} style={{ padding: "10px 20px", background: "#6366f1", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}>Confirm Merge</button>
+                            <button onClick={() => merge.setIsMergeModalOpen(false)} style={{ padding: "10px 20px", background: "#f0f0f0", border: "none", borderRadius: "8px", cursor: "pointer" }}>{t("mBackButton")}</button>
+                            <button onClick={handleFinishMerge} style={{ padding: "10px 20px", background: "#6366f1", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}>{t("mConfirmMergeButton")}</button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {permissionsTarget && (
-                <div style={{ position: "fixed", left: permissionsTarget.anchor?.left, top: permissionsTarget.anchor?.top, zIndex: 300 }}>
-                    <PermissionsMenu moduleId={permissionsTarget.moduleId} users={permissionsTarget.users} onAddUser={handleAddUser} onRemoveUser={handleRemoveUser} onClose={() => setPermissionsTarget(null)} />
+            {mPermissionsTarget && (
+                <div style={{ position: "fixed", left: mPermissionsTarget.anchor?.left, top: mPermissionsTarget.anchor?.top, zIndex: 300 }}>
+                    <PermissionsMenu moduleId={mPermissionsTarget.moduleId} users={mPermissionsTarget.users} onAddUser={handleAddUser} onRemoveUser={handleRemoveUser} onClose={() => mSetPermissionsTarget(null)} />
                 </div>
             )}
 
-            {addToFolderTarget && (
+            {mAddToFolderTarget && (
                 <>
-                    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 301 }} onClick={() => setAddToFolderTarget(null)} />
-                    <div className="dropdown-menu" style={{ position: "fixed", left: addToFolderTarget.anchor?.left || "50%", top: addToFolderTarget.anchor?.top || "50%", zIndex: 302, background: "white", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", padding: "8px 0", minWidth: "200px", maxHeight: "300px", overflowY: "auto" }}>
-                        <div style={{ padding: "8px 16px", fontWeight: "bold", borderBottom: "1px solid #eee", fontSize: "14px", color: "#666" }}>Add "{addToFolderTarget.module.name}" to:</div>
-                        {folders.length === 0 ? <div style={{ padding: "12px", textAlign: "center", color: "gray", fontSize: "13px" }}>No folders found.</div> : folders.map(folder => (
+                    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 301 }} onClick={() => mSetAddToFolderTarget(null)} />
+                    <div className="dropdown-menu" style={{ position: "fixed", left: mAddToFolderTarget.anchor?.left || "50%", top: mAddToFolderTarget.anchor?.top || "50%", zIndex: 302, background: "white", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", padding: "8px 0", minWidth: "200px", maxHeight: "300px", overflowY: "auto" }}>
+                        <div style={{ padding: "8px 16px", fontWeight: "bold", borderBottom: "1px solid #eee", fontSize: "14px", color: "#666" }}>Add "{mAddToFolderTarget.module.name}" to:</div>
+                        {mFolders.length === 0 ? <div style={{ padding: "12px", textAlign: "center", color: "gray", fontSize: "13px" }}>No folders found.</div> : mFolders.map(folder => (
                             <div key={folder.id} onClick={() => handleAddToFolder(folder)} style={{ padding: "10px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px" }}>
                                 <ColoredIcon icon={FolderIcon} color={folder.color || "#6366f1"} size={18} />
                                 <span style={{ fontSize: "14px", color: "#333" }}>{folder.name}</span>
@@ -408,21 +411,20 @@ export default function Modules({ source = "library", preloadedModules, preloade
                 </>
             )}
 
-            {/* NEW: Import/Export Modal */}
-            {importExportTarget && (
+            {mImportExportTarget && (
                 <ModuleImportExportModal
                     open={true}
-                    onClose={() => setImportExportTarget(null)}
-                    moduleId={importExportTarget.id}
-                    moduleName={importExportTarget.name}
+                    onClose={() => mSetImportExportTarget(null)}
+                    moduleId={mImportExportTarget.id}
+                    moduleName={mImportExportTarget.name}
                     onSuccess={() => {
-                        setImportExportTarget(null);
+                        mSetImportExportTarget(null);
                         refreshParentOrLocal();
                     }}
                 />
             )}
 
-            <ModalMessage open={modalInfo.open} type={modalInfo.type} title={modalInfo.title} message={modalInfo.message} onClose={handleCloseModal} />
+            <ModalMessage open={mModalInfo.open} type={mModalInfo.type} title={mModalInfo.title} message={mModalInfo.message} onClose={handleCloseModal} />
         </div>
     );
 }

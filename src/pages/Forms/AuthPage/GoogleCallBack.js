@@ -1,27 +1,28 @@
-// javascript
 import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { googleLogin } from "../../../api/authApi";
 import { setTokens, saveUserData } from "../../../utils/storage";
 import { useAuth } from "../../../context/AuthContext";
 import ModalMessage from "../../../components/ModalMessage/ModalMessage";
+import { useI18n } from "../../../i18n";
 
 export default function GoogleCallback() {
     const [params] = useSearchParams();
     const navigate = useNavigate();
     const { setUser } = useAuth();
     const handledRef = useRef(false);
+    const { t } = useI18n();
 
     const [modal, setModal] = useState({
         open: true,
         type: "info",
-        message: "Processing Google authorization..."
+        message: t("googleProcessing")
     });
 
     useEffect(() => {
         const code = params.get("code");
         if (!code) {
-            setModal({ open: true, type: "error", message: "No authorization code. Redirecting to login..." });
+            setModal({ open: true, type: "error", message: t("googleNoCode") });
             setTimeout(() => navigate("/login"), 1000);
             return;
         }
@@ -40,15 +41,15 @@ export default function GoogleCallback() {
                 saveUserData(user);
                 setUser(user);
 
-                setModal({ open: true, type: "success", message: "Logged in successfully. Redirecting..." });
+                setModal({ open: true, type: "success", message: t("googleSuccess") });
                 setTimeout(() => navigate("/"), 800);
             })
             .catch((err) => {
                 console.error("Google login failed:", err);
-                setModal({ open: true, type: "error", message: "Google authorization failed. Redirecting to login..." });
+                setModal({ open: true, type: "error", message: t("googleFailed") });
                 setTimeout(() => navigate("/login"), 1200);
             });
-    }, [params, navigate, setUser]);
+    }, [params, navigate, setUser, t]);
 
     return (
         <ModalMessage

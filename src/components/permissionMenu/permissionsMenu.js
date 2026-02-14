@@ -5,6 +5,7 @@ import UserAvatar from "../avatar/avatar";
 import { ReactComponent as CloseIcon } from "../../images/close.svg";
 import { ReactComponent as DeleteIcon } from "../../images/delete.svg";
 import { ReactComponent as AddIcon } from "../../images/add.svg";
+import { useI18n } from "../../i18n";
 import "./permissionMenu.css";
 
 // Хук для debounce
@@ -26,6 +27,7 @@ export default function PermissionsMenu({ moduleId, users = [], onAddUser, onRem
     const [currentUsers, setCurrentUsers] = useState(users);
     const [loadingUsers, setLoadingUsers] = useState(false);
 
+    const { t } = useI18n();
     const debouncedSearch = useDebounce(search, 500);
 
     // 1. Завантажуємо список користувачів з правами при монтуванні (якщо є moduleId)
@@ -84,7 +86,7 @@ export default function PermissionsMenu({ moduleId, users = [], onAddUser, onRem
     return (
         <div className="pm-permissions-menu" onClick={(e) => e.stopPropagation()}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                <span style={{ fontWeight: 600, fontSize: "14px" }}>Manage Access</span>
+                <span style={{ fontWeight: 600, fontSize: "14px" }}>{t("pmHeader_label")}</span>
                 <button className="pm-btn-icon" onClick={onClose}>
                     <CloseIcon />
                 </button>
@@ -92,7 +94,7 @@ export default function PermissionsMenu({ moduleId, users = [], onAddUser, onRem
 
             <input
                 type="text"
-                placeholder="Search user..."
+                placeholder={t("pmSearch_placeholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 style={{
@@ -108,7 +110,9 @@ export default function PermissionsMenu({ moduleId, users = [], onAddUser, onRem
             {search.length > 0 && (
                 <div className="pm-user-list">
                     {loadingSearch ? (
-                        <div style={{ padding: "8px", fontSize: "13px", color: "var(--perm-muted)", textAlign: "center" }}>Searching...</div>
+                        <div style={{ padding: "8px", fontSize: "13px", color: "var(--perm-muted)", textAlign: "center" }}>
+                            {t("pmSearching_label")}
+                        </div>
                     ) : searchResults.length > 0 ? (
                         searchResults.map(user => (
                             <div
@@ -118,7 +122,6 @@ export default function PermissionsMenu({ moduleId, users = [], onAddUser, onRem
                                 style={{ cursor: "pointer" }}
                             >
                                 <div className="pm-user-left">
-                                    {/* Додано disableStrictFallback={true} */}
                                     <UserAvatar
                                         name={user.username}
                                         src={user.avatar}
@@ -134,7 +137,9 @@ export default function PermissionsMenu({ moduleId, users = [], onAddUser, onRem
                             </div>
                         ))
                     ) : (
-                        <div style={{ padding: "8px", fontSize: "13px", color: "var(--perm-muted)", textAlign: "center" }}>No users found</div>
+                        <div style={{ padding: "8px", fontSize: "13px", color: "var(--perm-muted)", textAlign: "center" }}>
+                            {t("pmNoUsers_label")}
+                        </div>
                     )}
                     {searchResults.length > 0 && <div style={{ borderBottom: "1px solid var(--perm-border)", margin: "4px 0" }}></div>}
                 </div>
@@ -143,19 +148,20 @@ export default function PermissionsMenu({ moduleId, users = [], onAddUser, onRem
             {/* Список поточних користувачів */}
             <div className="pm-user-list">
                 {loadingUsers && !search ? (
-                    <div style={{ padding: "8px", textAlign: "center", fontSize: "13px", color: "gray" }}>Loading permissions...</div>
+                    <div style={{ padding: "8px", textAlign: "center", fontSize: "13px", color: "gray" }}>
+                        {t("pmLoading_label")}
+                    </div>
                 ) : (
                     <>
                         {currentUsers.length === 0 && !search && (
                             <div style={{ padding: "8px", fontSize: "13px", color: "var(--perm-muted)", textAlign: "center" }}>
-                                Only you have access
+                                {t("pmOnlyYou_label")}
                             </div>
                         )}
 
                         {currentUsers.map(user => (
                             <div key={user.id} className="pm-user-item">
                                 <div className="pm-user-left">
-                                    {/* Додано disableStrictFallback={true} */}
                                     <UserAvatar
                                         name={user.username}
                                         src={user.avatar}
@@ -166,11 +172,11 @@ export default function PermissionsMenu({ moduleId, users = [], onAddUser, onRem
                                     <span className="pm-user-name">{user.username}</span>
                                 </div>
                                 <div className="pm-user-right">
-                                    <span className="pm-user-role">Editor</span>
+                                    <span className="pm-user-role">{t("pmRoleEditor_label")}</span>
                                     <button
                                         className="pm-btn-icon"
                                         onClick={() => handleRemoveClick(user.id)}
-                                        title="Remove access"
+                                        title={t("pmRemoveAccess_label")}
                                     >
                                         <DeleteIcon />
                                     </button>
@@ -182,7 +188,9 @@ export default function PermissionsMenu({ moduleId, users = [], onAddUser, onRem
             </div>
 
             <div className="pm-permissions-footer">
-                <button className="pm-btn-primary" onClick={onClose}>Done</button>
+                <button className="pm-btn-primary" onClick={onClose}>
+                    {t("pmDone_btn")}
+                </button>
             </div>
         </div>
     );

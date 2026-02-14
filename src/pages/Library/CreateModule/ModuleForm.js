@@ -5,7 +5,8 @@ import ClickOutsideWrapper from "../../../components/clickOutsideWrapper";
 import Loader from "../../../components/loader/loader";
 import { getLanguages, getTopics } from "../../../api/modulesApi";
 import ModuleImportExportModal from "../../../components/ModuleImportExportModal/ModuleImportExportModal";
-import { translateWords } from "../../../api/deeplApi"; // NEW IMPORT
+import { translateWords } from "../../../api/deeplApi";
+import { useI18n } from "../../../i18n";
 
 import { ReactComponent as CloseIcon } from "../../../images/close.svg";
 import { ReactComponent as TrashIcon } from "../../../images/delete.svg";
@@ -24,6 +25,7 @@ export default function ModuleForm({
                                        onSubmit,
                                        onSubmitAndPractice
                                    }) {
+    const { t } = useI18n();
     const navigate = useNavigate();
 
     // --- Data Sources ---
@@ -99,7 +101,7 @@ export default function ModuleForm({
             if (topicsList.length > 0 && initialData.topic) {
                 if (typeof initialData.topic === 'object') setSelectedTopic(initialData.topic);
                 else if (typeof initialData.topic === 'number') {
-                    const found = topicsList.find(t => t.id === initialData.topic);
+                    const found = topicsList.find(topicItem => topicItem.id === initialData.topic);
                     if (found) setSelectedTopic(found);
                 }
             }
@@ -126,12 +128,11 @@ export default function ModuleForm({
     };
 
     const handleSubmit = () => {
-        if (!name.trim()) return alert("Please enter a module name");
-        if (!selectedLangLeft || !selectedLangRight) return alert("Please select languages");
+        if (!name.trim()) return alert(t("mfEnterModuleName"));
+        if (!selectedLangLeft || !selectedLangRight) return alert(t("mfSelectLanguages"));
 
-        // Валідація: фільтруємо порожні картки
         const validCards = cards.filter(c => c.term.trim() || c.definition.trim());
-        if (validCards.length === 0) return alert("Please add at least one card");
+        if (validCards.length === 0) return alert(t("mfAddAtLeastOneCard"));
 
         const moduleObj = {
             id: initialData.id,
@@ -149,7 +150,7 @@ export default function ModuleForm({
     const handleDeeplTranslate = async (cardId, term) => {
         if (!term) return;
         if (!selectedLangRight) {
-            alert("Please select a target language (Right) first.");
+            alert(t("mfTranslateTargetLangFirst"));
             return;
         }
 
@@ -158,10 +159,7 @@ export default function ModuleForm({
         try {
             const targetLang = selectedLangRight.id;
 
-            const response = await translateWords(
-                [term],
-                targetLang
-            );
+            const response = await translateWords([term], targetLang);
 
             const translatedData = response.data.translations[0];
             const translatedText = typeof translatedData === 'string' ? translatedData : translatedData?.text;
@@ -181,7 +179,6 @@ export default function ModuleForm({
         }
     };
 
-
     const handleImportedCards = (importedCards) => {
         if (!importedCards || importedCards.length === 0) return;
 
@@ -197,7 +194,9 @@ export default function ModuleForm({
 
                 <div className="create-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <h2 className="create-title">{mode === "edit" ? "Edit module" : "Create new module"}</h2>
+                        <h2 className="create-title">
+                            {mode === "edit" ? t("mfEditModuleTitle") : t("mfCreateModuleTitle")}
+                        </h2>
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -207,18 +206,18 @@ export default function ModuleForm({
                                 width={130}
                                 height={39}
                                 onClick={() => setShowImportModal(true)}
-                                title="Import CSV/XLSX to fill cards"
+                                title={t("mfImportTitle")}
                             >
                                 <ReplaceIcon style={{ marginRight: 6, width: 16, height: 16 }} />
-                                Import
+                                {t("mfImportCards")}
                             </Button>
 
                             <Button variant="static" width={120} height={39} onClick={handleSubmit} disabled={loading}>
-                                {loading ? <div style={{ transform: 'scale(0.5)' }}><Loader /></div> : (mode === "edit" ? "Save" : "Create")}
+                                {loading ? <div style={{ transform: 'scale(0.5)' }}><Loader /></div> : (mode === "edit" ? t("mfSaveButton") : t("mfCreateButton"))}
                             </Button>
                         </div>
 
-                        <button onClick={() => navigate(-1)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }} title="Close">
+                        <button onClick={() => navigate(-1)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }} title={t("mfCloseButton")}>
                             <CloseIcon width={28} height={28} />
                         </button>
                     </div>
@@ -228,7 +227,7 @@ export default function ModuleForm({
                     <ClickOutsideWrapper onClickOutside={() => setOpenLeft(false)}>
                         <div className="lang-dropdown">
                             <Button variant="toggle" active={openLeft} onClick={() => setOpenLeft(!openLeft)} width={160} height={32}>
-                                {selectedLangLeft ? selectedLangLeft.name : "Select Language"}
+                                {selectedLangLeft ? selectedLangLeft.name : t("mfSelectLanguage")}
                                 {openLeft ? <ArrowUp width={14} height={14} style={{ marginLeft: 6 }} /> : <ArrowDown width={14} height={14} style={{ marginLeft: 6 }} />}
                             </Button>
                             {openLeft && (
@@ -248,7 +247,7 @@ export default function ModuleForm({
                     <ClickOutsideWrapper onClickOutside={() => setOpenRight(false)}>
                         <div className="lang-dropdown">
                             <Button variant="toggle" active={openRight} onClick={() => setOpenRight(!openRight)} width={160} height={32}>
-                                {selectedLangRight ? selectedLangRight.name : "Select Language"}
+                                {selectedLangRight ? selectedLangRight.name : t("mfSelectLanguage")}
                                 {openRight ? <ArrowUp width={14} height={14} style={{ marginLeft: 6 }} /> : <ArrowDown width={14} height={14} style={{ marginLeft: 6 }} />}
                             </Button>
                             {openRight && (
@@ -263,14 +262,14 @@ export default function ModuleForm({
                 </div>
 
                 <div className="module-inputs">
-                    <input className="module-input" placeholder="Name" value={name} onChange={e => setName(e.target.value)} />
+                    <input className="module-input" placeholder={t("mfModuleNamePlaceholder")} value={name} onChange={e => setName(e.target.value)} />
 
                     <div style={{ width: "100%" }}>
                         <ClickOutsideWrapper onClickOutside={() => setOpenTopicDropdown(false)}>
                             <div className="lang-dropdown" style={{ width: '100%' }}>
                                 <div className="module-input" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }} onClick={() => setOpenTopicDropdown(!openTopicDropdown)}>
                                     <span style={{ color: selectedTopic ? 'inherit' : '#757575' }}>
-                                        {selectedTopic ? selectedTopic.name : "Select Topic"}
+                                        {selectedTopic ? selectedTopic.name : t("mfSelectTopic")}
                                     </span>
                                     {openTopicDropdown ? <ArrowUp width={14} height={14} /> : <ArrowDown width={14} height={14} />}
                                 </div>
@@ -283,7 +282,7 @@ export default function ModuleForm({
                                                 </div>
                                             ))
                                         ) : (
-                                            <div className="dropdown-item" style={{ cursor: 'default', color: 'gray' }}>No topics available</div>
+                                            <div className="dropdown-item" style={{ cursor: 'default', color: 'gray' }}>{t("mfNoTopicsAvailable")}</div>
                                         )}
                                     </div>
                                 )}
@@ -291,10 +290,9 @@ export default function ModuleForm({
                         </ClickOutsideWrapper>
                     </div>
 
-                    <input className="module-input" placeholder="Description (optional)" value={description} onChange={e => setDescription(e.target.value)} />
+                    <input className="module-input" placeholder={t("mfModuleDescriptionPlaceholder")} value={description} onChange={e => setDescription(e.target.value)} />
                 </div>
 
-                {/* --- Cards List --- */}
                 <div className="cards-list">
                     {cards.map((card, idx) => (
                         <div className="card-row" key={card.id}>
@@ -307,35 +305,33 @@ export default function ModuleForm({
                                 <div className="card-separator" />
                                 <div className="card-fields">
                                     <div className="field-with-label">
-                                        <input className="card-input" placeholder="Term" value={card.term} onChange={(e) => handleCardChange(card.id, "term", e.target.value)} />
-                                        <div className="field-label">Term</div>
+                                        <input className="card-input" placeholder={t("mfTermLabel")} value={card.term} onChange={(e) => handleCardChange(card.id, "term", e.target.value)} />
+                                        <div className="field-label">{t("mfTermLabel")}</div>
                                     </div>
                                     <div className="field-with-label">
-                                        <input className="card-input" placeholder="Definition" value={card.definition} onChange={(e) => handleCardChange(card.id, "definition", e.target.value)} />
-                                        <div className="field-label">Definition</div>
+                                        <input className="card-input" placeholder={t("mfDefinitionLabel")} value={card.definition} onChange={(e) => handleCardChange(card.id, "definition", e.target.value)} />
+                                        <div className="field-label">{t("mfDefinitionLabel")}</div>
                                     </div>
 
-                                    {/* DEEPL INTEGRATION */}
                                     <div className="deepl-link">
                                         <button
                                             type="button"
-                                            className="deepl-btn" // Ви можете додати стилі для .deepl-btn в CSS, наприклад background: none; border: none; cursor: pointer;
+                                            className="deepl-btn"
                                             style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', padding: 0 }}
                                             onClick={() => handleDeeplTranslate(card.id, card.term)}
                                             disabled={translatingCardId === card.id || !card.term}
-                                            title="Translate with DeepL"
+                                            title={t("mfDeeplTranslate")}
                                         >
                                             <DeeplIcon className="deepl-icon" style={{ opacity: translatingCardId === card.id ? 0.5 : 1 }}/>
                                             <span style={{ color: 'var(--text-color)', fontSize: '12px' }}>
-                                                {translatingCardId === card.id ? "Loading..." : "DeepL"}
+                                                {translatingCardId === card.id ? t("mfDeeplLoading") : t("mfDeeplTranslate")}
                                             </span>
                                         </button>
                                     </div>
-
                                 </div>
                             </div>
                             <div className="card-actions-col">
-                                <button className="icon-top-btn delete-card-btn" onClick={(e) => handleRemoveCard(e, card.id)} disabled={cards.length <= 1} title="Remove card">
+                                <button className="icon-top-btn delete-card-btn" onClick={(e) => handleRemoveCard(e, card.id)} disabled={cards.length <= 1} title={t("mfRemoveCard")}>
                                     <TrashIcon width={16} height={16} />
                                 </button>
                             </div>
@@ -343,14 +339,17 @@ export default function ModuleForm({
                     ))}
                 </div>
 
-                <div className="card-actions"><Button variant="hover" width={140} height={39} onClick={handleAddCard}>+ Add card</Button></div>
+                <div className="card-actions">
+                    <Button variant="hover" width={140} height={39} onClick={handleAddCard}>
+                        {t("mfAddCard")}
+                    </Button>
+                </div>
                 <div className="bottom-actions">
                     <Button variant="static" width={100} height={33} onClick={handleSubmit} disabled={loading}>
-                        {loading ? <div style={{ transform: 'scale(0.5)' }}><Loader /></div> : (mode === "edit" ? "Save" : "Create")}
+                        {loading ? <div style={{ transform: 'scale(0.5)' }}><Loader /></div> : (mode === "edit" ? t("mfSaveButton") : t("mfCreateButton"))}
                     </Button>
                 </div>
 
-                {/* --- Import Modal --- */}
                 <ModuleImportExportModal
                     open={showImportModal}
                     onClose={() => setShowImportModal(false)}
@@ -366,4 +365,3 @@ export default function ModuleForm({
         </div>
     );
 }
-

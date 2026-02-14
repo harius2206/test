@@ -15,6 +15,7 @@ import { getUserDetails, getUsersRatings } from "../../api/usersApi";
 import { useError } from "../../context/ErrorContext";
 import { useAuth } from "../../context/AuthContext";
 import { getUserData, savePendingEmail, saveUserData } from "../../utils/storage";
+import { useI18n } from "../../i18n";
 
 // Components & Icons
 import { ReactComponent as ArrowLeft } from "../../images/arrowLeft.svg";
@@ -24,11 +25,10 @@ import { ReactComponent as FolderIcon } from "../../images/folder.svg";
 import ColoredIcon from "../../components/coloredIcon";
 import UserAvatar from "../../components/avatar/avatar";
 import DiagonalFlagRect from "../../components/diagonalFlagRect43";
-import Loader from "../../components/loader/loader"; // Імпорт лоадера
+import Loader from "../../components/loader/loader";
 
 import "./mainPage.css";
 
-// Helper for flags
 const getFlagUrl = (url) => {
     if (!url) return null;
     if (url.startsWith("http") || url.startsWith("data:")) return url;
@@ -42,11 +42,12 @@ export default function MainPage() {
     const navigate = useNavigate();
     const { user } = useAuth();
     const { showMessage, showError } = useError();
+    const { t } = useI18n();
 
-    const [latestViewed, setLatestViewed] = useState([]);
-    const [popularModules, setPopularModules] = useState([]);
-    const [bestAuthors, setBestAuthors] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [mpLatestViewed, mpSetLatestViewed] = useState([]);
+    const [mpPopularModules, mpSetPopularModules] = useState([]);
+    const [mpBestAuthors, mpSetBestAuthors] = useState([]);
+    const [mpLoading, mpSetLoading] = useState(true);
 
     // Email Verification Logic
     useEffect(() => {
@@ -69,22 +70,22 @@ export default function MainPage() {
                         saveUserData(updatedUser);
                     }
                 }
-                showMessage("Email successfully verified!", "success");
+                showMessage(t("mpEmailVerifiedSuccess"), "success");
                 setTimeout(() => { navigate("/"); }, 50);
             } catch (err) {
                 console.error("verifyNewEmail failed:", err);
-                showError("Email verification failed.");
+                showError(t("mpEmailVerificationError"));
             }
         })();
-    }, [navigate, showMessage, showError]);
+    }, [navigate, showMessage, showError, t]);
 
     // Data Fetching Logic
     useEffect(() => {
         const fetchData = async () => {
             try {
-                setLoading(true);
+                mpSetLoading(true);
 
-                // A. Latest Viewed (Modules + Folders)
+                // A. Latest Viewed
                 let myRecent = [];
                 if (user?.id) {
                     const userDetails = await getUserDetails(user.id);
@@ -94,7 +95,7 @@ export default function MainPage() {
                     const mixed = [...modules, ...folders].sort((a, b) => b.id - a.id);
                     myRecent = mixed.slice(0, 10);
                 }
-                setLatestViewed(myRecent);
+                mpSetLatestViewed(myRecent);
 
                 // B. Popular Modules
                 const modulesResp = await getModules();
@@ -107,19 +108,19 @@ export default function MainPage() {
                     })
                     .sort((a, b) => parseFloat(b.avg_rate) - parseFloat(a.avg_rate))
                     .slice(0, 10);
-                setPopularModules(popular);
+                mpSetPopularModules(popular);
 
                 // C. Best Authors
                 const authorsResp = await getUsersRatings();
                 const authors = authorsResp.data.results || authorsResp.data || [];
                 const filteredAuthors = authors.filter(a => String(a.id) !== String(user?.id));
 
-                setBestAuthors(filteredAuthors.slice(0, 100));
+                mpSetBestAuthors(filteredAuthors.slice(0, 100));
 
             } catch (error) {
                 console.error("Failed to load main page data:", error);
             } finally {
-                setLoading(false);
+                mpSetLoading(false);
             }
         };
 
@@ -133,19 +134,18 @@ export default function MainPage() {
         1000: { slidesPerView: 4 },
     };
 
-    // Замість напису "Loading..." на початку
-    if (loading && latestViewed.length === 0 && popularModules.length === 0) {
+    if (mpLoading && mpLatestViewed.length === 0 && mpPopularModules.length === 0) {
         return <Loader fullscreen />;
     }
 
     return (
         <div className="mp-wrapper">
 
-            {/* --- LATEST VIEWED (Modules & Folders) --- */}
+            {/* --- LATEST VIEWED --- */}
             <section className="mp-section">
-                <h2 className="mp-title">Latest viewed</h2>
-                {latestViewed.length === 0 ? (
-                    <div className="mp-empty">You haven’t watched anything yet</div>
+                <h2 className="mp-title">{t("mpLatestViewed")}</h2>
+                {mpLatestViewed.length === 0 ? (
+                    <div className="mp-empty">{t("mpLatestEmpty")}</div>
                 ) : (
                     <div className="mp-slider-wrapper">
                         <div className="mp-slider-frame">
@@ -156,7 +156,7 @@ export default function MainPage() {
                             <Swiper
                                 key="latest-swiper"
                                 modules={[Navigation, Autoplay]}
-                                loop={latestViewed.length > 4}
+                                loop={mpLatestViewed.length > 4}
                                 autoplay={{ delay: 3000, disableOnInteraction: false }}
                                 navigation={{ prevEl: ".prev-latest", nextEl: ".next-latest" }}
                                 observer={true}
@@ -164,15 +164,15 @@ export default function MainPage() {
                                 spaceBetween={16}
                                 breakpoints={commonBreakpoints}
                             >
-                                {latestViewed.map((item) => {
+                                {mpLatestViewed.map((item) => {
                                     const isFolder = item.type === 'folder';
                                     const itemUserId = typeof item.user === 'object' ? item.user?.id : item.user;
                                     const isMyItem = String(itemUserId) === String(user?.id);
                                     const authorName = typeof item.user === 'object' ? item.user?.username : "User";
                                     const topicName = item.topic?.name || (typeof item.topic === 'string' ? item.topic : "");
                                     const countText = isFolder
-                                        ? `${item.modules_count || 0} modules`
-                                        : `${item.cards_count || (item.cards ? item.cards.length : 0)} terms`;
+                                        ? `${item.modules_count || 0} ${t("mpModules")}`
+                                        : `${item.cards_count || (item.cards ? item.cards.length : 0)} ${t("mpTerms")}`;
 
                                     const handleClick = () => {
                                         if (isFolder) {
@@ -184,24 +184,17 @@ export default function MainPage() {
 
                                     return (
                                         <SwiperSlide key={`${item.type}-${item.id}`}>
-                                            <div
-                                                className="mp-folder-card"
-                                                onClick={handleClick}
-                                            >
+                                            <div className="mp-folder-card" onClick={handleClick}>
                                                 <div className="mp-folder-header">
                                                     <div style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
                                                         {isFolder && <ColoredIcon icon={FolderIcon} color={item.color || "#6366f1"} size={16} />}
                                                         <span className="mp-folder-count">{countText}</span>
                                                     </div>
-
-                                                    <span className="mp-folder-name" title={item.name}>
-                                                        {item.name}
-                                                    </span>
+                                                    <span className="mp-folder-name" title={item.name}>{item.name}</span>
                                                 </div>
-
                                                 <div className="mp-folder-meta">
                                                     {!isFolder && topicName && <span className="mp-folder-topic">{topicName}</span>}
-                                                    {!isMyItem && <span>by {authorName}</span>}
+                                                    {!isMyItem && <span>{t("mpBy")} {authorName}</span>}
                                                 </div>
                                             </div>
                                         </SwiperSlide>
@@ -219,9 +212,9 @@ export default function MainPage() {
 
             {/* --- POPULAR MODULES --- */}
             <section className="mp-section">
-                <h2 className="mp-title">Popular modules</h2>
-                {popularModules.length === 0 ? (
-                    <div className="mp-empty">No popular modules yet</div>
+                <h2 className="mp-title">{t("mpPopularModules")}</h2>
+                {mpPopularModules.length === 0 ? (
+                    <div className="mp-empty">{t("mpPopularEmpty")}</div>
                 ) : (
                     <div className="mp-slider-wrapper">
                         <div className="mp-slider-frame">
@@ -232,7 +225,7 @@ export default function MainPage() {
                             <Swiper
                                 key="modules-swiper"
                                 modules={[Navigation, Autoplay]}
-                                loop={popularModules.length > 4}
+                                loop={mpPopularModules.length > 4}
                                 autoplay={{ delay: 3500, disableOnInteraction: false }}
                                 navigation={{ prevEl: ".prev-mod", nextEl: ".next-mod" }}
                                 observer={true}
@@ -240,31 +233,22 @@ export default function MainPage() {
                                 spaceBetween={16}
                                 breakpoints={commonBreakpoints}
                             >
-                                {popularModules.map((m) => {
+                                {mpPopularModules.map((m) => {
                                     const flag1 = getFlagUrl(m.lang_from?.flag);
                                     const flag2 = getFlagUrl(m.lang_to?.flag);
                                     const rating = m.avg_rate ? parseFloat(m.avg_rate).toFixed(1) : "0.0";
                                     const words = m.cards_count || (m.cards ? m.cards.length : 0);
                                     const authorName = m.user?.username || "Unknown";
-                                    const description = m.description || "No description provided.";
+                                    const description = m.description || t("mpNoDescription");
 
                                     return (
                                         <SwiperSlide key={m.id}>
-                                            <div
-                                                className="mp-module-card"
-                                                onClick={() => navigate(`/library/module-view?id=${m.id}`)}
-                                                style={{cursor: "pointer"}}
-                                            >
+                                            <div className="mp-module-card" onClick={() => navigate(`/library/module-view?id=${m.id}`)}>
                                                 <div className="mp-card-header">
                                                     <div className="mp-module-top">
                                                         <h4 className="mp-module-name" title={m.name}>{m.name}</h4>
                                                         {(flag1 || flag2) && (
-                                                            <DiagonalFlagRect
-                                                                flag1={flag1}
-                                                                flag2={flag2}
-                                                                width={20}
-                                                                height={15}
-                                                            />
+                                                            <DiagonalFlagRect flag1={flag1} flag2={flag2} width={20} height={15} />
                                                         )}
                                                     </div>
                                                     <div className="mp-rating">
@@ -272,17 +256,11 @@ export default function MainPage() {
                                                         <StarIcon className="mp-star" />
                                                     </div>
                                                 </div>
-
-                                                <p className="mp-module-desc">
-                                                    {description}
-                                                </p>
-
+                                                <p className="mp-module-desc">{description}</p>
                                                 <div className="mp-card-bottom">
-                                                    <span>{words} words</span>
+                                                    <span>{words} {t("mpWords")}</span>
                                                     <div className="mp-bottom-divider" />
-                                                    <span className="mp-author-text" title={authorName}>
-                                                        {authorName}
-                                                    </span>
+                                                    <span className="mp-author-text" title={authorName}>{authorName}</span>
                                                 </div>
                                             </div>
                                         </SwiperSlide>
@@ -300,9 +278,9 @@ export default function MainPage() {
 
             {/* --- BEST AUTHORS --- */}
             <section className="mp-section">
-                <h2 className="mp-title">Best authors</h2>
-                {bestAuthors.length === 0 ? (
-                    <div className="mp-empty">No authors found</div>
+                <h2 className="mp-title">{t("mpBestAuthors")}</h2>
+                {mpBestAuthors.length === 0 ? (
+                    <div className="mp-empty">{t("mpAuthorsEmpty")}</div>
                 ) : (
                     <div className="mp-slider-wrapper">
                         <div className="mp-slider-frame">
@@ -313,7 +291,7 @@ export default function MainPage() {
                             <Swiper
                                 key="authors-swiper"
                                 modules={[Navigation, Autoplay]}
-                                loop={bestAuthors.length > 4}
+                                loop={mpBestAuthors.length > 4}
                                 autoplay={{ delay: 3200, disableOnInteraction: false }}
                                 navigation={{ prevEl: ".prev-auth", nextEl: ".next-auth" }}
                                 observer={true}
@@ -321,13 +299,9 @@ export default function MainPage() {
                                 spaceBetween={16}
                                 breakpoints={commonBreakpoints}
                             >
-                                {bestAuthors.map((a) => (
+                                {mpBestAuthors.map((a) => (
                                     <SwiperSlide key={a.id}>
-                                        <div
-                                            className="mp-author-card"
-                                            onClick={() => navigate(`/profile/public/${a.id}`)}
-                                            style={{cursor: "pointer"}}
-                                        >
+                                        <div className="mp-author-card" onClick={() => navigate(`/profile/public/${a.id}`)}>
                                             <UserAvatar
                                                 name={a.username}
                                                 size={50}
@@ -341,7 +315,7 @@ export default function MainPage() {
                                                     <span>{a.avg_rate ? parseFloat(a.avg_rate).toFixed(1) : "0.0"}</span>
                                                 </div>
                                                 <div className="mp-author-modules">
-                                                    {a.public_modules_count || 0} modules
+                                                    {a.public_modules_count || 0} {t("mpModulesShort")}
                                                 </div>
                                             </div>
                                         </div>

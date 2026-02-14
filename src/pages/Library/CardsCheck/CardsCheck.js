@@ -3,76 +3,75 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import CardsCheckCard from "../../../components/cardsCheckCard/cardsCheckCard";
 import CardsCheckResult from "../../../components/cardsCheckResult/cardsCheckResult";
 import closeIcon from "../../../images/close.svg";
-import { getModuleById, updateCardLearnStatus } from "../../../api/modulesApi"; // Використовуємо getModuleById для отримання карток конкретного модуля
+import { getModuleById, updateCardLearnStatus } from "../../../api/modulesApi";
+import { useI18n } from "../../../i18n";
 import "./cardsCheck.css";
 
 export default function CardsCheck() {
+    const { t } = useI18n();
     const location = useLocation();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
-    const moduleIdFromUrl = searchParams.get("id");
-    const originatingModule = location.state?.module;
-    const moduleId = moduleIdFromUrl || originatingModule?.id;
+    const ccModuleIdFromUrl = searchParams.get("id");
+    const ccOriginatingModule = location.state?.module;
+    const ccModuleId = ccModuleIdFromUrl || ccOriginatingModule?.id;
 
-    const [moduleName, setModuleName] = useState(originatingModule?.name || "Module");
+    const [ccModuleName, ccSetModuleName] = useState(ccOriginatingModule?.name || t("ccModuleLabel"));
+    const [ccCards, ccSetCards] = useState([]);
+    const [ccLoading, ccSetLoading] = useState(true);
+    const [ccCurrent, ccSetCurrent] = useState(0);
+    const [ccLearned, ccSetLearned] = useState(0);
+    const [ccNotLearned, ccSetNotLearned] = useState(0);
+    const [ccFinished, ccSetFinished] = useState(false);
+    const [ccTime, ccSetTime] = useState(0);
 
-    const [cards, setCards] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    const [current, setCurrent] = useState(0);
-    const [learned, setLearned] = useState(0);
-    const [notLearned, setNotLearned] = useState(0);
-    const [finished, setFinished] = useState(false);
-
-    const [time, setTime] = useState(0);
-    const intervalRef = useRef(null);
+    const ccIntervalRef = useRef(null);
 
     useEffect(() => {
-        if (moduleId) {
-            setLoading(true);
-            getModuleById(moduleId)
+        if (ccModuleId) {
+            ccSetLoading(true);
+            getModuleById(ccModuleId)
                 .then((res) => {
                     const data = res.data;
-                    if (data.name) setModuleName(data.name);
+                    if (data.name) ccSetModuleName(data.name);
 
                     const loadedCards = (data.cards || []).map(c => ({
                         ...c,
                         term: c.original,
                         definition: c.translation
                     }));
-                    setCards(loadedCards);
+                    ccSetCards(loadedCards);
                 })
                 .catch((err) => {
                     console.error("Error fetching module cards:", err);
-                    setCards([]);
+                    ccSetCards([]);
                 })
                 .finally(() => {
-                    setLoading(false);
+                    ccSetLoading(false);
                 });
         } else {
-            setLoading(false);
+            ccSetLoading(false);
         }
-    }, [moduleId]);
+    }, [ccModuleId]);
 
     // Таймер
     useEffect(() => {
-        if (!loading && cards.length > 0 && !finished) {
-            intervalRef.current = setInterval(() => {
-                setTime((prev) => prev + 1);
+        if (!ccLoading && ccCards.length > 0 && !ccFinished) {
+            ccIntervalRef.current = setInterval(() => {
+                ccSetTime((prev) => prev + 1);
             }, 1000);
         }
-        return () => clearInterval(intervalRef.current);
-    }, [loading, cards.length, finished]);
+        return () => clearInterval(ccIntervalRef.current);
+    }, [ccLoading, ccCards.length, ccFinished]);
 
-    const handleAnswer = async (isLearned) => {
-        if (isLearned) setLearned((prev) => prev + 1);
-        else setNotLearned((prev) => prev + 1);
+    const ccHandleAnswer = async (isLearned) => {
+        if (isLearned) ccSetLearned((prev) => prev + 1);
+        else ccSetNotLearned((prev) => prev + 1);
 
-        const currentCard = cards[current];
+        const currentCard = ccCards[ccCurrent];
         if (currentCard && currentCard.id) {
             try {
-
                 await updateCardLearnStatus(currentCard.id, isLearned, {
                     original: currentCard.term,
                     translation: currentCard.definition,
@@ -83,57 +82,61 @@ export default function CardsCheck() {
             }
         }
 
-        if (current + 1 < cards.length) {
-            setCurrent((prev) => prev + 1);
+        if (ccCurrent + 1 < ccCards.length) {
+            ccSetCurrent((prev) => prev + 1);
         } else {
-            setFinished(true);
-            clearInterval(intervalRef.current);
+            ccSetFinished(true);
+            clearInterval(ccIntervalRef.current);
         }
     };
 
-    const handleRetry = () => {
-        setCurrent(0);
-        setLearned(0);
-        setNotLearned(0);
-        setFinished(false);
-        setTime(0);
+    const ccHandleRetry = () => {
+        ccSetCurrent(0);
+        ccSetLearned(0);
+        ccSetNotLearned(0);
+        ccSetFinished(false);
+        ccSetTime(0);
 
-        clearInterval(intervalRef.current);
-        intervalRef.current = setInterval(() => {
-            setTime((prev) => prev + 1);
+        clearInterval(ccIntervalRef.current);
+        ccIntervalRef.current = setInterval(() => {
+            ccSetTime((prev) => prev + 1);
         }, 1000);
     };
 
-    const handleClose = () => {
-        clearInterval(intervalRef.current);
-        if (moduleId) {
-            navigate(`/library/module-view?id=${moduleId}`, { state: { module: { id: moduleId, name: moduleName } } });
+    const ccHandleClose = () => {
+        clearInterval(ccIntervalRef.current);
+        if (ccModuleId) {
+            navigate(`/library/module-view?id=${ccModuleId}`, { state: { module: { id: ccModuleId, name: ccModuleName } } });
         } else {
             navigate(-1);
         }
     };
 
-    const avg = (learned + notLearned) > 0
-        ? (time / (learned + notLearned)).toFixed(1)
+    const ccAvg = (ccLearned + ccNotLearned) > 0
+        ? (ccTime / (ccLearned + ccNotLearned)).toFixed(1)
         : 0;
 
-    // Стан завантаження
-    if (loading) {
-        return <div className="cc-page"><div className="cc-header"><h3>Loading...</h3></div></div>;
-    }
-
-    // Якщо карток немає
-    if (!loading && cards.length === 0) {
+    if (ccLoading) {
         return (
             <div className="cc-page">
                 <div className="cc-header">
-                    <h2 className="cc-module-title">{moduleName}</h2>
-                    <button className="cc-close-btn" onClick={handleClose}>
+                    <h3>{t("ccLoading")}</h3>
+                </div>
+            </div>
+        );
+    }
+
+    if (!ccLoading && ccCards.length === 0) {
+        return (
+            <div className="cc-page">
+                <div className="cc-header">
+                    <h2 className="cc-module-title">{ccModuleName}</h2>
+                    <button className="cc-close-btn" onClick={ccHandleClose}>
                         <img src={closeIcon} alt="Close" />
                     </button>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                    <p>No cards in this module.</p>
+                    <p>{t("ccNoCards")}</p>
                 </div>
             </div>
         );
@@ -142,33 +145,33 @@ export default function CardsCheck() {
     return (
         <div className="cc-page">
             <div className="cc-header">
-                <h2 className="cc-module-title">{moduleName}</h2>
+                <h2 className="cc-module-title">{ccModuleName}</h2>
 
                 <div className="cc-progress">
-                    {current + 1}/{cards.length}
+                    {ccCurrent + 1}/{ccCards.length}
                 </div>
 
-                <button className="cc-close-btn" onClick={handleClose}>
+                <button className="cc-close-btn" onClick={ccHandleClose}>
                     <img src={closeIcon} alt="Close" />
                 </button>
             </div>
 
-            {!finished ? (
+            {!ccFinished ? (
                 <CardsCheckCard
-                    term={cards[current].term}
-                    definition={cards[current].definition}
-                    learnedCount={learned}
-                    notLearnedCount={notLearned}
-                    onAnswer={handleAnswer}
+                    term={ccCards[ccCurrent].term}
+                    definition={ccCards[ccCurrent].definition}
+                    learnedCount={ccLearned}
+                    notLearnedCount={ccNotLearned}
+                    onAnswer={ccHandleAnswer}
                 />
             ) : (
                 <CardsCheckResult
-                    learned={learned}
-                    notLearned={notLearned}
-                    total={cards.length}
-                    time={time}
-                    avg={avg}
-                    onRetry={handleRetry}
+                    learned={ccLearned}
+                    notLearned={ccNotLearned}
+                    total={ccCards.length}
+                    time={ccTime}
+                    avg={ccAvg}
+                    onRetry={ccHandleRetry}
                 />
             )}
         </div>

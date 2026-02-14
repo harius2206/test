@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
+import { useI18n } from "../../../i18n";
 import {
     getFolders,
     createFolder,
@@ -27,7 +28,6 @@ import { ReactComponent as FolderIcon } from "../../../images/folder.svg";
 import { ReactComponent as DotsIcon } from "../../../images/dots.svg";
 import { ReactComponent as RenameIcon } from "../../../images/rename.svg";
 import { ReactComponent as DeleteIcon } from "../../../images/delete.svg";
-// ExportIcon removed
 import { ReactComponent as SaveIcon } from "../../../images/save.svg";
 import { ReactComponent as EyeOpenedIcon } from "../../../images/eyeOpened.svg";
 import { ReactComponent as EyeClosedIcon } from "../../../images/eyeClosed.svg";
@@ -36,27 +36,28 @@ import { ReactComponent as PinIcon } from "../../../images/pin.svg";
 export default function Folders({ addFolder, setAddFolder, source = "library", preloadedFolders, loadingParent, onRefresh }) {
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { t } = useI18n();
 
-    const [folders, setFolders] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [renamingId, setRenamingId] = useState(null);
-    const [renameValue, setRenameValue] = useState("");
+    const [fFolders, fSetFolders] = useState([]);
+    const [fLoading, fSetLoading] = useState(true);
+    const [fRenamingId, fSetRenamingId] = useState(null);
+    const [fRenameValue, fSetRenameValue] = useState("");
 
-    const colors = [
+    const fColors = [
         "#ef4444", "#f97316", "#facc15", "#22c55e",
         "#06b6d4", "#3b82f6", "#6366f1", "#8b5cf6",
         "#d946ef", "#ec4899", "#78716c", "#000000"
     ];
 
-    const loadFolders = useCallback(async () => {
-        if (!user?.id) { setLoading(false); return; }
+    const fLoadFolders = useCallback(async () => {
+        if (!user?.id) { fSetLoading(false); return; }
 
         if (source === "library" && preloadedFolders) {
             if (loadingParent) {
-                setLoading(true);
+                fSetLoading(true);
                 return;
             }
-            setFolders(preloadedFolders.map(f => ({
+            fSetFolders(preloadedFolders.map(f => ({
                 ...f,
                 modules: f.modules_count || 0,
                 pinned: f.pinned,
@@ -64,12 +65,12 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                 is_saved: f.saved,
                 user: f.user
             })));
-            setLoading(false);
+            fSetLoading(false);
             return;
         }
 
         try {
-            setLoading(true);
+            fSetLoading(true);
             let response;
             if (source === "saves") {
                 response = await getSavedFolders(user.id);
@@ -78,7 +79,7 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
             }
             const data = response.data.results || response.data;
 
-            setFolders(data.map(f => ({
+            fSetFolders(data.map(f => ({
                 ...f,
                 modules: f.modules_count || 0,
                 pinned: f.pinned,
@@ -89,20 +90,20 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
         } catch (error) {
             console.error("Failed to load folders", error);
         } finally {
-            setLoading(false);
+            fSetLoading(false);
         }
     }, [user, source, preloadedFolders, loadingParent]);
 
-    useEffect(() => { loadFolders(); }, [loadFolders]);
+    useEffect(() => { fLoadFolders(); }, [fLoadFolders]);
 
-    const refreshParentOrLocal = () => {
+    const fRefreshParentOrLocal = () => {
         if (onRefresh) onRefresh();
-        else loadFolders();
+        else fLoadFolders();
     };
 
-    const handleSaveToggle = async (folder) => {
+    const fHandleSaveToggle = async (folder) => {
         const wasSaved = folder.is_saved;
-        setFolders(prev =>
+        fSetFolders(prev =>
             source === "saves" && wasSaved
                 ? prev.filter(f => f.id !== folder.id)
                 : prev.map(f => f.id === folder.id ? { ...f, is_saved: !wasSaved } : f)
@@ -112,36 +113,36 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
             if (wasSaved) await unsaveFolder(folder.id);
             else await saveFolder(folder.id);
         } catch (err) {
-            loadFolders();
-            alert("Action failed");
+            fLoadFolders();
+            alert(t("fActionFailed"));
         }
     };
 
-    const handlePinToggle = async (folder) => {
+    const fHandlePinToggle = async (folder) => {
         const isPinned = folder.pinned;
-        setFolders(prev => prev.map(f => f.id === folder.id ? { ...f, pinned: !isPinned } : f));
+        fSetFolders(prev => prev.map(f => f.id === folder.id ? { ...f, pinned: !isPinned } : f));
         try {
             if (isPinned) await unpinFolder(folder.id);
             else await pinFolder(folder.id);
         } catch (err) {
-            setFolders(prev => prev.map(f => f.id === folder.id ? { ...f, pinned: isPinned } : f));
-            alert("Pin action failed");
+            fSetFolders(prev => prev.map(f => f.id === folder.id ? { ...f, pinned: isPinned } : f));
+            alert(t("fPinActionFailed"));
         }
     };
 
-    const handleDeleteFolder = async (id) => {
-        if (!window.confirm("Delete this folder?")) return;
+    const fHandleDeleteFolder = async (id) => {
+        if (!window.confirm(t("fDeleteFolderConfirm"))) return;
         try {
             await deleteFolder(id);
-            setFolders(prev => prev.filter(f => f.id !== id));
+            fSetFolders(prev => prev.filter(f => f.id !== id));
         } catch (error) {
-            alert("Error deleting folder");
+            alert(t("fDeleteFolderError"));
         }
     };
 
-    const handleUpdate = async (id, data, uiUpdate) => {
-        const oldFolders = [...folders];
-        setFolders(prev => prev.map(f => f.id === id ? { ...f, ...uiUpdate } : f));
+    const fHandleUpdate = async (id, data, uiUpdate) => {
+        const oldFolders = [...fFolders];
+        fSetFolders(prev => prev.map(f => f.id === id ? { ...f, ...uiUpdate } : f));
         try {
             if (data.visible !== undefined) {
                 await toggleFolderVisibility(id, data.visible);
@@ -149,12 +150,12 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                 await updateFolder(id, data);
             }
         } catch (error) {
-            setFolders(oldFolders);
+            fSetFolders(oldFolders);
         }
     };
 
-    const handleSort = (type) => {
-        setFolders(prev => {
+    const fHandleSort = (type) => {
+        fSetFolders(prev => {
             const sorted = [...prev];
             if (type === "date") sorted.sort((a, b) => b.id - a.id);
             if (type === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
@@ -162,18 +163,18 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
         });
     };
 
-    const saveRename = async (id) => {
-        if (!renameValue.trim()) return setRenamingId(null);
-        await handleUpdate(id, { name: renameValue.trim() }, { name: renameValue.trim() });
-        setRenamingId(null);
+    const fSaveRename = async (id) => {
+        if (!fRenameValue.trim()) return fSetRenamingId(null);
+        await fHandleUpdate(id, { name: fRenameValue.trim() }, { name: fRenameValue.trim() });
+        fSetRenamingId(null);
     };
 
-    if (loading) return <Loader />;
+    if (fLoading) return <Loader />;
 
     return (
         <div className="folders-page">
             <div className="library-controls">
-                <SortMenu onSort={handleSort} />
+                <SortMenu onSort={fHandleSort} />
             </div>
 
             <div className="module-list">
@@ -182,25 +183,25 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                         type="folder"
                         fields={["name", "color"]}
                         icon={FolderIcon}
-                        colorOptions={colors}
+                        colorOptions={fColors}
                         active={addFolder}
                         onClose={() => setAddFolder(false)}
                         onCreate={(val) => {
                             createFolder(val).then(() => {
                                 setAddFolder(false);
-                                refreshParentOrLocal();
-                            }).catch(() => alert("Error creating folder"));
+                                fRefreshParentOrLocal();
+                            }).catch(() => alert(t("fCreateFolderError")));
                         }}
                     />
                 )}
 
-                {folders.length === 0 && (
+                {fFolders.length === 0 && (
                     <div style={{ padding: 20, color: "gray", textAlign: "center", width: "100%" }}>
-                        No folders found.
+                        {t("fNoFoldersFound")}
                     </div>
                 )}
 
-                {folders.map(folder => {
+                {fFolders.map(folder => {
                     const folderUserId = typeof folder.user === 'object' ? folder.user?.id : folder.user;
                     const isOwn = folderUserId === user?.id || !folderUserId;
                     const authorName = folder.user?.username || "User";
@@ -211,38 +212,36 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                     if (isOwn) {
                         menuItems.push(
                             {
-                                label: folder.private ? "Make Public" : "Make Private",
-                                onClick: () => handleUpdate(folder.id, { visible: folder.private ? "public" : "private" }, { private: !folder.private }),
+                                label: folder.private ? t("fMakePublicLabel") : t("fMakePrivateLabel"),
+                                onClick: () => fHandleUpdate(folder.id, { visible: folder.private ? "public" : "private" }, { private: !folder.private }),
                                 icon: <ColoredIcon icon={folder.private ? EyeClosedIcon : EyeOpenedIcon} size={16} />
                             },
-                            { label: "Rename", onClick: () => { setRenamingId(folder.id); setRenameValue(folder.name); }, icon: <ColoredIcon icon={RenameIcon} size={16} /> },
+                            { label: t("fRenameLabel"), onClick: () => { fSetRenamingId(folder.id); fSetRenameValue(folder.name); }, icon: <ColoredIcon icon={RenameIcon} size={16} /> },
                             {
-                                label: folder.pinned ? "Unpin" : "Pin",
-                                onClick: () => handlePinToggle(folder),
+                                label: folder.pinned ? t("fUnpinLabel") : t("fPinLabel"),
+                                onClick: () => fHandlePinToggle(folder),
                                 icon: <ColoredIcon icon={PinIcon} size={16} />
                             },
-                            { label: "Delete", onClick: () => handleDeleteFolder(folder.id), icon: <ColoredIcon icon={DeleteIcon} size={16} /> }
+                            { label: t("fDeleteLabel"), onClick: () => fHandleDeleteFolder(folder.id), icon: <ColoredIcon icon={DeleteIcon} size={16} /> }
                         );
                     }
 
                     menuItems.push({
-                        label: folder.is_saved ? "Unsave" : "Save",
-                        onClick: () => handleSaveToggle(folder),
+                        label: folder.is_saved ? t("fUnsaveLabel") : t("fSaveLabel"),
+                        onClick: () => fHandleSaveToggle(folder),
                         icon: <SaveIcon width={16} height={16} />
                     });
-
-                    // Export item removed here
 
                     return (
                         <div
                             className="module-card"
                             key={folder.id}
-                            onClick={() => renamingId !== folder.id && navigate(`/library/folders/${folder.id}`)}
+                            onClick={() => fRenamingId !== folder.id && navigate(`/library/folders/${folder.id}`)}
                             style={{ cursor: "pointer" }}
                         >
                             <div className="module-info">
                                 <div className="top-row">
-                                    <span className="terms-count">{folder.modules} modules</span>
+                                    <span className="terms-count">{folder.modules} {t("fModulesLabel")}</span>
                                     {!isOwn && (
                                         <>
                                             <span className="separator">|</span>
@@ -255,13 +254,13 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                                 </div>
                                 <div className="module-name-row" style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                     <ColoredIcon icon={FolderIcon} color={folder.color} size={20} />
-                                    {renamingId === folder.id ? (
+                                    {fRenamingId === folder.id ? (
                                         <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }} onClick={e => e.stopPropagation()}>
                                             <span style={{ flex: 1 }}>
-                                                <EditableField value={renameValue} onSave={setRenameValue} editable={true} autosave={true} />
+                                                <EditableField value={fRenameValue} onSave={fSetRenameValue} editable={true} autosave={true} />
                                             </span>
-                                            <Button variant="static" width={70} height={30} onClick={() => saveRename(folder.id)}>Save</Button>
-                                            <Button variant="hover" width={70} height={30} onClick={() => setRenamingId(null)}>Cancel</Button>
+                                            <Button variant="static" width={70} height={30} onClick={() => fSaveRename(folder.id)}>{t("fSaveButton")}</Button>
+                                            <Button variant="hover" width={70} height={30} onClick={() => fSetRenamingId(null)}>{t("fCancelButton")}</Button>
                                         </div>
                                     ) : (
                                         <span className="folder-name-text">{folder.name}</span>

@@ -7,6 +7,8 @@ import { ReactComponent as ExportIcon } from "../../images/export.svg";
 import { ReactComponent as ReplaceIcon } from "../../images/replace.svg";
 import * as XLSX from "xlsx"; // Потрібно: npm install xlsx
 import "./moduleImportExportModal.css";
+import { useI18n } from "../../i18n";
+
 
 export default function ModuleImportExportModal({
                                                     moduleId,
@@ -22,6 +24,7 @@ export default function ModuleImportExportModal({
     const [error, setError] = useState(null);
     const [successMsg, setSuccessMsg] = useState(null);
     const fileInputRef = useRef(null);
+    const { t } = useI18n();
 
     useEffect(() => {
         if (open && isLocal) {
@@ -110,10 +113,10 @@ export default function ModuleImportExportModal({
             link.remove();
             window.URL.revokeObjectURL(url);
 
-            setSuccessMsg(`Файл успішно завантажено (${format.toUpperCase()})`);
+            setSuccessMsg(t("mieExportSuccess_label").replace("{format}", format.toUpperCase()));
         } catch (err) {
             console.error("Export failed:", err);
-            setError("Помилка експорту. Спробуйте пізніше.");
+            setError("mieExportError_label");
         } finally {
             setLoading(false);
         }
@@ -130,7 +133,7 @@ export default function ModuleImportExportModal({
         const isExcel = file.name.toLowerCase().match(/\.(xlsx|xls)$/);
 
         if (!isCsv && !isExcel) {
-            setError("Невірний формат. Підтримуються .csv, .xlsx, .xls");
+            setError("mieErrorInvalidFormat_label");
             return;
         }
 
@@ -150,37 +153,31 @@ export default function ModuleImportExportModal({
 
                 if (parsedCards.length > 0) {
                     onLocalImport(parsedCards); // Повертаємо масив карток
-                    setSuccessMsg(`Успішно додано ${parsedCards.length} карток!`);
+                    setSuccessMsg(t("mieSuccessAddedCards_label").replace("{count}", parsedCards.length));
                     setTimeout(() => onClose(), 1000);
                 } else {
-                    setError("Не знайдено даних або невірний формат (очікується: Термін, Визначення)");
+                    setError("mieErrorNoData_label");
                 }
             } else {
                 // --- API режим: Відправляємо на сервер ---
                 await importModule(moduleId, file);
-                setSuccessMsg("Модуль успішно оновлено!");
+                setSuccessMsg(t("mieImportSuccess_label"));
                 if (onSuccess) onSuccess();
             }
         } catch (err) {
             console.error("Import error:", err);
-            setError("Помилка обробки файлу.");
+            setError("mieProcessingError_label");
         } finally {
             setLoading(false);
             if (fileInputRef.current) fileInputRef.current.value = "";
         }
     };
 
-    const handleTabChange = (tab) => {
-        setActiveTab(tab);
-        setError(null);
-        setSuccessMsg(null);
-    };
-
     return (
         <div className="mie-overlay" onClick={onClose}>
             <div className="mie-box" onClick={(e) => e.stopPropagation()}>
                 <div className="mie-header">
-                    <h3>{isLocal ? "Імпорт карток" : "Керування даними"}</h3>
+                    <h3>{isLocal ? t("mieHeaderImport_label") : t("mieHeaderManage_label")}</h3>
                     <button className="mie-close-btn" onClick={onClose}>
                         <CloseIcon width={20} height={20} />
                     </button>
@@ -190,15 +187,15 @@ export default function ModuleImportExportModal({
                     <div className="mie-tabs">
                         <button
                             className={`mie-tab ${activeTab === "export" ? "active" : ""}`}
-                            onClick={() => { setActiveTab("export"); setError(null); }}
+                            onClick={() => { setActiveTab("export"); setError(null); setSuccessMsg(null); }}
                         >
-                            Експорт
+                            {t("mieTabExport_label")}
                         </button>
                         <button
                             className={`mie-tab ${activeTab === "import" ? "active" : ""}`}
-                            onClick={() => { setActiveTab("import"); setError(null); }}
+                            onClick={() => { setActiveTab("import"); setError(null); setSuccessMsg(null); }}
                         >
-                            Імпорт
+                            {t("mieTabImport_label")}
                         </button>
                     </div>
                 )}
@@ -207,16 +204,16 @@ export default function ModuleImportExportModal({
                     {loading ? (
                         <div className="mie-loader-wrapper">
                             <Loader />
-                            <p>Обробка даних...</p>
+                            <p>{t("mieProcessing_label")}</p>
                         </div>
                     ) : (
                         <>
-                            {error && <div className="mie-alert error">{error}</div>}
+                            {error && <div className="mie-alert error">{t(error)}</div>}
                             {successMsg && <div className="mie-alert success">{successMsg}</div>}
 
                             {activeTab === "export" && !isLocal && (
                                 <div className="mie-panel">
-                                    <p className="mie-desc">Завантажити картки:</p>
+                                    <p className="mie-desc">{t("mieDescExport_label")}</p>
                                     <div className="mie-actions">
                                         <Button variant="static" onClick={() => handleExport("csv")} width="100%" height="48px">
                                             <ExportIcon className="mie-btn-icon" /> CSV
@@ -232,8 +229,8 @@ export default function ModuleImportExportModal({
                                 <div className="mie-panel">
                                     <p className="mie-desc">
                                         {isLocal
-                                            ? "Дані з файлу будуть додані до поточного списку карток."
-                                            : "Оновіть модуль з файлу (.csv, .xlsx)."
+                                            ? t("mieDescImportLocal_label")
+                                            : t("mieDescImportApi_label")
                                         }
                                     </p>
 
@@ -248,11 +245,11 @@ export default function ModuleImportExportModal({
                                     <div className="mie-actions">
                                         <Button variant="static" onClick={() => fileInputRef.current?.click()} width="100%" height="48px">
                                             <ReplaceIcon className="mie-btn-icon" />
-                                            Вибрати файл
+                                            {t("mieBtnSelectFile_label")}
                                         </Button>
                                     </div>
                                     <p className="mie-hint">
-                                        Формат: Стовпець 1 (Термін), Стовпець 2 (Визначення)
+                                        {t("mieHintFormat_label")}
                                     </p>
                                 </div>
                             )}

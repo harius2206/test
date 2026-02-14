@@ -7,14 +7,14 @@ import { ThemeContext } from "../../context/ThemeContext";
 import SearchField from "../searchField/searchField";
 import UserAvatar from "../avatar/avatar";
 import { useAuth } from "../../context/AuthContext";
-import { getUserData, saveUserData } from "../../utils/storage";
-import { clearAllExceptTheme } from "../../utils/storage";
+import { getUserData, clearAllExceptTheme } from "../../utils/storage";
+import { useI18n } from "../../i18n";
 
 export default function UserMenu() {
+    const { t } = useI18n();
     const [open, setOpen] = useState(false);
     const [avatarVersion, setAvatarVersion] = useState(0);
     const { user, logout, setUser } = useAuth();
-
     const navigate = useNavigate();
     const location = useLocation();
     const { theme, setLight, setDark } = useContext(ThemeContext);
@@ -28,11 +28,8 @@ export default function UserMenu() {
         location.pathname.includes("/saves") ||
         location.pathname.includes("/library/saves");
 
-    const toggleMenu = () => {
-        setOpen((p) => !p);
-    };
+    const toggleMenu = () => setOpen((p) => !p);
 
-    /* ==== LISTEN STORAGE CHANGES ==== */
     useEffect(() => {
         const update = () => {
             const storedUser = getUserData();
@@ -49,12 +46,9 @@ export default function UserMenu() {
         setUser?.(null);
         window.dispatchEvent(new Event("storage"));
         navigate("/");
-        setTimeout(() => {
-            window.location.reload();
-        }, 0);
+        setTimeout(() => window.location.reload(), 0);
     };
 
-    // Оновлена функція навігації, що приймає state
     const handleNavigate = (path, state = null) => {
         navigate(path, { state });
         setOpen(false);
@@ -111,7 +105,7 @@ export default function UserMenu() {
                 <div className="um-avatar-btn" onClick={toggleMenu}>
                     <UserAvatar
                         key={avatarVersion}
-                        name={user?.username || "Guest"}
+                        name={user?.username || t("umGuest_label")}
                         src={user?.avatar || getUserData()?.avatar || undefined}
                         size={40}
                         fontSize={20}
@@ -123,7 +117,7 @@ export default function UserMenu() {
                         {showSearchInsideMenu && (
                             <div className="um-search-container">
                                 <SearchField
-                                    placeholder="search for anything"
+                                    placeholder={t("umSearch_placeholder")}
                                     width="100%"
                                     height="38px"
                                 />
@@ -133,16 +127,16 @@ export default function UserMenu() {
                         <div className="um-info">
                             <UserAvatar
                                 key={avatarVersion}
-                                name={user?.username || "Guest"}
+                                name={user?.username || t("umGuest_label")}
                                 src={user?.avatar || getUserData()?.avatar || undefined}
                                 size={48}
                                 fontSize={24}
                             />
                             <div>
                                 <div className="um-name" ref={nameRef}>
-                                    {cutName || user?.username || "Guest"}
+                                    {cutName || user?.username || t("umGuest_label")}
                                 </div>
-                                <div className="um-email">{user?.email || "not logged in"}</div>
+                                <div className="um-email">{user?.email || t("umNotLoggedIn_label")}</div>
                             </div>
                         </div>
 
@@ -153,66 +147,35 @@ export default function UserMenu() {
                                 <>
                                     {isMobile && (
                                         <>
-                                            <div
-                                                className="um-link"
-                                                onClick={() => handleNavigate("/")}
-                                            >
-                                                Main
-                                            </div>
-                                            <div
-                                                className="um-link"
-                                                onClick={() => handleNavigate("/library")}
-                                            >
-                                                Library
-                                            </div>
-                                            <div
-                                                className="um-link"
-                                                onClick={() => handleNavigate("/folders")}
-                                            >
-                                                Folders
-                                            </div>
+                                            <div className="um-link" onClick={() => handleNavigate("/")}>{t("umMain_label")}</div>
+                                            <div className="um-link" onClick={() => handleNavigate("/library")}>{t("umLibrary_label")}</div>
+                                            <div className="um-link" onClick={() => handleNavigate("/folders")}>{t("umFolders_label")}</div>
                                             <hr />
                                         </>
                                     )}
 
-                                    <div
-                                        className="um-link"
-                                        onClick={() => handleNavigate("/profile/private")}
-                                    >
-                                        Private profile
-                                    </div>
-                                    <div
-                                        className="um-link"
-                                        onClick={() => handleNavigate(`/profile/public/${user?.id}`)}
-                                    >
-                                        Public profile
-                                    </div>
+                                    <div className="um-link" onClick={() => handleNavigate("/profile/private")}>{t("umPrivateProfile_label")}</div>
+                                    <div className="um-link" onClick={() => handleNavigate(`/profile/public/${user?.id}`)}>{t("umPublicProfile_label")}</div>
 
                                     <hr />
 
                                     <div className="um-link um-row">
-                                        <span>Language</span>
-                                        <span className="um-lang">
-                                            English <GlobeIcon className="um-lang-icon" />
-                                        </span>
+                                        <span>{t("umLanguage_label")}</span>
+                                        <span className="um-lang">{t("umEnglish_label")} <GlobeIcon className="um-lang-icon" /></span>
                                     </div>
 
                                     <div className="um-theme-selector">
-                                        <span className="um-theme-label">Select theme</span>
+                                        <span className="um-theme-label">{t("umSelectTheme_label")}</span>
                                         <div className="um-theme-buttons">
                                             <button
-                                                className={`um-theme-button black ${
-                                                    theme === "dark" ? "active" : ""
-                                                }`}
+                                                className={`um-theme-button black ${theme === "dark" ? "active" : ""}`}
                                                 onClick={() => handleThemeChange("dark")}
-                                                aria-label="Dark theme"
+                                                aria-label={t("umDarkTheme_label")}
                                             />
                                             <button
-                                                className={`um-theme-button white ${
-                                                    theme === "light" ? "active" : ""
-                                                }`}
+                                                className={`um-theme-button white ${theme === "light" ? "active" : ""}`}
                                                 onClick={() => handleThemeChange("light")}
-                                                aria-label="Light theme"
+                                                aria-label={t("umLightTheme_label")}
                                             />
                                         </div>
                                     </div>
@@ -221,91 +184,52 @@ export default function UserMenu() {
 
                                     {!isSavesPage && (
                                         <>
-                                            <div
-                                                className="um-link"
-                                                onClick={() => handleNavigate("/library/create-module")}
-                                            >
-                                                Create module
-                                            </div>
-
+                                            <div className="um-link" onClick={() => handleNavigate("/library/create-module")}>{t("umCreateModule_label")}</div>
                                             <hr />
                                         </>
                                     )}
 
-                                    {/* Staff Links */}
                                     {user?.is_staff && (
                                         <>
-                                            <div
-                                                className="um-link"
-                                                onClick={() => window.open("http://127.0.0.1:8000/swagger/#/api/api_v1_auth_login_create", "_blank")}
-                                            >
-                                                Swagger
-                                            </div>
-                                            <div
-                                                className="um-link"
-                                                onClick={() => window.open("http://127.0.0.1:8000/admin/users/user/", "_blank")}
-                                            >
-                                                Admin
-                                            </div>
-                                            <div
-                                                className="um-link"
-                                                onClick={() => window.open("http://127.0.0.1:8000/silk/request/d069e388-28ca-4f61-94f9-2e54f423690b/", "_blank")}
-                                            >
-                                                Silk
-                                            </div>
-                                            <div
-                                                className="um-link"
-                                                onClick={() => window.open("http://127.0.0.1:5555/tasks", "_blank")}
-                                            >
-                                                Flower
-                                            </div>
+                                            <div className="um-link" onClick={() => window.open("http://127.0.0.1:8000/swagger/#/api/api_v1_auth_login_create", "_blank")}>{t("umSwagger_label")}</div>
+                                            <div className="um-link" onClick={() => window.open("http://127.0.0.1:8000/admin/users/user/", "_blank")}>{t("umAdmin_label")}</div>
+                                            <div className="um-link" onClick={() => window.open("http://127.0.0.1:8000/silk/request/d069e388-28ca-4f61-94f9-2e54f423690b/", "_blank")}>{t("umSilk_label")}</div>
+                                            <div className="um-link" onClick={() => window.open("http://127.0.0.1:5555/tasks", "_blank")}>{t("umFlower_label")}</div>
                                             <hr />
                                         </>
                                     )}
 
-                                    <div className="um-link um-logout" onClick={handleLogout}>
-                                        Log out
-                                    </div>
+                                    <div className="um-link um-logout" onClick={handleLogout}>{t("umLogout_label")}</div>
                                 </>
                             ) : (
                                 <>
                                     <div
                                         className="um-link"
-                                        style={{
-                                            color: "var(--accent)",
-                                            fontWeight: 600,
-                                            cursor: "pointer",
-                                        }}
+                                        style={{ color: "var(--accent)", fontWeight: 600, cursor: "pointer" }}
                                         onClick={() => handleNavigate("/login")}
                                     >
-                                        Log in
+                                        {t("umLogin_label")}
                                     </div>
 
                                     <hr />
 
                                     <div className="um-link um-row">
-                                        <span>Language</span>
-                                        <span className="um-lang">
-                                            English <GlobeIcon className="um-lang-icon" />
-                                        </span>
+                                        <span>{t("umLanguage_label")}</span>
+                                        <span className="um-lang">{t("umEnglish_label")} <GlobeIcon className="um-lang-icon" /></span>
                                     </div>
 
                                     <div className="um-theme-selector">
-                                        <span className="um-theme-label">Select theme</span>
+                                        <span className="um-theme-label">{t("umSelectTheme_label")}</span>
                                         <div className="um-theme-buttons">
                                             <button
-                                                className={`um-theme-button black ${
-                                                    theme === "dark" ? "active" : ""
-                                                }`}
+                                                className={`um-theme-button black ${theme === "dark" ? "active" : ""}`}
                                                 onClick={() => handleThemeChange("dark")}
-                                                aria-label="Dark theme"
+                                                aria-label={t("umDarkTheme_label")}
                                             />
                                             <button
-                                                className={`um-theme-button white ${
-                                                    theme === "light" ? "active" : ""
-                                                }`}
+                                                className={`um-theme-button white ${theme === "light" ? "active" : ""}`}
                                                 onClick={() => handleThemeChange("light")}
-                                                aria-label="Light theme"
+                                                aria-label={t("umLightTheme_label")}
                                             />
                                         </div>
                                     </div>

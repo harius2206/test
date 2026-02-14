@@ -4,8 +4,10 @@ import ModuleForm from "./ModuleForm";
 import { createModule, updateModule, getModuleById } from "../../../api/modulesApi";
 import { addModuleToFolder } from "../../../api/foldersApi";
 import Loader from "../../../components/loader/loader";
+import { useI18n } from "../../../i18n";
 
 export default function CreateModule() {
+    const { t } = useI18n();
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -53,7 +55,7 @@ export default function CreateModule() {
                     setInitialData(formattedData);
                 } catch (error) {
                     console.error("Failed to load module details:", error);
-                    alert("Error loading module data.");
+                    alert(t("cmErrorLoadingModule"));
                     navigate("/library");
                 } finally {
                     setLoading(false);
@@ -62,7 +64,7 @@ export default function CreateModule() {
 
             fetchData();
         }
-    }, [mode, moduleId, navigate]);
+    }, [mode, moduleId, navigate, t]);
 
     const handleFormSubmit = async (formData) => {
         setLoading(true);
@@ -72,8 +74,6 @@ export default function CreateModule() {
                 original: c.term,
                 translation: c.definition
             };
-            // Зберігаємо ID тільки для старих карток (які прийшли з бекенду)
-            // Нові картки (додані вручну або імпортовані) матимуть тимчасові великі ID (Date.now()), їх ми не шлемо
             if (c.id && c.id < 1700000000000) {
                 cardData.id = c.id;
             }
@@ -109,7 +109,7 @@ export default function CreateModule() {
             console.error("Operation failed:", error);
             const msg = error.response?.data
                 ? JSON.stringify(error.response.data)
-                : "Failed to save module.";
+                : t("cmOperationFailed");
             alert(msg);
         } finally {
             setLoading(false);
@@ -129,7 +129,7 @@ export default function CreateModule() {
                 initialData={initialData}
                 loading={loading}
                 onSubmit={handleFormSubmit}
-                onSubmitAndPractice={() => console.log("Practice feature coming soon")}
+                onSubmitAndPractice={() => console.log(t("cmPracticeComingSoon"))}
             />
         </>
     );

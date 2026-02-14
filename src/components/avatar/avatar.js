@@ -12,7 +12,6 @@ export default function UserAvatar({
                                        alt,
                                        disableStrictFallback = false, // Новий проп
                                    }) {
-    // Якщо disableStrictFallback === true, ми не беремо дані з localStorage (поточного юзера)
     const currentUserData = disableStrictFallback ? null : (getUserAvatar() || getUserData()?.avatar);
     const imageSrc = src || avatar || currentUserData || undefined;
 

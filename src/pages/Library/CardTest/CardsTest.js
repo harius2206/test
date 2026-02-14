@@ -5,7 +5,8 @@ import CardsCheckResult from "../../../components/cardsCheckResult/cardsCheckRes
 import TestResultCards from "../../../components/testResultCards/TestResultCards";
 import Button from "../../../components/button/button";
 import closeIcon from "../../../images/close.svg";
-import { getModuleCards, getModuleById } from "../../../api/modulesApi";
+import { getModuleCards } from "../../../api/modulesApi";
+import { useI18n } from "../../../i18n";
 
 import "./cardsTest.css";
 
@@ -20,89 +21,77 @@ const shuffle = (array) => {
 };
 
 export default function CardsTest() {
+    const { t } = useI18n();
     const location = useLocation();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
     // Отримуємо ID модуля з URL або зі стейту
-    const queryModuleId = searchParams.get("id");
-    const stateModule = location.state?.module;
+    const ctQueryModuleId = searchParams.get("id");
+    const ctStateModule = location.state?.module;
 
     // Визначаємо поточний ID та назву
-    const moduleId = queryModuleId || stateModule?.id;
-    const moduleName = stateModule?.name || "Module Test";
+    const ctModuleId = ctQueryModuleId || ctStateModule?.id;
+    const ctModuleName = ctStateModule?.name || t("ctModuleDefault");
 
-    const [questions, setQuestions] = useState([]);
-    const [answers, setAnswers] = useState({});
-    const [finished, setFinished] = useState(false);
-    const [time, setTime] = useState(0);
-    const [showWarning, setShowWarning] = useState(false);
-    const [loading, setLoading] = useState(true);
-    const topRef = useRef(null);
+    const [ctQuestions, ctSetQuestions] = useState([]);
+    const [ctAnswers, ctSetAnswers] = useState({});
+    const [ctFinished, ctSetFinished] = useState(false);
+    const [ctTime, ctSetTime] = useState(0);
+    const [ctShowWarning, ctSetShowWarning] = useState(false);
+    const [ctLoading, ctSetLoading] = useState(true);
+    const ctTopRef = useRef(null);
 
     // Основний ефект завантаження та підготовки даних
     useEffect(() => {
-        const prepareData = async () => {
-            setLoading(true);
-            let rawCards = [];
+        const ctPrepareData = async () => {
+            ctSetLoading(true);
+            let ctRawCards = [];
 
             try {
-                // ВАРІАНТ 1: Картки вже передані через навігацію (з ModuleView)
-                if (stateModule && stateModule.cards && stateModule.cards.length > 0) {
-                    // Використовуємо передані картки, вони вже мають структуру term/definition
-                    rawCards = stateModule.cards;
+                if (ctStateModule && ctStateModule.cards && ctStateModule.cards.length > 0) {
+                    ctRawCards = ctStateModule.cards;
                 }
-                // ВАРІАНТ 2: Карток немає, завантажуємо з API по ID
-                else if (moduleId) {
-                    // Пробуємо отримати картки модуля
-                    const response = await getModuleCards({ module: moduleId });
+                else if (ctModuleId) {
+                    const response = await getModuleCards({ module: ctModuleId });
                     const fetchedData = Array.isArray(response.data) ? response.data : (response.data.results || []);
 
-                    // АДАПТАЦІЯ ДАНИХ (Бекенд -> Фронтенд)
-                    // Якщо бекенд повертає original/translation, ми мапимо їх у term/definition
-                    rawCards = fetchedData.map(c => ({
+                    ctRawCards = fetchedData.map(c => ({
                         id: c.id,
-                        term: c.term || c.original,             // Питання
-                        definition: c.definition || c.translation // Відповідь
+                        term: c.term || c.original,
+                        definition: c.definition || c.translation
                     }));
                 }
 
-                if (!rawCards || rawCards.length === 0) {
-                    setQuestions([]);
+                if (!ctRawCards || ctRawCards.length === 0) {
+                    ctSetQuestions([]);
                 } else {
-                    const preparedQuestions = generateQuestions(rawCards);
-                    setQuestions(preparedQuestions);
+                    const ctPreparedQuestions = ctGenerateQuestions(ctRawCards);
+                    ctSetQuestions(ctPreparedQuestions);
                 }
 
             } catch (error) {
                 console.error("Error loading cards for test:", error);
             } finally {
-                setLoading(false);
+                ctSetLoading(false);
             }
         };
 
-        prepareData();
-    }, [moduleId, stateModule]);
+        ctPrepareData();
+    }, [ctModuleId, ctStateModule, t]);
 
     // Логіка генерації питань
-    const generateQuestions = (cards) => {
-        // Фільтруємо картки, щоб не було пустих
+    const ctGenerateQuestions = (cards) => {
         const validCards = cards.filter(c => c.term && c.definition);
-
         const shuffledCards = shuffle(validCards);
 
         return shuffledCards.map((card) => {
             const correctDefinition = card.definition;
-
-            // Беремо всі інші визначення
             const otherDefinitions = validCards
                 .filter((c) => c.id !== card.id)
                 .map((c) => c.definition);
 
-            // Вибираємо 3 випадкові неправильні
             const distractors = shuffle(otherDefinitions).slice(0, 3);
-
-            // Формуємо варіанти
             const options = shuffle([correctDefinition, ...distractors]);
 
             return {
@@ -116,63 +105,62 @@ export default function CardsTest() {
 
     // Таймер
     useEffect(() => {
-        if (finished || loading || questions.length === 0) return;
-        const timer = setInterval(() => setTime((t) => t + 1), 1000);
+        if (ctFinished || ctLoading || ctQuestions.length === 0) return;
+        const timer = setInterval(() => ctSetTime((prev) => prev + 1), 1000);
         return () => clearInterval(timer);
-    }, [finished, loading, questions.length]);
+    }, [ctFinished, ctLoading, ctQuestions.length]);
 
-    const handleSelect = (id, answer) => {
-        setAnswers((prev) => ({ ...prev, [id]: answer }));
+    const ctHandleSelect = (id, answer) => {
+        ctSetAnswers((prev) => ({ ...prev, [id]: answer }));
     };
 
-    const handleSkip = (id) => {
-        setAnswers((prev) => ({ ...prev, [id]: "skipped" }));
+    const ctHandleSkip = (id) => {
+        ctSetAnswers((prev) => ({ ...prev, [id]: "skipped" }));
     };
 
-    const handleSend = () => {
-        const unanswered = questions.find((q) => !answers[q.id]);
+    const ctHandleSend = () => {
+        const unanswered = ctQuestions.find((q) => !ctAnswers[q.id]);
         if (unanswered) {
-            setShowWarning(true);
+            ctSetShowWarning(true);
             const el = document.getElementById(`question-${unanswered.id}`);
             if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
             return;
         }
-        setShowWarning(false);
-        setFinished(true);
+        ctSetShowWarning(false);
+        ctSetFinished(true);
         setTimeout(() => window.scrollTo({ top: 0, behavior: "auto" }), 1);
     };
 
-    const handleRetry = () => {
-        setAnswers({});
-        setFinished(false);
-        setTime(0);
-        setShowWarning(false);
-        setQuestions(prev => shuffle(prev));
+    const ctHandleRetry = () => {
+        ctSetAnswers({});
+        ctSetFinished(false);
+        ctSetTime(0);
+        ctSetShowWarning(false);
+        ctSetQuestions(prev => shuffle(prev));
         setTimeout(() => window.scrollTo({ top: 0, behavior: "auto" }), 1);
     };
 
-    const handleClose = () => {
-        if (stateModule) {
-            navigate("/library/module-view", { state: { module: stateModule } });
-        } else if (moduleId) {
-            // Якщо прийшли по посиланню, повертаємось на перегляд модуля по ID
-            navigate(`/library/module-view?id=${moduleId}`);
+    const ctHandleClose = () => {
+        if (ctStateModule) {
+            navigate("/library/module-view", { state: { module: ctStateModule } });
+        } else if (ctModuleId) {
+            navigate(`/library/module-view?id=${ctModuleId}`);
         } else {
             navigate("/library");
         }
     };
 
     // Результати
-    const learnedCount = Object.entries(answers).filter(([id, ans]) => {
-        const q = questions.find((x) => x.id === Number(id));
+    const ctLearnedCount = Object.entries(ctAnswers).filter(([id, ans]) => {
+        const q = ctQuestions.find((x) => x.id === Number(id));
         return q && ans === q.correct;
     }).length;
 
-    const notLearnedCount = questions.length - learnedCount;
-    const avg = questions.length > 0 ? (time / questions.length).toFixed(1) : 0;
+    const ctNotLearnedCount = ctQuestions.length - ctLearnedCount;
+    const ctAvg = ctQuestions.length > 0 ? (ctTime / ctQuestions.length).toFixed(1) : 0;
 
-    const resultCards = questions.map((q) => {
-        const userAnswer = answers[q.id];
+    const ctResultCards = ctQuestions.map((q) => {
+        const userAnswer = ctAnswers[q.id];
         return {
             question: q.term,
             answers: q.options,
@@ -182,37 +170,37 @@ export default function CardsTest() {
         };
     });
 
-    if (loading) {
+    if (ctLoading) {
         return (
             <div className="ct-container">
                 <div className="ct-header-fixed">
                     <div className="ct-header-row">
-                        <span className="ct-title">Loading...</span>
+                        <span className="ct-title">{t("ctLoading")}</span>
                         <button className="ct-close-btn" onClick={() => navigate(-1)}>
                             <img src={closeIcon} alt="Close" />
                         </button>
                     </div>
                 </div>
                 <div style={{ marginTop: "100px", textAlign: "center", color: "white" }}>
-                    Loading cards...
+                    {t("ctLoading")}
                 </div>
             </div>
         );
     }
 
-    if (!questions.length) {
+    if (!ctQuestions.length) {
         return (
             <div className="ct-container">
                 <div className="ct-header-fixed">
                     <div className="ct-header-row">
-                        <span className="ct-title">{moduleName}</span>
-                        <button className="ct-close-btn" onClick={handleClose}>
+                        <span className="ct-title">{ctModuleName}</span>
+                        <button className="ct-close-btn" onClick={ctHandleClose}>
                             <img src={closeIcon} alt="Close" />
                         </button>
                     </div>
                 </div>
                 <div style={{ marginTop: "100px", textAlign: "center", color: "white" }}>
-                    No cards found or module is empty.
+                    {t("ctNoCards")}
                 </div>
             </div>
         );
@@ -220,35 +208,35 @@ export default function CardsTest() {
 
     return (
         <div className="ct-container">
-            {!finished ? (
+            {!ctFinished ? (
                 <>
-                    <div className="ct-header-fixed" ref={topRef}>
+                    <div className="ct-header-fixed" ref={ctTopRef}>
                         <div className="ct-header-row">
-                            <span className="ct-title">{moduleName}</span>
+                            <span className="ct-title">{ctModuleName}</span>
                             <span className="ct-progress">
-                                {Object.keys(answers).length} / {questions.length}
+                                {Object.keys(ctAnswers).length} / {ctQuestions.length}
                             </span>
-                            <button className="ct-close-btn" onClick={handleClose}>
+                            <button className="ct-close-btn" onClick={ctHandleClose}>
                                 <img src={closeIcon} alt="Close" />
                             </button>
                         </div>
-                        {showWarning && (
+                        {ctShowWarning && (
                             <div className="ct-warning-text">
-                                Please answer all questions before sending.
+                                {t("ctSendWarning")}
                             </div>
                         )}
                     </div>
 
                     <div className="ct-questions-list">
-                        {questions.map((q, idx) => (
+                        {ctQuestions.map((q, idx) => (
                             <TestQuestionCard
                                 key={q.id}
                                 question={q}
                                 index={idx}
-                                total={questions.length}
-                                selected={answers[q.id]}
-                                onSelect={handleSelect}
-                                onSkip={handleSkip}
+                                total={ctQuestions.length}
+                                selected={ctAnswers[q.id]}
+                                onSelect={ctHandleSelect}
+                                onSkip={ctHandleSkip}
                             />
                         ))}
                     </div>
@@ -258,10 +246,10 @@ export default function CardsTest() {
                             variant="toggle"
                             color="#6366f1"
                             width="200px"
-                            onClick={handleSend}
+                            onClick={ctHandleSend}
                             height={40}
                         >
-                            Send
+                            {t("ctSendBtn")}
                         </Button>
                     </div>
                 </>
@@ -269,27 +257,27 @@ export default function CardsTest() {
                 <>
                     <div className="ct-header">
                         <div className="ct-header-row">
-                            <span className="ct-title">{moduleName}</span>
+                            <span className="ct-title">{ctModuleName}</span>
                             <span className="ct-progress">
-                                {questions.length} / {questions.length}
+                                {ctQuestions.length} / {ctQuestions.length}
                             </span>
-                            <button className="ct-close-btn" onClick={handleClose}>
+                            <button className="ct-close-btn" onClick={ctHandleClose}>
                                 <img src={closeIcon} alt="Close" />
                             </button>
                         </div>
                     </div>
 
                     <CardsCheckResult
-                        learned={learnedCount}
-                        notLearned={notLearnedCount}
-                        total={questions.length}
-                        time={time}
-                        avg={avg}
-                        onRetry={handleRetry}
-                        moduleName={moduleName}
+                        learned={ctLearnedCount}
+                        notLearned={ctNotLearnedCount}
+                        total={ctQuestions.length}
+                        time={ctTime}
+                        avg={ctAvg}
+                        onRetry={ctHandleRetry}
+                        moduleName={ctModuleName}
                     />
 
-                    <TestResultCards questions={resultCards} onRetry={handleRetry}/>
+                    <TestResultCards questions={ctResultCards} onRetry={ctHandleRetry}/>
                 </>
             )}
         </div>

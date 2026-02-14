@@ -7,11 +7,12 @@ import { ReactComponent as CardIcon } from "../../images/cards.svg";
 import Tooltip from "../tooltip/tooltip";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-// Імпортуємо нові методи для пінів
 import { getPinnedFolders } from "../../api/foldersApi";
 import { getPinnedModules } from "../../api/modulesApi";
+import { useI18n } from "../../i18n";
 
 export default function SidePanel({ isLeftAligned = false }) {
+    const { t } = useI18n(); // <-- використання i18n
     const [open, setOpen] = useState(false);
     const [hoveredTooltip, setHoveredTooltip] = useState(null);
     const iconRefs = useRef({});
@@ -27,13 +28,11 @@ export default function SidePanel({ isLeftAligned = false }) {
 
         const fetchPinned = async () => {
             try {
-                // Виконуємо два паралельні запити на отримання пінів
                 const [foldersRes, modulesRes] = await Promise.all([
                     getPinnedFolders(user.id),
                     getPinnedModules(user.id)
                 ]);
 
-                // Встановлюємо дані, якщо вони є (бекенд повертає масив об'єктів або структуру з results)
                 const foldersData = foldersRes.data.results || foldersRes.data || [];
                 const modulesData = modulesRes.data.results || modulesRes.data || [];
 
@@ -44,7 +43,6 @@ export default function SidePanel({ isLeftAligned = false }) {
             }
         };
 
-        // Завантажуємо при маунті або коли панель відкривається
         if (open) {
             fetchPinned();
         }
@@ -55,7 +53,6 @@ export default function SidePanel({ isLeftAligned = false }) {
             <div className="side-panel">
                 {open && (
                     <div className="side-icons">
-                        {/* Pinned Folders */}
                         {pinnedFolders.map(folder => (
                             <div key={`f-${folder.id}`} className="side-icon-wrapper">
                                 <button
@@ -76,12 +73,10 @@ export default function SidePanel({ isLeftAligned = false }) {
                             </div>
                         ))}
 
-                        {/* Separator if needed */}
                         {pinnedFolders.length > 0 && pinnedModules.length > 0 && (
                             <div style={{ height: "1px", background: "#444", margin: "8px 12px" }} />
                         )}
 
-                        {/* Pinned Modules */}
                         {pinnedModules.map(module => (
                             <div key={`m-${module.id}`} className="side-icon-wrapper">
                                 <button
@@ -103,7 +98,7 @@ export default function SidePanel({ isLeftAligned = false }) {
 
                         {pinnedFolders.length === 0 && pinnedModules.length === 0 && (
                             <div style={{ color: "#888", fontSize: "12px", textAlign: "center", marginTop: "10px" }}>
-                                No pins
+                                {t("spNoPins_label")}
                             </div>
                         )}
                     </div>

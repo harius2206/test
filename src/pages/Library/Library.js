@@ -1,51 +1,51 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { getUserDetails } from "../../api/usersApi";
+import { useI18n } from "../../i18n";
 
 import Folders from "./Folders/Folders";
 import Modules from "./Modules/Modules";
 import FolderInfo from "./FolderInfo/FolderInfo";
 import Button from "../../components/button/button";
-import Loader from "../../components/loader/loader"; // Імпорт лоадера
+import Loader from "../../components/loader/loader";
 import "./library.css";
 
 export default function Library() {
+    const { t } = useI18n();
     const navigate = useNavigate();
     const { user } = useAuth();
 
-    const [activeTab, setActiveTab] = useState(() => {
+    const [lActiveTab, lSetActiveTab] = useState(() => {
         return localStorage.getItem("libraryActiveTab") || "folders";
     });
 
-    const [addFolder, setAddFolder] = useState(false);
-    const [libraryData, setLibraryData] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [lAddFolder, lSetAddFolder] = useState(false);
+    const [lLibraryData, lSetLibraryData] = useState(null);
+    const [lLoading, lSetLoading] = useState(true);
 
     useEffect(() => {
-        localStorage.setItem("libraryActiveTab", activeTab);
-    }, [activeTab]);
+        localStorage.setItem("libraryActiveTab", lActiveTab);
+    }, [lActiveTab]);
 
-    // Завантажуємо дані один раз при вході в бібліотеку
-    const fetchLibraryData = useCallback(async () => {
+    const lFetchLibraryData = useCallback(async () => {
         if (!user?.id) return;
-        setLoading(true);
+        lSetLoading(true);
         try {
             const res = await getUserDetails(user.id);
-            setLibraryData(res.data);
+            lSetLibraryData(res.data);
         } catch (error) {
             console.error("Failed to load library data", error);
         } finally {
-            setLoading(false);
+            lSetLoading(false);
         }
     }, [user]);
 
     useEffect(() => {
-        fetchLibraryData();
-    }, [fetchLibraryData]);
+        lFetchLibraryData();
+    }, [lFetchLibraryData]);
 
-    // Використовуємо фулскрін лоадер для першого завантаження бібліотеки
-    if (loading && !libraryData) {
+    if (lLoading && !lLibraryData) {
         return <Loader fullscreen />;
     }
 
@@ -58,52 +58,52 @@ export default function Library() {
                         element={
                             <>
                                 <div className="library-header">
-                                    <h1>Your library</h1>
-                                    {activeTab === "folders" ? (
-                                        <Button variant="static" width={170} height={40} onClick={() => setAddFolder(true)}>
-                                            Add folder
+                                    <h1>{t("lLibraryTitle")}</h1>
+                                    {lActiveTab === "folders" ? (
+                                        <Button variant="static" width={170} height={40} onClick={() => lSetAddFolder(true)}>
+                                            {t("lAddFolder")}
                                         </Button>
                                     ) : (
                                         <Button variant="static" width={170} height={40} onClick={() => navigate("/library/create-module")}>
-                                            Add module
+                                            {t("lAddModule")}
                                         </Button>
                                     )}
                                 </div>
 
                                 <div className="tabs-wrapper">
                                     <div
-                                        className={`tab ${activeTab === "modules" ? "active" : ""}`}
-                                        onClick={() => setActiveTab("modules")}
+                                        className={`tab ${lActiveTab === "modules" ? "active" : ""}`}
+                                        onClick={() => lSetActiveTab("modules")}
                                     >
-                                        Modules
+                                        {t("lTabModules")}
                                     </div>
                                     <div
-                                        className={`tab ${activeTab === "folders" ? "active" : ""}`}
-                                        onClick={() => setActiveTab("folders")}
+                                        className={`tab ${lActiveTab === "folders" ? "active" : ""}`}
+                                        onClick={() => lSetActiveTab("folders")}
                                     >
-                                        Folders
+                                        {t("lTabFolders")}
                                     </div>
                                     <div className="tabs-underline">
-                                        <div className={`tabs-indicator ${activeTab}`} />
+                                        <div className={`tabs-indicator ${lActiveTab}`} />
                                     </div>
                                 </div>
 
                                 <div className="library-content">
-                                    <div style={{ display: activeTab === "modules" ? "block" : "none" }}>
+                                    <div style={{ display: lActiveTab === "modules" ? "block" : "none" }}>
                                         <Modules
-                                            preloadedModules={libraryData?.modules || []}
-                                            loadingParent={loading}
-                                            onRefresh={fetchLibraryData}
+                                            preloadedModules={lLibraryData?.modules || []}
+                                            loadingParent={lLoading}
+                                            onRefresh={lFetchLibraryData}
                                         />
                                     </div>
 
-                                    <div style={{ display: activeTab === "folders" ? "block" : "none" }}>
+                                    <div style={{ display: lActiveTab === "folders" ? "block" : "none" }}>
                                         <Folders
-                                            addFolder={addFolder}
-                                            setAddFolder={setAddFolder}
-                                            preloadedFolders={libraryData?.folders || []}
-                                            loadingParent={loading}
-                                            onRefresh={fetchLibraryData}
+                                            addFolder={lAddFolder}
+                                            setAddFolder={lSetAddFolder}
+                                            preloadedFolders={lLibraryData?.folders || []}
+                                            loadingParent={lLoading}
+                                            onRefresh={lFetchLibraryData}
                                         />
                                     </div>
                                 </div>

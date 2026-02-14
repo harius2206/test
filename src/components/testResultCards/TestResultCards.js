@@ -1,8 +1,11 @@
 import React from "react";
 import Button from "../button/button";
 import "./testResultCards.css";
+import { useI18n } from "../../i18n";
 
 export default function TestResultCards({ questions = [], onRetry }) {
+    const { t } = useI18n();
+
     return (
         <div className="trc-container">
             {questions.map((q, index) => {
@@ -24,12 +27,12 @@ export default function TestResultCards({ questions = [], onRetry }) {
                             <div className="tq-counter">
                                 {index + 1} / {questions.length}
                             </div>
-                            <div className="tq-definition-label">definition</div>
+                            <div className="tq-definition-label">{t("trcDefinition_label")}</div>
                             <div className="tq-definition">{q.question}</div>
                         </div>
 
                         <div className="tq-body">
-                            <div className="tq-select-label">Select answer:</div>
+                            <div className="tq-select-label">{t("trcSelectAnswer_label")}</div>
                             <div className="tq-options-grid">
                                 {q.answers.map((opt, i) => {
                                     const isAnswerCorrect = i === q.correct;
@@ -49,7 +52,7 @@ export default function TestResultCards({ questions = [], onRetry }) {
                             </div>
 
                             {isSkipped && (
-                                <div className="tq-skipped-label">Skipped</div>
+                                <div className="tq-skipped-label">{t("trcSkipped_label")}</div>
                             )}
                         </div>
                     </div>
@@ -64,7 +67,7 @@ export default function TestResultCards({ questions = [], onRetry }) {
                     height={40}
                     onClick={onRetry}
                 >
-                    Try again
+                    {t("trcTryAgain_btn")}
                 </Button>
             </div>
         </div>

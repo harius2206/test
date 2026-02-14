@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { getUserDetails } from "../../../api/usersApi";
+import { useI18n } from "../../../i18n";
 import Folders from "../Folders/Folders";
 import Modules from "../Modules/Modules";
 import Cards from "./Cards/Cards";
@@ -9,84 +10,86 @@ import "./saves.css";
 
 export default function Saves() {
     const { user } = useAuth();
-    const [activeTab, setActiveTab] = useState(() => localStorage.getItem("savesActiveTab") || "folders");
+    const { t } = useI18n();
+
+    const [sActiveTab, sSetActiveTab] = useState(() => localStorage.getItem("savesActiveTab") || "folders");
 
     // Стейт для завантаження папок користувача (щоб працювало "Add to folder" в модулях)
-    const [userData, setUserData] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [sUserData, sSetUserData] = useState(null);
+    const [sLoading, sSetLoading] = useState(true);
 
     useEffect(() => {
-        localStorage.setItem("savesActiveTab", activeTab);
-    }, [activeTab]);
+        localStorage.setItem("savesActiveTab", sActiveTab);
+    }, [sActiveTab]);
 
-    const loadUserData = useCallback(async () => {
+    const sLoadUserData = useCallback(async () => {
         if (!user?.id) return;
         try {
             const res = await getUserDetails(user.id);
-            setUserData(res.data);
+            sSetUserData(res.data);
         } catch (error) {
             console.error("Failed to load user folders for saves page", error);
         } finally {
-            setLoading(false);
+            sSetLoading(false);
         }
     }, [user]);
 
     useEffect(() => {
-        loadUserData();
-    }, [loadUserData]);
+        sLoadUserData();
+    }, [sLoadUserData]);
 
     return (
         <div className="app-wrapper" style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
             <main className="library-main">
                 <div className="library-header">
-                    <h1>Your saves</h1>
+                    <h1>{t("sSavesTitle")}</h1>
                 </div>
 
                 <div className="tabs-wrapper">
                     <div
-                        className={`tab ${activeTab === "modules" ? "active" : ""}`}
-                        onClick={() => setActiveTab("modules")}
+                        className={`tab ${sActiveTab === "modules" ? "active" : ""}`}
+                        onClick={() => sSetActiveTab("modules")}
                     >
-                        Modules
+                        {t("sTabModules")}
                     </div>
                     <div
-                        className={`tab ${activeTab === "folders" ? "active" : ""}`}
-                        onClick={() => setActiveTab("folders")}
+                        className={`tab ${sActiveTab === "folders" ? "active" : ""}`}
+                        onClick={() => sSetActiveTab("folders")}
                     >
-                        Folders
+                        {t("sTabFolders")}
                     </div>
                     <div
-                        className={`tab ${activeTab === "cards" ? "active" : ""}`}
-                        onClick={() => setActiveTab("cards")}
+                        className={`tab ${sActiveTab === "cards" ? "active" : ""}`}
+                        onClick={() => sSetActiveTab("cards")}
                     >
-                        Cards
+                        {t("sTabCards")}
                     </div>
                     <div className="tabs-underline">
-                        <div className={`tabs-indicator ${activeTab}`} />
+                        <div className={`tabs-indicator ${sActiveTab}`} />
                     </div>
                 </div>
 
                 <div className="library-content">
-                    {loading ? (
+                    {sLoading ? (
                         <Loader />
                     ) : (
                         <>
-                            {activeTab === "folders" && (
+                            {sActiveTab === "folders" && (
                                 <Folders
                                     source="saves"
-                                    onRefresh={loadUserData}
+                                    onRefresh={sLoadUserData}
                                 />
                             )}
 
-                            {activeTab === "modules" && (
+                            {sActiveTab === "modules" && (
                                 <Modules
                                     source="saves"
-                                    preloadedFolders={userData?.folders || []}
-                                    onRefresh={loadUserData}
+                                    preloadedFolders={sUserData?.folders || []}
+                                    onRefresh={sLoadUserData}
                                 />
                             )}
 
-                            {activeTab === "cards" && (
+                            {sActiveTab === "cards" && (
                                 <Cards />
                             )}
                         </>

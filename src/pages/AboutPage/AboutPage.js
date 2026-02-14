@@ -1,9 +1,11 @@
 import React, { useContext } from "react";
 import { ThemeContext } from "../../context/ThemeContext";
+import { useI18n } from "../../i18n";
 import "./aboutPage.css";
 
 const AboutPage = () => {
     const { theme } = useContext(ThemeContext);
+    const { t } = useI18n();
 
     const frontendTech = [
         "React 19",
@@ -26,32 +28,32 @@ const AboutPage = () => {
     return (
         <div className={`about-container ${theme}`}>
             <section className="about-header">
-                <h1>Про проєкт</h1>
-                <p className="subtitle">Дипломна робота студентів ВТФК</p>
-                <p className="group-info">Група: 4КІ-21</p>
+                <h1>{t("aboutHeader_title")}</h1>
+                <p className="subtitle">{t("aboutHeader_subtitle")}</p>
+                <p className="group-info">{t("aboutHeader_group")}</p>
             </section>
 
             <section className="about-team">
                 <div className="team-member">
                     <div className="photo-placeholder">
-                        <span>Фото розробника<br/>Войцех Євгеній</span>
+                        <span>{t("teamMember1_photo")}<br/>{t("teamMember1_name")}</span>
                     </div>
-                    <h3>Войцех Євгеній</h3>
-                    <p className="role">Розробник</p>
+                    <h3>{t("teamMember1_name")}</h3>
+                    <p className="role">{t("teamMember_role")}</p>
                 </div>
 
                 <div className="team-member">
                     <div className="photo-placeholder">
-                        <span>Фото розробника<br/>Чемін Дмитро</span>
+                        <span>{t("teamMember2_photo")}<br/>{t("teamMember2_name")}</span>
                     </div>
-                    <h3>Чемін Дмитро</h3>
-                    <p className="role">Розробник</p>
+                    <h3>{t("teamMember2_name")}</h3>
+                    <p className="role">{t("teamMember_role")}</p>
                 </div>
             </section>
 
             <section className="tech-stack">
                 <div className="tech-card front">
-                    <h2>Frontend Stack</h2>
+                    <h2>{t("techStack_frontend")}</h2>
                     <ul>
                         {frontendTech.map((tech, index) => (
                             <li key={index}>{tech}</li>
@@ -60,7 +62,7 @@ const AboutPage = () => {
                 </div>
 
                 <div className="tech-card back">
-                    <h2>Backend Stack</h2>
+                    <h2>{t("techStack_backend")}</h2>
                     <ul>
                         {backendTech.map((tech, index) => (
                             <li key={index}>{tech}</li>

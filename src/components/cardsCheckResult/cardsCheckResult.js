@@ -3,7 +3,7 @@ import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import Button from "../button/button";
 import "./cardsCheckResult.css";
-
+import { useI18n } from "../../i18n";
 export default function CardsCheckResult({ learned, notLearned, total, time, avg, onRetry }) {
     const [themeColors, setThemeColors] = useState({
         text: "#000",
@@ -12,11 +12,10 @@ export default function CardsCheckResult({ learned, notLearned, total, time, avg
         accent: "#6366f1",
         black: "#000000",
     });
-
+    const { t } = useI18n();
     useEffect(() => {
         const root = getComputedStyle(document.documentElement);
 
-        // parse rgb(a) or hex color string into [r,g,b]
         const parseColor = (input) => {
             if (!input) return null;
             const s = input.trim();
@@ -40,7 +39,6 @@ export default function CardsCheckResult({ learned, notLearned, total, time, avg
             return null;
         };
 
-        // compute relative luminance then decide black/white contrast
         const getContrastFor = (colorStr) => {
             const rgb = parseColor(colorStr);
             if (!rgb) return "#000";
@@ -49,12 +47,10 @@ export default function CardsCheckResult({ learned, notLearned, total, time, avg
                 return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
             });
             const lum = 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
-            // threshold: if background is light -> use black, else white
             return lum > 0.5 ? "#000000" : "#FFFFFF";
         };
 
         const getBgCandidate = () => {
-            // try a few likely CSS variables, fallback to computed body background
             return (
                 root.getPropertyValue("--background") ||
                 root.getPropertyValue("--bg") ||
@@ -81,9 +77,7 @@ export default function CardsCheckResult({ learned, notLearned, total, time, avg
 
         updateColors();
 
-        // observe attribute changes on root (theme toggles often change data-theme/class)
         const observer = new MutationObserver(() => {
-            // re-read computed styles and update colors
             updateColors();
         });
         observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "class", "style"] });
@@ -102,7 +96,7 @@ export default function CardsCheckResult({ learned, notLearned, total, time, avg
                         text={`${percentage}%`}
                         strokeWidth={14}
                         styles={buildStyles({
-                            textColor: themeColors.text, // now adapts to theme
+                            textColor: themeColors.text,
                             pathColor: themeColors.path,
                             trailColor: themeColors.trail,
                             textSize: "18px",
@@ -114,11 +108,11 @@ export default function CardsCheckResult({ learned, notLearned, total, time, avg
 
                 <div className="ccr-stats">
                     <p>
-                        <span className="ccr-learned">Learned </span>
+                        <span className="ccr-learned">{t("ccrLearned_label")} </span>
                         <span className="ccr-learned ccr-count">{learned}</span>
                     </p>
                     <p>
-                        <span className="ccr-notlearned">Not learned </span>
+                        <span className="ccr-notlearned">{t("ccrNotLearned_label")} </span>
                         <span className="ccr-notlearned ccr-count">{notLearned}</span>
                     </p>
                 </div>
@@ -126,8 +120,8 @@ export default function CardsCheckResult({ learned, notLearned, total, time, avg
 
             <div className="ccr-footer-row">
                 <div className="ccr-time">
-                    <p>Time: {time}s.</p>
-                    <p>Average time: {avg}s.</p>
+                    <p>{t("ccrTime_label")}: {time}s.</p>
+                    <p>{t("ccrAvgTime_label")}: {avg}s.</p>
                 </div>
 
                 <Button
@@ -144,7 +138,7 @@ export default function CardsCheckResult({ learned, notLearned, total, time, avg
                     }}
                     onClick={onRetry}
                 >
-                    Try again
+                    {t("ccrRetryButton_label")}
                 </Button>
             </div>
         </div>

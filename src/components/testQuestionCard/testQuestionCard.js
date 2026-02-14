@@ -1,5 +1,6 @@
 import React from "react";
 import "./testQuestionCard.css";
+import { useI18n } from "../../i18n";
 
 export default function TestQuestionCard({
                                              question,
@@ -9,12 +10,13 @@ export default function TestQuestionCard({
                                              onSelect,
                                              onSkip,
                                          }) {
+    const { t } = useI18n();
     const isSkipped = selected === "skipped";
 
     return (
         <div className="tq-card" id={`question-${question.id}`}>
             <div className="tq-header">
-                <div className="tq-definition-label">Definition</div>
+                <div className="tq-definition-label">{t("tqcDefinition_label")}</div>
                 <div className="tq-counter">
                     {index + 1} / {total}
                 </div>
@@ -22,9 +24,8 @@ export default function TestQuestionCard({
 
             <div className="tq-definition">{question.term}</div>
 
-
             <div className="tq-body">
-                <div className="tq-select-label">Select answer:</div>
+                <div className="tq-select-label">{t("tqcSelectAnswer_label")}</div>
                 <div className="tq-options-grid">
                     {question.options.map((opt, i) => (
                         <button
@@ -41,7 +42,7 @@ export default function TestQuestionCard({
                     className={`tq-skip-btn ${isSkipped ? "active" : ""}`}
                     onClick={() => onSkip(question.id)}
                 >
-                    Skip
+                    {t("tqcSkip_btn")}
                 </button>
             </div>
         </div>

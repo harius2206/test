@@ -5,13 +5,15 @@ import { getUserData, getUserAvatar } from "../../utils/storage";
 import { useAuth } from "../../context/AuthContext";
 import UserAvatar from "../avatar/avatar";
 import { clearAllExceptTheme } from "../../utils/storage";
+import { useI18n } from "../../i18n";
 
 export default function ProfileNav() {
     const { logout, setUser } = useAuth();
     const navigate = useNavigate();
+    const { t } = useI18n(); // використання i18n
 
     const [avatar, setAvatar] = useState(() => getUserAvatar() || getUserData()?.avatar || null);
-    const [profile, setProfile] = useState(() => getUserData() || { username: "Guest", date_joined: null, id: null });
+    const [profile, setProfile] = useState(() => getUserData() || { username: t("guest_label"), date_joined: null, id: null });
 
     const [cutName, setCutName] = useState("");
     const nameRef = useRef(null);
@@ -20,13 +22,13 @@ export default function ProfileNav() {
     useEffect(() => {
         const onStorage = () => {
             const storedProfile = getUserData();
-            setProfile(storedProfile || { username: "Guest", date_joined: null, id: null });
+            setProfile(storedProfile || { username: t("guest_label"), date_joined: null, id: null });
             setAvatar(getUserAvatar() || storedProfile?.avatar || null);
         };
 
         window.addEventListener("storage", onStorage);
         return () => window.removeEventListener("storage", onStorage);
-    }, []);
+    }, [t]);
 
     /* === FIT USERNAME TO WIDTH === */
     const fitName = () => {
@@ -110,42 +112,41 @@ export default function ProfileNav() {
         <div className="profile-nav">
             <div className="profile-info">
                 <UserAvatar
-                    name={profile?.username || "Guest"}
+                    name={profile?.username || t("guest_label")}
                     src={avatar || profile?.avatar || undefined}
                     size={160}
                     fontSize={56}
                 />
 
                 <h3 className="profile-name" ref={nameRef}>
-                    {cutName || profile?.username || "Guest"}
+                    {cutName || profile?.username || t("guest_label")}
                 </h3>
 
-                <p className="profile-date">created: {joined}</p>
+                <p className="profile-date">{t("profile_created_label")}: {joined}</p>
             </div>
 
             <nav className="profile-links">
-                {/* Змінено посилання на реальний публічний профіль з використанням ID користувача */}
                 <NavLink
                     to={profile?.id ? `/profile/public/${profile.id}` : "/profile/public-library"}
                     className={({ isActive }) => (isActive ? "active" : "")}
                 >
-                    Public profile
+                    {t("profile_public_label")}
                 </NavLink>
 
                 <NavLink to="/profile/private" className={({ isActive }) => (isActive ? "active" : "")}>
-                    Private profile
+                    {t("profile_private_label")}
                 </NavLink>
                 <NavLink to="/profile/change-photo" className={({ isActive }) => (isActive ? "active" : "")}>
-                    Change photo
+                    {t("profile_change_photo_label")}
                 </NavLink>
                 <NavLink to="/profile/safety" className={({ isActive }) => (isActive ? "active" : "")}>
-                    Safety
+                    {t("profile_safety_label")}
                 </NavLink>
                 <NavLink to="/logout" onClick={handleLogout}>
-                    Log out
+                    {t("profile_logout_label")}
                 </NavLink>
                 <NavLink to="/profile/delete" className={({ isActive }) => (isActive ? "active" : "")}>
-                    Delete account
+                    {t("profile_delete_label")}
                 </NavLink>
             </nav>
         </div>
