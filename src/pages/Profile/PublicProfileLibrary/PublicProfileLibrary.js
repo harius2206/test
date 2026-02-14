@@ -95,7 +95,7 @@ export default function PublicProfileLibrary() {
                 rating: m.avg_rate,
                 flagFrom: getFlagUrl(m.lang_from?.flag),
                 flagTo: getFlagUrl(m.lang_to?.flag),
-                user: { id: data.id, username: data.username, avatar: data.avatar },
+                user: { id: data.id, username: data.username, avatar: getFlagUrl(data.avatar) },
                 topic: m.topic,
                 cards_count: m.cards_count !== undefined ? m.cards_count : (m.cards ? m.cards.length : 0),
                 collaborators: m.collaborators || [],
@@ -108,7 +108,7 @@ export default function PublicProfileLibrary() {
             const mappedFolders = allowedFolders.map(f => ({
                 ...f,
                 modules_count: f.modules_count || (f.modules ? f.modules.length : 0),
-                user: { id: data.id, username: data.username, avatar: data.avatar },
+                user: { id: data.id, username: data.username, avatar: getFlagUrl(data.avatar) },
                 is_saved: f.saved,
                 pinned: f.pinned
             }));

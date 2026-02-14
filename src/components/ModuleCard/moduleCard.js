@@ -16,7 +16,7 @@ import { ReactComponent as FolderIcon } from "../../images/folder.svg";
 import { ReactComponent as MergeIcon } from "../../images/merge.svg";
 import { ReactComponent as SaveIcon } from "../../images/save.svg";
 import { ReactComponent as PinIcon } from "../../images/pin.svg";
-import { ReactComponent as ExportIcon } from "../../images/export.svg"; // NEW IMPORT
+import { ReactComponent as ExportIcon } from "../../images/export.svg";
 
 import "./moduleCard.css";
 
@@ -38,7 +38,7 @@ export default function ModuleCard({
                                        onUnsave,
                                        onPin,
                                        onUnpin,
-                                       onExport // NEW PROP
+                                       onExport
                                    }) {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -124,7 +124,6 @@ export default function ModuleCard({
         });
     }
 
-    // NEW: Export / Import menu item
     if (onExport) {
         menuItems.push({
             label: "Export / Import",
@@ -169,7 +168,12 @@ export default function ModuleCard({
 
                     <span className="separator">|</span>
                     <div className="author-block">
-                        <UserAvatar name={authorName} src={authorAvatar} size={20} />
+                        <UserAvatar
+                            name={authorName}
+                            src={authorAvatar}
+                            size={20}
+                            disableStrictFallback={true}
+                        />
                         <span className="author">{authorName}</span>
                     </div>
 

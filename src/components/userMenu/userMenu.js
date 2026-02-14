@@ -5,7 +5,7 @@ import { ReactComponent as GlobeIcon } from "../../images/language.svg";
 import ClickOutsideWrapper from "../clickOutsideWrapper";
 import { ThemeContext } from "../../context/ThemeContext";
 import SearchField from "../searchField/searchField";
-import UserAvatar from "../avatar/avatar"; // Повернув UserAvatar
+import UserAvatar from "../avatar/avatar";
 import { useAuth } from "../../context/AuthContext";
 import { getUserData, saveUserData } from "../../utils/storage";
 import { clearAllExceptTheme } from "../../utils/storage";
@@ -54,8 +54,9 @@ export default function UserMenu() {
         }, 0);
     };
 
-    const handleNavigate = (path) => {
-        navigate(path);
+    // Оновлена функція навігації, що приймає state
+    const handleNavigate = (path, state = null) => {
+        navigate(path, { state });
         setOpen(false);
     };
 
@@ -182,7 +183,7 @@ export default function UserMenu() {
                                     </div>
                                     <div
                                         className="um-link"
-                                        onClick={() => handleNavigate("/profile/public-library")}
+                                        onClick={() => handleNavigate(`/profile/public/${user?.id}`)}
                                     >
                                         Public profile
                                     </div>
@@ -226,12 +227,7 @@ export default function UserMenu() {
                                             >
                                                 Create module
                                             </div>
-                                            <div
-                                                className="um-link"
-                                                onClick={() => handleNavigate("/library/create-folder")}
-                                            >
-                                                Create folder
-                                            </div>
+
                                             <hr />
                                         </>
                                     )}
