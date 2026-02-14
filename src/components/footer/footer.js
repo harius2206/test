@@ -1,10 +1,10 @@
 import "./footer.css"
-import language from "./language.svg"
-import {Link} from "react-router-dom";
+import languageIcon from "./language.svg"
+import { Link } from "react-router-dom";
 import { useI18n } from "../../i18n";
 
 export default function Footer() {
-    const { t } = useI18n();
+    const { t, setIsLangModalOpen } = useI18n();
 
     return (
         <div className="footer-wrapper">
@@ -19,8 +19,12 @@ export default function Footer() {
                     </nav>
                 </div>
 
-                <div className="footer-lang">
-                    <img src={language} alt="language" className="footer-lang-icon" />
+                <div
+                    className="footer-lang"
+                    onClick={() => setIsLangModalOpen(true)}
+                    style={{ cursor: 'pointer' }}
+                >
+                    <img src={languageIcon} alt="language" className="footer-lang-icon" />
                     <span>{t("footerLanguage_label")}</span>
                 </div>
             </footer>

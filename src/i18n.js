@@ -1,7 +1,24 @@
 import { createContext, useContext, useState } from "react";
 
+export const availableLanguages = [
+    { code: "ua", label: "Українська", flag: "🇺🇦" },
+    { code: "en", label: "English", flag: "🇺🇸" },
+    { code: "pl", label: "Polski", flag: "🇵🇱" },
+    { code: "de", label: "Deutsch", flag: "🇩🇪" },
+    { code: "fr", label: "Français", flag: "🇫🇷" },
+    { code: "es", label: "Español", flag: "🇪🇸" },
+    { code: "it", label: "Italiano", flag: "🇮🇹" },
+    { code: "tr", label: "Türkçe", flag: "🇹🇷" },
+    { code: "jp", label: "日本語", flag: "🇯🇵" },
+    { code: "cn", label: "中文", flag: "🇨🇳" },
+    { code: "kr", label: "한국어", flag: "🇰🇷" },
+    { code: "pt", label: "Português", flag: "🇵🇹" },
+];
+
 const translations = {
     ua: {
+        // --- Language Modal
+        langModalTitle: "Виберіть мову",
 
         // --- CardsCheckResult
         ccrLearned_label: "Вивчено",
@@ -14,7 +31,7 @@ const translations = {
         footerCopy_label: "© 2026 kusottare team",
         footerAbout_label: "Про нас",
         footerHelp_label: "Допомога",
-        footerLanguage_label: "English",
+        footerLanguage_label: "Українська",
 
         // --- Header
         hdrSearchPlaceholder_label: "шукати будь-що",
@@ -113,7 +130,7 @@ const translations = {
         umPrivateProfile_label: "Приватний профіль",
         umPublicProfile_label: "Публічний профіль",
         umLanguage_label: "Мова",
-        umEnglish_label: "Англійська",
+        umEnglish_label: "Українська",
         umSelectTheme_label: "Виберіть тему",
         umDarkTheme_label: "Темна тема",
         umLightTheme_label: "Світла тема",
@@ -466,23 +483,506 @@ const translations = {
         sfApiKeyDeletedMsg: "DeepL ключ видалено.",
         sfApiKeyDeleteFailed: "Не вдалося видалити DeepL ключ.",
     },
+    en: {
+        // --- Language Modal
+        langModalTitle: "Select Language",
+
+        // --- CardsCheckResult
+        ccrLearned_label: "Learned",
+        ccrNotLearned_label: "Not learned",
+        ccrTime_label: "Time",
+        ccrAvgTime_label: "Average time",
+        ccrRetryButton_label: "Try again",
+
+        // --- Footer
+        footerCopy_label: "© 2026 kusottare team",
+        footerAbout_label: "About us",
+        footerHelp_label: "Help",
+        footerLanguage_label: "English",
+
+        // --- Header
+        hdrSearchPlaceholder_label: "search anything",
+        hdrNavMain_label: "Home",
+        hdrNavLibrary_label: "Library",
+        hdrNavSaved_label: "Saved",
+
+        // --- ModuleCard
+        moduleCardTerms_label: "terms",
+        moduleCardNoDescription_label: "No description",
+        moduleCardEdit_label: "Edit",
+        moduleCardSave_label: "Save",
+        moduleCardUnsave_label: "Remove from saved",
+        moduleCardPin_label: "Pin",
+        moduleCardUnpin_label: "Unpin",
+        moduleCardPermissions_label: "Permissions",
+        moduleCardAddToFolder_label: "Add to folder",
+        moduleCardExport_label: "Export / Import",
+        moduleCardMerge_label: "Merge",
+        moduleCardCancelMerge_label: "Cancel merge",
+        moduleCardDelete_label: "Delete",
+
+        // --- ModuleImportExportModal
+        mieHeaderImport_label: "Import cards",
+        mieHeaderManage_label: "Data management",
+        mieTabExport_label: "Export",
+        mieTabImport_label: "Import",
+        mieProcessing_label: "Processing data...",
+        mieErrorInvalidFile_label: "Invalid format. Supported: .csv, .xlsx, .xls",
+        mieErrorParsing_label: "Error parsing file.",
+        mieErrorNoData_label: "No data found or invalid format (expected: Term, Definition)",
+        mieSuccessUpdated_label: "Module updated successfully!",
+        mieSuccessDownloaded_label: "File downloaded successfully",
+        mieSuccessAddedCards_label: "Successfully added {count} cards!",
+        mieDescExport_label: "Download cards:",
+        mieDescImportLocal_label: "Data from file will be added to the current list.",
+        mieDescImportApi_label: "Update module from file (.csv, .xlsx).",
+        mieBtnSelectFile_label: "Select file",
+        mieHintFormat_label: "Format: Column 1 (Term), Column 2 (Definition)",
+        mieExportSuccess_label: "File downloaded successfully ({format})",
+        mieExportError_label: "Export error. Try again later.",
+        mieImportSuccess_label: "Module updated successfully!",
+        mieProcessingError_label: "File processing error.",
+        mieErrorInvalidFormat_label: "Invalid format. Supported: .csv, .xlsx, .xls",
+
+        // --- PermissionsMenu
+        pmHeader_label: "Access Management",
+        pmSearch_placeholder: "Search user...",
+        pmSearching_label: "Searching...",
+        pmNoUsers_label: "No users found",
+        pmLoading_label: "Loading permissions...",
+        pmOnlyYou_label: "Only you have access",
+        pmRemoveAccess_label: "Remove access",
+        pmDone_btn: "Done",
+        pmRoleEditor_label: "Editor",
+
+        // --- ProfileNav
+        guest_label: "Guest",
+        profile_created_label: "created",
+        profile_public_label: "Public profile",
+        profile_private_label: "Private profile",
+        profile_change_photo_label: "Change photo",
+        profile_safety_label: "Security",
+        profile_logout_label: "Log out",
+        profile_delete_label: "Delete account",
+
+        // --- SearchField
+        sfSearch_label: "Search",
+
+        // --- SidePanel
+        spNoPins_label: "No pinned items",
+
+        // --- SortMenu
+        smSort_btn: "Sort",
+        smByDate_label: "By date",
+        smByName_label: "By name",
+
+        // --- TestResultCard
+        trcDefinition_label: "Definition",
+        trcSelectAnswer_label: "Select answer:",
+        trcSkipped_label: "Skipped",
+        trcTryAgain_btn: "Try again",
+
+        // --- TestQuestionCard
+        tqcDefinition_label: "Definition",
+        tqcSelectAnswer_label: "Select answer:",
+        tqcSkip_btn: "Skip",
+
+        // --- UserMenu
+        umGuest_label: "Guest",
+        umNotLoggedIn_label: "not logged in",
+        umSearch_placeholder: "search anything",
+        umMain_label: "Home",
+        umLibrary_label: "Library",
+        umFolders_label: "Folders",
+        umPrivateProfile_label: "Private profile",
+        umPublicProfile_label: "Public profile",
+        umLanguage_label: "Language",
+        umEnglish_label: "English",
+        umSelectTheme_label: "Select theme",
+        umDarkTheme_label: "Dark theme",
+        umLightTheme_label: "Light theme",
+        umCreateModule_label: "Create module",
+        umSwagger_label: "Swagger",
+        umAdmin_label: "Admin",
+        umSilk_label: "Silk",
+        umFlower_label: "Flower",
+        umLogout_label: "Log out",
+        umLogin_label: "Log in",
+
+        // --- AuthProvider
+        authLoading_label: "Loading...",
+
+        // --- AboutPage
+        aboutHeader_title: "About the project",
+        aboutHeader_subtitle: "VTFC Student Diploma Work",
+        aboutHeader_group: "Group: 4KI-21",
+        teamMember1_name: "Eugene Voitsekh",
+        teamMember1_photo: "Developer photo",
+        teamMember2_name: "Dmytro Chemin",
+        teamMember2_photo: "Developer photo",
+        teamMember_role: "Developer",
+        techStack_frontend: "Frontend Stack",
+        techStack_backend: "Backend Stack",
+
+        // --- GitHubCallback
+        ghProcessing: "Processing GitHub authorization...",
+        ghNoCode: "No authorization code. Redirecting to login...",
+        ghSuccess: "Login successful. Proceeding...",
+        ghFailed: "GitHub authorization failed. Redirecting to login...",
+
+        // --- GoogleCallBack
+        googleProcessing: "Processing Google authorization...",
+        googleNoCode: "No authorization code. Redirecting to login...",
+        googleSuccess: "Login successful. Proceeding...",
+        googleFailed: "Google authorization failed. Redirecting to login...",
+
+        // --- LoginPage
+        loginTitle: "Login",
+        username: "Username",
+        password: "Password",
+        forgotPassword: "Forgot password?",
+        loginBtn: "Log in",
+        or: "or",
+        noAccount: "Don't have an account?",
+        register: "Sign up",
+        enterUsernamePassword: "Please enter your username and password.",
+        incorrectUsernamePassword: "Invalid username or password.",
+        unexpectedError: "An unexpected error occurred. Please try again.",
+        LoginGoogleFailed: "Google authorization failed. Please try again.",
+        githubFailed: "GitHub authorization failed. Please try again.",
+        emailVerified: "Your account has been successfully verified!",
+        emailVerifyFailed: "Account verification failed. Please try again.",
+
+        // --- PasswordReset
+        passwordReset: "Password Reset",
+        enterEmailForReset: "Enter the registered email address where the password reset link will be sent.",
+        emailAddress: "Email address",
+        sending: "Sending...",
+        send: "Send",
+        enterNewPassword: "Enter new password",
+        confirmNewPassword: "Confirm new password",
+        saving: "Saving...",
+        apply: "Apply",
+        didntReceiveEmail: "Didn't receive an email?",
+        sendAgain: "Send again",
+        enterRegisteredEmail: "Please enter your registered email address",
+        checkYourEmail: "Check your email!",
+        sendResetFailed: "Failed to send password reset email.",
+        fillBothFields: "Please fill in both fields",
+        passwordsDoNotMatch: "Passwords do not match",
+        passwordResetSuccess: "Password changed successfully!",
+        passwordResetFailed: "Password reset failed.",
+
+        // --- RegisterPage
+        rpRegistration: "Registration",
+        rpUsernamePlaceholder: "Username",
+        rpEmailPlaceholder: "Email (optional)",
+        rpPasswordPlaceholder: "Password",
+        rpConfirmPasswordPlaceholder: "Confirm password",
+        rpPasswordsDoNotMatch: "Passwords do not match",
+        rpUsernameTooLong: "Username must be no more than 20 characters.",
+        rpRegistrationSuccess: "Registration successful! Please check your email.",
+        rpRegistrationFailed: "Registration error. Please check your data.",
+        rpAccountVerified: "Account successfully verified",
+        rpProcessing: "Processing...",
+        rpOr: "or",
+        rpAlreadyHaveAccount: "Already have an account?",
+        rpSignIn: "Log in",
+        rpGithubLogin: "Login with GitHub",
+        rpGoogleLogin: "Login with Google",
+
+        // --- CardsCheck
+        ccLoading: "Loading...",
+        ccNoCards: "There are no cards in this module.",
+        ccModuleLabel: "Module",
+
+        // --- CardsTest
+        ctLoading: "Loading cards...",
+        ctNoCards: "No cards found or module is empty",
+        ctSendWarning: "Please answer all questions before submitting",
+        ctModuleDefault: "Testing Module",
+        ctSendBtn: "Submit",
+
+        // --- CreateModule
+        cmErrorLoadingModule: "Error loading module data.",
+        cmOperationFailed: "Failed to save the module.",
+        cmPracticeComingSoon: "Practice feature coming soon",
+
+        // --- ModuleForm
+        mfCreateModuleTitle: "Create new module",
+        mfEditModuleTitle: "Edit module",
+        mfModuleNamePlaceholder: "Title",
+        mfModuleDescriptionPlaceholder: "Description (optional)",
+        mfSelectLanguage: "Select language",
+        mfSelectTopic: "Select topic",
+        mfNoTopicsAvailable: "No topics available",
+        mfTermLabel: "Term",
+        mfDefinitionLabel: "Definition",
+        mfAddCard: "+ Add card",
+        mfImportCards: "Import",
+        mfImportTitle: "Import CSV/XLSX to fill cards",
+        mfDeeplTranslate: "DeepL",
+        mfDeeplLoading: "Loading...",
+        mfTranslateTargetLangFirst: "Please select target language first (on the right).",
+        mfEnterModuleName: "Please enter module title",
+        mfSelectLanguages: "Please select languages",
+        mfAddAtLeastOneCard: "Please add at least one card",
+        mfRemoveCard: "Delete card",
+        mfSaveButton: "Save",
+        mfCreateButton: "Create",
+        mfCloseButton: "Close",
+
+        // --- FolderInfo
+        fpErrorLoadingFolder: "Folder not found or could not be loaded.",
+        fpDeleteFolderConfirm: "Delete this folder? This action cannot be undone.",
+        fpDeleteFolderError: "Failed to delete folder.",
+        fpChangeVisibilityError: "Failed to change visibility.",
+        fpModuleVisibilityError: "Failed to change module visibility.",
+        fpPinError: "Error while pinning.",
+        fpAddUserError: "Failed to add user.",
+        fpRemoveUserError: "Failed to remove user.",
+        fpAddToFolderSuccess: "Module \"{moduleName}\" added to folder \"{folderName}\"",
+        fpAddToFolderError: "Failed to add to folder.",
+        fpNoModules: "No modules yet",
+        fpMergeModeBannerStrong: "Merge mode",
+        fpMergeModeBanner: "{count} modules selected. Click on cards to select/deselect.",
+        fpFinalizeMergeTitle: "Finalize Merge",
+        fpNewNamePlaceholder: "New title",
+        fpSelectTopicPlaceholder: "Select topic...",
+        fpBackButton: "Back",
+        fpConfirmMergeButton: "Confirm",
+        fpCloseButton: "Close",
+        fpAddModuleButton: "Add module",
+        fpRenameLabel: "Rename",
+        fpDeleteLabel: "Delete",
+        fpMakePublicLabel: "Make public",
+        mfMakePrivateLabel: "Make private",
+        fpPinLabel: "Pin",
+        fpUnpinLabel: "Unpin",
+        fpRemoveFromFolderLabel: "Remove from folder",
+        fpSaveButton: "Save",
+        fpCancelButton: "Cancel",
+        fpProcessButton: "Merge",
+        fpAddToFolderTitle: "Add \"{moduleName}\" to:",
+        fpNoFoldersFound: "No folders found.",
+        fpMergeSuccess: "Modules merged successfully!",
+        fpMergeError: "Failed to merge modules.",
+        fpModalErrorTitle: "Error",
+        fpModalSuccessTitle: "Success",
+        fpModalAddedTitle: "Added",
+
+        // --- Folders
+        fDeleteFolderConfirm: "Delete this folder? This action cannot be undone.",
+        fCreateFolderError: "Error creating folder",
+        fActionFailed: "Action failed",
+        fPinActionFailed: "Failed to pin/unpin folder",
+        fDeleteFolderError: "Error deleting folder",
+        fNoFoldersFound: "No folders found",
+        fSaveButton: "Save",
+        fCancelButton: "Cancel",
+        fMakePublicLabel: "Make public",
+        fMakePrivateLabel: "Make private",
+        fRenameLabel: "Rename",
+        fPinLabel: "Pin",
+        fUnpinLabel: "Unpin",
+        fDeleteLabel: "Delete",
+        fSaveLabel: "Save",
+        fUnsaveLabel: "Remove from saved",
+        fModulesLabel: "modules",
+
+        // --- Modules
+        mDeleteModuleConfirm: "Delete this module? This action cannot be undone.",
+        mErrorTitle: "Error",
+        mSaveModuleFailed: "Failed to save module.",
+        mUnsaveModuleFailed: "Failed to remove module from saved.",
+        mPinModuleFailed: "Failed to pin module.",
+        mUnpinModuleFailed: "Failed to unpin module.",
+        mDeleteModuleFailed: "Failed to delete module.",
+        mVisibilityChangeFailed: "Failed to change module visibility.",
+        mAddUserFailed: "Failed to add user.",
+        mRemoveUserFailed: "Failed to remove user.",
+        mAddToFolderFailed: "Failed to add module to folder.",
+        mAddedTitle: "Added",
+        mAddedPrefix: "Module added",
+        mAddedToFolder: "to folder",
+        mNoModulesYet: "You don't have any modules yet.",
+        mSelectTopicPlaceholder: "Select topic...",
+        mBackButton: "Back",
+        mConfirmMergeButton: "Confirm merge",
+        mMergeModeTitle: "Merge mode:",
+        mModulesSelected: "modules selected.",
+        mMergeClickInstruction: "Click on cards to select/deselect.",
+        mErrorLoadingData: "Failed to load your modules.",
+
+        // --- ModuleView
+        mvDeleteModuleConfirm: "Delete this module? This action cannot be undone.",
+        mvDeleteModuleFailed: "Failed to delete module.",
+        mvFailedAction: "Action failed.",
+        mvFailedRate: "Failed to rate module.",
+        mvErrorLoadModule: "Failed to load module.",
+        mvLearnedTitle: "Learned",
+        mvInProgressTitle: "In progress",
+        mvEmptyMessage: "It's empty here",
+        mvRestartTitle: "Restart",
+        mvAutoTitle: "Auto",
+        mvFullscreenTitle: "Fullscreen mode",
+        mvCloseTitle: "Close",
+        mvEditLabel: "Edit",
+        mvCollaboratorsLabel: "Collaborators",
+        mvDeleteLabel: "Delete",
+
+        // --- Cards
+        cEmptyCardsMessage: "It's empty here for now",
+        cFullscreenLabel: "Fullscreen",
+        cErrorLearnUpdate: "Failed to update learning status",
+        cErrorActionFailed: "Action failed",
+
+        // --- Saves
+        sSavesTitle: "Your Saved Items",
+        sTabModules: "Modules",
+        sTabFolders: "Folders",
+        sTabCards: "Cards",
+
+        // --- Library
+        lLibraryTitle: "Your Library",
+        lAddFolder: "Add folder",
+        lAddModule: "Add module",
+        lTabModules: "Modules",
+        lTabFolders: "Folders",
+
+        // --- MainPage
+        mpLatestViewed: "Recently viewed",
+        mpLatestEmpty: "You haven't viewed anything yet",
+        mpPopularModules: "Popular modules",
+        mpPopularEmpty: "No popular modules yet",
+        mpBestAuthors: "Top authors",
+        mpAuthorsEmpty: "No authors found",
+        mpWords: "words",
+        mpBy: "by",
+        mpTerms: "terms",
+        mpModules: "modules",
+        mpModulesShort: "modules",
+        mpNoDescription: "No description available.",
+        mpEmailVerifiedSuccess: "Email verified successfully!",
+        mpEmailVerificationError: "Email verification failed.",
+
+        // --- PublicProfileLibrary
+        pplModulesTab: "Modules",
+        pplFoldersTab: "Folders",
+        pplNoModules: "No available modules found.",
+        pplNoFolders: "No available folders found.",
+        pplSavedTitle: "Saved",
+        pplErrorTitle: "Error",
+        pplModuleSaveSuccess: "Module saved successfully.",
+        pplModuleSaveError: "Failed to save module.",
+        pplModuleUnsaveError: "Failed to remove module from saved.",
+        pplModulePinError: "Failed to pin module.",
+        pplModuleUnpinError: "Failed to unpin module.",
+        pplFolderPinError: "Error while pinning folder.",
+        pplPin: "Pin",
+        pplUnpin: "Unpin",
+        pplExport: "Export",
+        pplNoBio: "No profile description.",
+        pplUserNotFoundError: "User not found or connection error.",
+
+        // --- ChangePhoto
+        cpChangePhotoTitle: "Change Photo",
+        cpChangePhotoSubtitle: "Upload a new avatar",
+        cpChoosePhotoBtn: "Select photo",
+        cpSavePhotoBtn: "Save",
+        cpUploadingPhotoBtn: "Uploading...",
+        cpDeletePhotoBtn: "Delete",
+        cpNoAvatarText: "none",
+
+        // --- DeleteAccount
+        daDeleteAccountTitle: "Delete Account",
+        daDeleteAccountSubtitle: "Permanent account deletion",
+        daAttentionText: "Warning!",
+        daAttentionDescription: "If you close your account, you will permanently lose access to it and all data, even if you create a new account with the same email in the future.",
+        daDeleteAccountBtn: "Delete",
+
+        // --- PrivateProfile
+        ppPrivateProfileTitle: "Private Profile",
+        ppPrivateProfileSubtitle: "Add some info about yourself",
+        ppUsernameLabel: "Username",
+        ppFirstNameLabel: "First Name",
+        ppLastNameLabel: "Last Name",
+        ppDescriptionLabel: "About me",
+        ppUsernameLengthError: "Username cannot be more than 20 characters.",
+        ppProfileUpdatedMsg: "Profile updated successfully.",
+
+        // --- Safety
+        sfSafetyTitle: "Security",
+        sfSafetySubtitle: "Here you can change your email or password",
+        sfYourEmailLabel: "Your email",
+        sfEmailAdvice: "Enter a new email; a verification link will be sent to it. Once verified, your email will be updated.",
+        sfSendEmailBtn: "Send",
+        sfWaitEmailBtn: "Wait...",
+        sfVerificationEmailMsg: "Verification link sent! Please check your inbox.",
+        sfEmailEmptyError: "Email cannot be empty.",
+        sfEmailActionFailed: "Failed to send verification link.",
+        sfYourPasswordLabel: "Current password",
+        sfNewPasswordLabel: "New password",
+        sfConfirmPasswordLabel: "Confirm new password",
+        sfChangePasswordBtn: "Change password",
+        sfForgotPasswordBtn: "Forgot password?",
+        sfAllFieldsError: "All fields must be filled.",
+        sfPasswordsMismatchError: "Passwords do not match.",
+        sfPasswordChangedMsg: "Password changed successfully!",
+        sfChangePasswordFailed: "Failed to change password.",
+        sfApiKeyStatusLabel: "Your DeepL API key status",
+        sfNoKeyLabel: "No key",
+        sfActiveKeyLabel: "Active key",
+        sfCharsLeftLabel: "chars left",
+        sfAddApiKeyLabel: "Add DeepL API key",
+        sfUpdateApiKeyLabel: "Update DeepL API key",
+        sfEnterKeyPlaceholder: "Enter key",
+        sfEnterNewKeyPlaceholder: "Enter new key to update",
+        sfSaveKeyBtn: "Save key",
+        sfUpdateKeyBtn: "Update key",
+        sfSavingKeyBtn: "Saving...",
+        sfDeletingKeyBtn: "Deleting...",
+        sfDeleteKeyBtn: "Delete DeepL key",
+        sfApiKeyEmptyError: "API key cannot be empty.",
+        sfApiKeyUpdatedSuccess: "DeepL key updated successfully.",
+        sfApiKeyCreatedSuccess: "DeepL key added successfully.",
+        sfApiKeySaveFailed: "Failed to save DeepL key.",
+        sfApiKeyDeletedMsg: "DeepL key deleted.",
+        sfApiKeyDeleteFailed: "Failed to delete DeepL key.",
+    },
 };
 
 const I18nContext = createContext();
 
 export const I18nProvider = ({ children }) => {
-    const [language, setLanguage] = useState("ua");
+    const [language, setLanguage] = useState(() => {
+        return localStorage.getItem("app_lang") || "ua";
+    });
+
+    const [isLangModalOpen, setIsLangModalOpen] = useState(false);
 
     const t = (key) => {
-        return translations[language][key] || key;
+        // Додаємо fallback на англійську, якщо ключа немає в українській,
+        // або повертаємо сам ключ
+        return translations[language]?.[key] || translations["en"]?.[key] || key;
     };
 
     const changeLanguage = (lang) => {
-        if (translations[lang]) setLanguage(lang);
+        setLanguage(lang);
+        localStorage.setItem("app_lang", lang);
+        setIsLangModalOpen(false);
     };
 
     return (
-        <I18nContext.Provider value={{ t, language, changeLanguage }}>
+        <I18nContext.Provider
+            value={{
+                t,
+                language,
+                changeLanguage,
+                isLangModalOpen,
+                setIsLangModalOpen
+            }}
+        >
             {children}
         </I18nContext.Provider>
     );

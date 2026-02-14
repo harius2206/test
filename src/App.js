@@ -9,10 +9,13 @@ import SidePanel from "./components/sidePanel/sidePanel";
 import { AuthProvider } from "./context/AuthContext";
 import { ErrorProvider } from "./context/ErrorContext";
 import AuthGuard from "./components/Auth/AuthGuard";
-import { I18nProvider } from "./i18n";
+import { I18nProvider, useI18n } from "./i18n";
+import LanguageModal from "./components/LanguageModal/LanguageModal";
 
 function AppLayout() {
     const location = useLocation();
+    const { isLangModalOpen } = useI18n();
+
     const hideSide =
         location.pathname.startsWith("/profile") ||
         location.pathname.startsWith("/login") ||
@@ -39,6 +42,8 @@ function AppLayout() {
                 </div>
             </main>
             <Footer />
+
+            {isLangModalOpen && <LanguageModal />}
         </div>
     );
 }

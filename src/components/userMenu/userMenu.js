@@ -11,7 +11,7 @@ import { getUserData, clearAllExceptTheme } from "../../utils/storage";
 import { useI18n } from "../../i18n";
 
 export default function UserMenu() {
-    const { t } = useI18n();
+    const { t, setIsLangModalOpen, language } = useI18n();
     const [open, setOpen] = useState(false);
     const [avatarVersion, setAvatarVersion] = useState(0);
     const { user, logout, setUser } = useAuth();
@@ -159,9 +159,12 @@ export default function UserMenu() {
 
                                     <hr />
 
-                                    <div className="um-link um-row">
+                                    <div className="um-link um-row" onClick={() => setIsLangModalOpen(true)}>
                                         <span>{t("umLanguage_label")}</span>
-                                        <span className="um-lang">{t("umEnglish_label")} <GlobeIcon className="um-lang-icon" /></span>
+                                        <span className="um-lang">
+                                            {language === 'ua' ? 'Українська' : 'English'}
+                                            <GlobeIcon className="um-lang-icon" />
+                                        </span>
                                     </div>
 
                                     <div className="um-theme-selector">
@@ -213,9 +216,12 @@ export default function UserMenu() {
 
                                     <hr />
 
-                                    <div className="um-link um-row">
+                                    <div className="um-link um-row" onClick={() => setIsLangModalOpen(true)}>
                                         <span>{t("umLanguage_label")}</span>
-                                        <span className="um-lang">{t("umEnglish_label")} <GlobeIcon className="um-lang-icon" /></span>
+                                        <span className="um-lang">
+                                            {language === 'ua' ? 'Українська' : 'English'}
+                                            <GlobeIcon className="um-lang-icon" />
+                                        </span>
                                     </div>
 
                                     <div className="um-theme-selector">
