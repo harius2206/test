@@ -1,5 +1,6 @@
 import "./footer.css"
 import language from "./language.svg"
+import {Link} from "react-router-dom";
 
 export default function Footer() {
     return (
@@ -10,7 +11,7 @@ export default function Footer() {
                     <span className="footer-copy">© 2025 kusottare team</span>
                     <span className="footer-divider"></span>
                     <nav className="footer-nav">
-                        <a href="#">About us</a>
+                        <Link to="/about">About Us</Link>
                         <a href="#">Help</a>
                     </nav>
                 </div>

@@ -1,0 +1,82 @@
+.about-container {
+    padding: 40px 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+}
+
+.about-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.group-info {
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.about-team {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    margin-bottom: 50px;
+    flex-wrap: wrap;
+}
+
+.team-member {
+    text-align: center;
+}
+
+.photo-placeholder {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background-color: #f0f0f0;
+    border: 2px dashed #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+    color: #888;
+}
+
+.tech-stack {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.tech-card {
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.tech-card h2 {
+    border-bottom: 2px solid #3b82f6;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.tech-card ul {
+    list-style: none;
+    padding: 0;
+}
+
+.tech-card li {
+    padding: 5px 0;
+}
+
+/* Підтримка темної теми */
+[data-theme='dark'] .about-container {
+    color: #fff;
+}
+
+[data-theme='dark'] .photo-placeholder {
+    background-color: #2d3748;
+    border-color: #4a5568;
+}
+
+[data-theme='dark'] .tech-card {
+    background-color: #1a202c;
+}

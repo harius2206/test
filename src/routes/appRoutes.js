@@ -12,6 +12,7 @@ import LoginPage from "../pages/Forms/AuthPage/LoginPage";
 import PasswordReset from "../pages/Forms/AuthPage/PasswordReset";
 import GitHubCallback from "../pages/Forms/AuthPage/GitHubCallback";
 import GoogleCallback from "../pages/Forms/AuthPage/GoogleCallBack";
+import AboutPage from "../pages/AboutPage/AboutPage";
 
 const appRoutes = [
     { path: "/", component: MainPage },
@@ -32,6 +33,8 @@ const appRoutes = [
     { path: "/reset-password", component: PasswordReset },
     { path: "/github/callback", component: GitHubCallback },
     { path: "/google/callback", component: GoogleCallback },
+
+    { path: "/about", component: AboutPage, protected: false },
 ];
 
 export default appRoutes;
