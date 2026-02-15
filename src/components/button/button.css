@@ -1,5 +1,5 @@
 .btn {
-    display: flex;
+    display: inline-flex; /* Змінено з flex на inline-flex, щоб кнопка не займала всю ширину */
     justify-content: center;
     align-items: center;
     font-size: 16px;
@@ -7,8 +7,11 @@
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     outline: none;
+    box-sizing: border-box; /* Важливо для правильного розрахунку падінгів */
+    overflow: hidden;
+    text-overflow: ellipsis; /* На випадок екстремально довгих слів */
 }
 
 .btn:hover:not(:disabled) {
@@ -24,32 +27,14 @@
     cursor: not-allowed;
 }
 
+/* Видалено жорсткі кольори фону, щоб вони не перебивали inline-styles з JS */
 [data-theme="dark"] .btn {
     box-shadow: none;
 }
 
-[data-theme="dark"] .btn-static {
-    background-color: #655ADE;
-    color: #ffffff;
-    border: 2px solid #655ADE;
-}
-
-[data-theme="dark"] .btn-toggle {
-    background-color: black;
-    color: #655ADE;
-    border: 2px solid #655ADE;
-}
-
-[data-theme="dark"] .btn-toggle[active],
-[data-theme="dark"] .btn-toggle.active {
-    background-color: #655ADE;
-    color: #ffffff;
-}
-
 [data-theme="dark"] .btn-link {
-    background: transparent;
-    border: none;
-    color: #655ADE;
+    background: transparent !important;
+    border: none !important;
     text-decoration: none;
 }
 

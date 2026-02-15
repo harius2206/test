@@ -61,15 +61,22 @@
     left: 0;
     background: var(--mc-bg-hover);
     border: 1px solid var(--mc-border);
-    padding: 4px 8px;
+    padding: 8px;
     border-radius: 6px;
     color: var(--mc-muted);
     font-size: 13px;
-    white-space: nowrap;
+
+
+    width: 150px;
+    white-space: normal;
+    word-break: break-all;
+    overflow-wrap: break-word;
+
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.15s ease;
     z-index: 5;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .hover-wrapper:hover .hover-hint {

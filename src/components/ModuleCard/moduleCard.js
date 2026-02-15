@@ -56,6 +56,12 @@ export default function ModuleCard({
     const isOwnModule = (user?.username === authorName) ||
         (user?.username && authorName && user.username.toLowerCase() === authorName.toLowerCase());
 
+    // Обмеження опису до 50 символів
+    const truncateDescription = (text) => {
+        if (!text) return t("moduleCardNoDescription_label");
+        return text.length > 50 ? text.substring(0, 50) + "..." : text;
+    };
+
     const handleCardClick = () => {
         if (isMergeMode) {
             if (onSelect) onSelect(module);
@@ -207,7 +213,7 @@ export default function ModuleCard({
                         )}
                     </div>
                     <span className="hover-hint">
-                        {module.description || t("moduleCardNoDescription_label")}
+                        {truncateDescription(module.description)}
                     </span>
                 </div>
 

@@ -847,3 +847,12 @@ main {
 .mv-row-save-btn.mv-active .save-icon {
     fill: none;
 }
+.module-description-text {
+    margin-top: 8px;
+    margin-bottom: 16px;
+    font-size: 15px;
+    color: var(--mc-muted); /* Використовуємо існуючу змінну для приглушеного тексту */
+    line-height: 1.5;
+    word-break: break-word; /* Щоб довгі слова не ламали верстку */
+    max-width: 800px;
+}

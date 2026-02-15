@@ -294,6 +294,23 @@ export default function ModuleView() {
                     </div>
                 </div>
 
+                {/* ДОДАНО: Виведення опису модуля з примусовим переносом слів */}
+                {mvModule.description && (
+                    <div
+                        className="mv-module-description"
+                        style={{
+                            marginBottom: '15px',
+                            color: 'var(--mc-muted)',
+                            fontSize: '15px',
+                            lineHeight: '1.4',
+                            wordBreak: 'break-all',    /* Примусовий перенос довгих слів */
+                            overflowWrap: 'anywhere'   /* Сучасний стандарт переносу в будь-якому місці */
+                        }}
+                    >
+                        {mvModule.description}
+                    </div>
+                )}
+
                 <div className="mv-view_tags-row">
                     {(mvModule.tags || []).map((t, i) => <span key={i} className="tag">{t}</span>)}
                 </div>
