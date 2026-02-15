@@ -15,6 +15,7 @@ import { ReactComponent as ArrowDown } from "../../../images/arrowDown.svg";
 import { ReactComponent as ArrowUp } from "../../../images/arrowUp.svg";
 import { ReactComponent as DeeplIcon } from "../../../images/deepl.svg";
 import { ReactComponent as ReplaceIcon } from "../../../images/replace.svg";
+import { ReactComponent as AddIcon } from "../../../images/add.svg";
 
 import "../CreateModule/createModule.css";
 
@@ -34,6 +35,7 @@ export default function ModuleForm({
 
     // --- Form State ---
     const [tags, setTags] = useState([]);
+    const [newTag, setNewTag] = useState("");
     const [name, setName] = useState("");
     const [selectedTopic, setSelectedTopic] = useState(null);
     const [description, setDescription] = useState("");
@@ -119,6 +121,26 @@ export default function ModuleForm({
     const handleRemoveCard = (e, id) => {
         e.stopPropagation();
         if (cards.length > 1) setCards(prev => prev.filter(c => c.id !== id));
+    };
+
+    const handleAddTag = () => {
+        const trimmed = newTag.trim();
+        if (!trimmed) return;
+
+        // Перевірка на 10 символів
+        if (trimmed.length > 10) {
+            alert(t("mfTagTooLong", "Тег не може бути довшим за 10 символів"));
+            return;
+        }
+
+        if (!tags.includes(trimmed)) {
+            setTags([...tags, trimmed]);
+            setNewTag("");
+        }
+    };
+
+    const handleRemoveTag = (tagToRemove) => {
+        setTags(tags.filter(t => t !== tagToRemove));
     };
 
     const handleSwapLanguages = () => {
@@ -291,6 +313,51 @@ export default function ModuleForm({
                     </div>
 
                     <input className="module-input" placeholder={t("mfModuleDescriptionPlaceholder")} value={description} onChange={e => setDescription(e.target.value)} />
+
+                    {/* СЕКЦІЯ ТЕГІВ */}
+                    <div className="tags-management-row" style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
+                        <div className="tag-input-wrapper" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <input
+                                className="module-input"
+                                style={{ flex: 1, marginBottom: 0 }}
+                                placeholder={t("mfAddTagPlaceholder", "Введіть тег (макс. 10 симв.)")}
+                                value={newTag}
+                                maxLength={10}
+                                onChange={e => setNewTag(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                            />
+                            <Button variant="hover" width={100} height={42} onClick={handleAddTag}>
+                                <AddIcon width={16} height={16} style={{ marginRight: 6 }} />
+                                {t("mfAddTagBtn", "Додати")}
+                            </Button>
+                        </div>
+
+                        {tags.length > 0 && (
+                            <div className="tags-list-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                {tags.map((tag, i) => (
+                                    <div key={i} className="tag-item-badge" style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        background: 'var(--bg-secondary)',
+                                        padding: '4px 10px',
+                                        borderRadius: '16px',
+                                        fontSize: '14px',
+                                        border: '1px solid var(--border-color)'
+                                    }}>
+                                        <span>{tag}</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveTag(tag)}
+                                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, display: 'flex' }}
+                                        >
+                                            <CloseIcon width={12} height={12} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 <div className="cards-list">

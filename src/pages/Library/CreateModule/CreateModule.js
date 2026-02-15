@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ModuleForm from "./ModuleForm";
-import { createModule, updateModule, getModuleById } from "../../../api/modulesApi";
+import { createModule, updateModule, getModuleById, updateModuleTags } from "../../../api/modulesApi";
 import { addModuleToFolder } from "../../../api/foldersApi";
 import Loader from "../../../components/loader/loader";
 import { useI18n } from "../../../i18n";
@@ -84,26 +84,30 @@ export default function CreateModule() {
             name: formData.name,
             description: formData.description,
             topic: formData.topic?.id || null,
-            tags: formData.tags,
             lang_from: formData.globalLangLeft?.id || 1,
             lang_to: formData.globalLangRight?.id || 2,
             cards: processedCards
         };
 
         try {
+            let currentId = moduleId;
             if (mode === "edit") {
                 await updateModule(moduleId, payload);
-                navigate(-1);
             } else {
                 const response = await createModule(payload);
-                const newModuleId = response.data.id;
+                currentId = response.data.id;
+            }
 
-                if (folderId && newModuleId) {
-                    await addModuleToFolder(folderId, newModuleId);
-                    navigate(`/library/folders/${folderId}`);
-                } else {
-                    navigate("/library");
-                }
+            // Окремо зберігаємо теги через спеціальний ендпоінт
+            if (currentId && formData.tags) {
+                await updateModuleTags(currentId, formData.tags);
+            }
+
+            if (mode === "create" && folderId && currentId) {
+                await addModuleToFolder(folderId, currentId);
+                navigate(`/library/folders/${folderId}`);
+            } else {
+                mode === "edit" ? navigate(-1) : navigate("/library");
             }
         } catch (error) {
             console.error("Operation failed:", error);

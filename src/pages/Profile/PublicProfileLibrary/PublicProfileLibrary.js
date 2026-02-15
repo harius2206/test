@@ -5,7 +5,8 @@ import {
     saveModule,
     unsaveModule,
     pinModule,
-    unpinModule
+    unpinModule,
+    deleteModule
 } from "../../../api/modulesApi";
 import {
     pinFolder,
@@ -66,9 +67,6 @@ export default function PublicProfileLibrary() {
             const pplHasAccess = (item) => {
                 if (item.visible === "public") return true;
                 if (currentUser && String(currentUser.id) === String(data.id)) return true;
-                if (currentUser && item.collaborators && item.collaborators.some(c => String(c.id) === String(currentUser.id))) {
-                    return true;
-                }
                 if (item.user_perm) return true;
                 return false;
             };
@@ -95,9 +93,9 @@ export default function PublicProfileLibrary() {
                 user: { id: data.id, username: data.username, avatar: getFlagUrl(data.avatar) },
                 topic: m.topic,
                 cards_count: m.cards_count !== undefined ? m.cards_count : (m.cards ? m.cards.length : 0),
-                collaborators: m.collaborators || [],
                 is_saved: m.saved,
-                pinned: m.pinned
+                pinned: m.pinned,
+                user_perm: m.user_perm // Зберігаємо права з бекенду
             }));
             pplSetModulesList(pplMappedModules);
 
@@ -181,6 +179,23 @@ export default function PublicProfileLibrary() {
         }
     };
 
+    const pplHandleEditModule = (module) => {
+        navigate("/library/create-module", {
+            state: { mode: "edit", moduleId: module.id, moduleData: module }
+        });
+    };
+
+    const pplHandleDeleteModule = async (modId) => {
+        if (window.confirm(t("confirmDeleteMessage") || "Are you sure?")) {
+            try {
+                await deleteModule(modId);
+                pplSetModulesList(prev => prev.filter(m => m.id !== modId));
+            } catch (err) {
+                pplSetModalInfo({ open: true, type: "error", title: t("pplErrorTitle"), message: t("pplModuleDeleteError") });
+            }
+        }
+    };
+
     const pplHandlePinFolder = async (folder) => {
         const pplIsPinned = folder.pinned;
         pplSetFoldersList(prev => prev.map(f => f.id === folder.id ? { ...f, pinned: !pplIsPinned } : f));
@@ -252,16 +267,23 @@ export default function PublicProfileLibrary() {
                         <div className="pp-empty">{t("pplNoModules")}</div>
                     ) : (
                         <div className="module-list">
-                            {pplModulesList.map((module) => (
-                                <ModuleCard
-                                    key={module.id}
-                                    module={module}
-                                    onSave={pplHandleSaveModule}
-                                    onUnsave={pplHandleUnsaveModule}
-                                    onPin={pplHandlePinModule}
-                                    onUnpin={pplHandleUnpinModule}
-                                />
-                            ))}
+                            {pplModulesList.map((module) => {
+                                // Перевірка прав через поле user_perm, яке повертає ваш API
+                                const canEdit = module.user_perm === "editor" || module.user_perm === "owner";
+
+                                return (
+                                    <ModuleCard
+                                        key={module.id}
+                                        module={module}
+                                        onSave={pplHandleSaveModule}
+                                        onUnsave={pplHandleUnsaveModule}
+                                        onPin={pplHandlePinModule}
+                                        onUnpin={pplHandleUnpinModule}
+                                        onEdit={canEdit ? pplHandleEditModule : null}
+                                        onDelete={canEdit ? pplHandleDeleteModule : null}
+                                    />
+                                );
+                            })}
                         </div>
                     )
                 ) : (

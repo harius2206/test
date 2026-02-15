@@ -42,6 +42,15 @@
     flex-direction: column;
     gap: 12px;
 }
+
+.module-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
 .hover-wrapper {
     position: relative;
 }
@@ -60,6 +69,7 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.15s ease;
+    z-index: 5;
 }
 
 .hover-wrapper:hover .hover-hint {
@@ -75,14 +85,24 @@
     border-radius: 12px;
     background: var(--mc-bg);
     transition: background 0.2s, border-color 0.2s;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .module-card:hover {
     background: var(--mc-bg-hover);
 }
 
+.top-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
 .separator {
     color: var(--mc-separator);
+    flex-shrink: 0;
 }
 
 /* === автор, рейтинг === */
@@ -90,6 +110,17 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    min-width: 0;
+}
+
+.author {
+    font-size: 13px;
+    color: var(--mc-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* Сильніше обмеження ширини ніка */
+    max-width: 80px;
 }
 
 .author-avatar {
@@ -97,6 +128,7 @@
     height: 18px;
     border-radius: 50%;
     object-fit: cover;
+    flex-shrink: 0;
 }
 
 .rating {
@@ -105,12 +137,19 @@
     gap: 4px;
     font-weight: bold;
     color: var(--mc-star);
+    flex-shrink: 0;
 }
 
 .mc-star-icon {
     width: 16px;
     height: 16px;
     fill: var(--mc-star);
+}
+
+.terms-count {
+    font-size: 13px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 /* === теги === */
@@ -121,27 +160,12 @@
     align-items: center;
     max-width: 100%;
 }
+
 .mc-tags-wrapper {
     display: flex;
     flex-direction: column;
     gap: 4px;
     max-width: 100%;
-}
-
-/* Перший ряд тегів — однорядковий */
-.tags-primary {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-/* Теги, які не помістилися у перший ряд */
-.tags-extra {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
 }
 
 .mc-tag {
@@ -153,37 +177,28 @@
     white-space: nowrap;
 }
 
-.tags-dots {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    padding: 0 4px;
-}
-
-.collapse-tags {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2px;
-    margin-left: 4px;
-    color: var(--mc-dots-color);
-}
-
 /* === назва модуля === */
 .module-name-row {
     margin-top: 6px;
+    min-width: 0;
 }
 
 .module-name-text {
     font-size: 16px;
     font-weight: 600;
     color: var(--mc-text);
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* === кнопки === */
 .folder-actions {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
+    margin-left: 10px;
 }
 
 .btn-icon {
@@ -192,58 +207,12 @@
     cursor: pointer;
     padding: 4px;
     border-radius: 6px;
-    transition: none;
     color: var(--mc-dots-color);
 }
 
-/* Крапки для тегів */
-.mc-more-icon {
-    color: #000; /* світлий режим */
-}
-
-[data-theme="dark"] .mc-more-icon {
-    color: #fff; /* темний режим */
-}
-
-/* Три крапки меню (DotsIcon) */
 [data-theme="dark"] .btn-icon svg {
     fill: #ffffff;
     color: #ffffff;
-}
-
-.btn-icon:hover {
-    background: transparent;
-}
-
-.btn-icon:active {
-    background: transparent;
-}
-
-/* === дропдаун === */
-.dropdown {
-    position: absolute;
-    background: var(--mc-dropdown-bg);
-    border: 1px solid var(--mc-dropdown-border);
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    z-index: 10;
-    padding: 6px 0;
-}
-
-.dropdown-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    text-decoration: none;
-    color: var(--mc-dropdown-text);
-    font-size: 14px;
-    transition: background 0.15s ease, color 0.15s ease;
-}
-
-.dropdown-item:hover {
-    background: var(--mc-btn-hover);
-    color: var(--mc-tag-bg);
 }
 
 /* === адаптивність === */
@@ -256,9 +225,5 @@
 
     .folder-actions {
         align-self: flex-end;
-    }
-
-    .module-name-text {
-        font-size: 15px;
     }
 }
