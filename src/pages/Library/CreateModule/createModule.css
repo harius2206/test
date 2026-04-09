@@ -68,6 +68,11 @@
     align-items: center;
 }
 
+.create-actions button svg {
+    fill: var(--clr-primary);
+    color: var(--clr-primary);
+}
+
 /* -------------------- LANGUAGE ROW (Global Swap) -------------------- */
 .global-lang-row {
     width: 100%;
@@ -90,8 +95,14 @@
     border-radius: 50%;
     transition: background-color 0.2s;
 }
+
 .global-lang-row .swap-btn:hover {
     background-color: var(--clr-border);
+}
+
+.global-lang-row .swap-btn svg {
+    fill: var(--clr-primary);
+    color: var(--clr-primary);
 }
 
 .lang-dropdown {
@@ -167,6 +178,12 @@
     outline: none;
 }
 
+.tag-input-wrapper button svg {
+    color: var(--clr-primary);
+    stroke: var(--clr-primary);
+    fill: none;
+}
+
 /* -------------------- CARDS LIST -------------------- */
 .cards-list {
     margin-top: 12px;
@@ -191,7 +208,8 @@
     box-sizing: border-box;
     position: relative;
     margin: 0 auto;
-    padding-right: 64px; /* Space for delete button */
+    padding-right: 64px;
+    transition: border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card-index-col {
@@ -214,10 +232,9 @@
     min-width: 0;
 }
 
-/* HEADER OF CARD: LANG - LANG (ВИПРАВЛЕНО: Flexbox замість Grid) */
 .card-lang-top {
-    display: flex; /* Використовуємо Flexbox */
-    justify-content: space-between; /* Розводимо по краях */
+    display: flex;
+    justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
     width: 100%;
@@ -242,12 +259,9 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    /* ВИДАЛЕНО: margin-left: auto; оскільки space-between впорається */
 }
 
-/* SWAP BTN ON CARD (Навіть якщо приховано, залишаємо стилі для чистоти) */
 .card-swap-btn {
-    /* Приховано, оскільки Swap має бути лише глобальним */
     display: none !important;
 }
 
@@ -360,7 +374,6 @@
     color: #ef4444;
 }
 
-/* FIX: Кнопка візуально не міняється, коли disabled */
 .icon-top-btn:disabled {
     opacity: 1;
     cursor: default;
@@ -446,12 +459,20 @@
     }
 
     .card-lang-top {
-        /* В мобільному вирівнювання також має бути space-between */
         justify-content: space-between;
     }
 }
 
-/* Focus styles */
 button:focus, .btn:focus, .module-input:focus {
     outline: none;
+}
+
+.card-row.incomplete-card .card-input:placeholder-shown:focus {
+    border-color: var(--clr-primary);
+    background-color: var(--clr-card-bg);
+}
+
+.card-row.active-card {
+    border-color: var(--clr-primary) !important;
+    box-shadow: 0 0 0 1px var(--clr-primary);
 }

@@ -264,6 +264,10 @@ const translations = {
         mfSaveButton: "Зберегти",
         mfCreateButton: "Створити",
         mfCloseButton: "Закрити",
+        mfSelectTopicWarning: "Виберіть тему модуля",
+        mfTagTooLong: "Тег не може бути довшим за 10 символів",
+        mfAddTagPlaceholder: "Введіть тег (макс. 10 симв.)",
+        mfAddTagBtn: "Додати",
 
         // --- FolderInfo
         fpErrorLoadingFolder: "Папку не знайдено або не вдалося завантажити.",
@@ -731,6 +735,10 @@ const translations = {
         mfSaveButton: "Save",
         mfCreateButton: "Create",
         mfCloseButton: "Close",
+        mfSelectTopicWarning: "Select a module topic",
+        mfTagTooLong: "Tag cannot be longer than 10 characters",
+        mfAddTagPlaceholder: "Enter tag (max 10 chars)",
+        mfAddTagBtn: "Add",
 
         // --- FolderInfo
         fpErrorLoadingFolder: "Folder not found or could not be loaded.",
@@ -1198,6 +1206,10 @@ const translations = {
         mfSaveButton: "Zapisz",
         mfCreateButton: "Utwórz",
         mfCloseButton: "Zamknij",
+        mfSelectTopicWarning: "Wybierz temat modułu",
+        mfTagTooLong: "Tag nie może być dłuższy niż 10 znaków",
+        mfAddTagPlaceholder: "Wpisz tag (maks. 10 znaków)",
+        mfAddTagBtn: "Dodaj",
 
         // --- FolderInfo
         fpErrorLoadingFolder: "Nie znaleziono folderu lub błąd ładowania.",
@@ -1665,6 +1677,10 @@ const translations = {
         mfSaveButton: "Speichern",
         mfCreateButton: "Erstellen",
         mfCloseButton: "Schließen",
+        mfSelectTopicWarning: "Modulthema auswählen",
+        mfTagTooLong: "Tag darf nicht länger als 10 Zeichen sein",
+        mfAddTagPlaceholder: "Tag eingeben (max. 10 Zeichen)",
+        mfAddTagBtn: "Hinzufügen",
 
         // --- FolderInfo
         fpErrorLoadingFolder: "Ordner nicht gefunden oder Ladefehler.",
@@ -2132,6 +2148,10 @@ const translations = {
         mfSaveButton: "Enregistrer",
         mfCreateButton: "Créer",
         mfCloseButton: "Fermer",
+        mfSelectTopicWarning: "Sélectionnez un sujet de module",
+        mfTagTooLong: "Le tag ne peut pas dépasser 10 caractères",
+        mfAddTagPlaceholder: "Entrez le tag (max 10 car.)",
+        mfAddTagBtn: "Ajouter",
 
         // --- FolderInfo
         fpErrorLoadingFolder: "Dossier introuvable ou erreur de chargement.",
@@ -2599,6 +2619,10 @@ const translations = {
         mfSaveButton: "Guardar",
         mfCreateButton: "Crear",
         mfCloseButton: "Cerrar",
+        mfSelectTopicWarning: "Seleccione un tema de módulo",
+        mfTagTooLong: "La etiqueta no puede tener más de 10 caracteres",
+        mfAddTagPlaceholder: "Ingrese etiqueta (máx. 10 car.)",
+        mfAddTagBtn: "Añadir",
 
         // --- FolderInfo
         fpErrorLoadingFolder: "Carpeta no encontrada o error de carga.",
@@ -3066,6 +3090,10 @@ const translations = {
         mfSaveButton: "Salva",
         mfCreateButton: "Crea",
         mfCloseButton: "Chiudi",
+        mfSelectTopicWarning: "Seleziona un argomento del modulo",
+        mfTagTooLong: "Il tag non può superare i 10 caratteri",
+        mfAddTagPlaceholder: "Inserisci tag (max 10 car.)",
+        mfAddTagBtn: "Aggiungi",
 
         // --- FolderInfo
         fpErrorLoadingFolder: "Cartella non trovata o errore di caricamento.",
@@ -3533,6 +3561,10 @@ const translations = {
         mfSaveButton: "Kaydet",
         mfCreateButton: "Oluştur",
         mfCloseButton: "Kapat",
+        mfSelectTopicWarning: "Modül konusunu seçin",
+        mfTagTooLong: "Etiket 10 karakterden uzun olamaz",
+        mfAddTagPlaceholder: "Etiket girin (maks. 10 kar.)",
+        mfAddTagBtn: "Ekle",
 
         // --- FolderInfo
         fpErrorLoadingFolder: "Klasör bulunamadı veya yükleme hatası.",
@@ -4000,6 +4032,10 @@ const translations = {
         mfSaveButton: "保存",
         mfCreateButton: "作成",
         mfCloseButton: "閉じる",
+        mfSelectTopicWarning: "モジュールのトピックを選択してください",
+        mfTagTooLong: "タグは10文字以内で入力してください",
+        mfAddTagPlaceholder: "タグを入力（最大10文字）",
+        mfAddTagBtn: "追加",
 
         // --- FolderInfo
         fpErrorLoadingFolder: "フォルダが見つからないか、読み込みに失敗しました。",
@@ -4467,6 +4503,10 @@ const translations = {
         mfSaveButton: "保存",
         mfCreateButton: "创建",
         mfCloseButton: "关闭",
+        mfSelectTopicWarning: "选择模块主题",
+        mfTagTooLong: "标签长度不能超过10个字符",
+        mfAddTagPlaceholder: "输入标签（最多10个字符）",
+        mfAddTagBtn: "添加",
 
         // --- FolderInfo
         fpErrorLoadingFolder: "文件夹未找到或加载出错。",
@@ -4934,6 +4974,10 @@ const translations = {
         mfSaveButton: "저장",
         mfCreateButton: "생성",
         mfCloseButton: "닫기",
+        mfSelectTopicWarning: "모듈 주제를 선택하세요",
+        mfTagTooLong: "태그는 10자를 초과할 수 없습니다",
+        mfAddTagPlaceholder: "태그 입력 (최대 10자)",
+        mfAddTagBtn: "추가",
 
         // --- FolderInfo
         fpErrorLoadingFolder: "폴더를 찾을 수 없거나 로드에 실패했습니다.",
@@ -5401,6 +5445,10 @@ const translations = {
         mfSaveButton: "Salvar",
         mfCreateButton: "Criar",
         mfCloseButton: "Fechar",
+        mfSelectTopicWarning: "Selecione um tópico do módulo",
+        mfTagTooLong: "A tag não pode ter mais de 10 caracteres",
+        mfAddTagPlaceholder: "Digite a tag (máx. 10 carac.)",
+        mfAddTagBtn: "Adicionar",
 
         // --- FolderInfo
         fpErrorLoadingFolder: "Pasta não encontrada ou erro de carregamento.",

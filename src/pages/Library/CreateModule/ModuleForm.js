@@ -55,6 +55,9 @@ export default function ModuleForm({
 
     const [cards, setCards] = useState([{ id: Date.now(), term: "", definition: "" }]);
 
+    // Стан для відстеження активної картки (тієї, яку зараз редагують)
+    const [activeCardId, setActiveCardId] = useState(null);
+
     // State for translation loading
     const [translatingCardId, setTranslatingCardId] = useState(null);
 
@@ -218,6 +221,9 @@ export default function ModuleForm({
         });
     };
 
+    // Перевіряємо, чи є хоча б одна незаповнена картка
+    const hasIncompleteCards = cards.some(c => !c.term.trim() || !c.definition.trim());
+
     return (
         <div className="page-with-layout">
             <main className="create-module-page container">
@@ -369,53 +375,86 @@ export default function ModuleForm({
                 </div>
 
                 <div className="cards-list">
-                    {cards.map((card, idx) => (
-                        <div className="card-row" key={card.id}>
-                            <div className="card-index-col">{idx + 1}</div>
-                            <div className="card-center-col">
-                                <div className="card-lang-top">
-                                    <span className="lang-left">{selectedLangLeft?.name}</span>
-                                    <span className="lang-right">{selectedLangRight?.name}</span>
-                                </div>
-                                <div className="card-separator" />
-                                <div className="card-fields">
-                                    <div className="field-with-label">
-                                        <input className="card-input" placeholder={t("mfTermLabel")} value={card.term} onChange={(e) => handleCardChange(card.id, "term", e.target.value)} />
-                                        <div className="field-label">{t("mfTermLabel")}</div>
-                                    </div>
-                                    <div className="field-with-label">
-                                        <input className="card-input" placeholder={t("mfDefinitionLabel")} value={card.definition} onChange={(e) => handleCardChange(card.id, "definition", e.target.value)} />
-                                        <div className="field-label">{t("mfDefinitionLabel")}</div>
-                                    </div>
+                    {cards.map((card, idx) => {
+                        const isCardIncomplete = !card.term.trim() || !card.definition.trim();
+                        const isActive = activeCardId === card.id;
 
-                                    <div className="deepl-link">
-                                        <button
-                                            type="button"
-                                            className="deepl-btn"
-                                            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', padding: 0 }}
-                                            onClick={() => handleDeeplTranslate(card.id, card.term)}
-                                            disabled={translatingCardId === card.id || !card.term}
-                                            title={t("mfDeeplTranslate")}
-                                        >
-                                            <DeeplIcon className="deepl-icon" style={{ opacity: translatingCardId === card.id ? 0.5 : 1 }}/>
-                                            <span style={{ color: 'var(--text-color)', fontSize: '12px' }}>
-                                                {translatingCardId === card.id ? t("mfDeeplLoading") : t("mfDeeplTranslate")}
-                                            </span>
-                                        </button>
+                        return (
+                            <div
+                                className={`card-row ${isCardIncomplete ? "incomplete-card" : ""} ${isActive ? "active-card" : ""}`}
+                                key={card.id}
+                                onFocus={() => setActiveCardId(card.id)}
+                                onBlur={(e) => {
+                                    // Якщо фокус перейшов на елемент поза цією карткою - знімаємо активний стан
+                                    if (!e.currentTarget.contains(e.relatedTarget)) {
+                                        setActiveCardId(null);
+                                    }
+                                }}
+                            >
+                                <div className="card-index-col">{idx + 1}</div>
+                                <div className="card-center-col">
+                                    <div className="card-lang-top">
+                                        <span className="lang-left">{selectedLangLeft?.name}</span>
+                                        <span className="lang-right">{selectedLangRight?.name}</span>
+                                    </div>
+                                    <div className="card-separator" />
+                                    <div className="card-fields">
+                                        <div className="field-with-label">
+                                            <input className="card-input" placeholder={t("mfTermLabel")} value={card.term} onChange={(e) => handleCardChange(card.id, "term", e.target.value)} />
+                                            <div className="field-label">{t("mfTermLabel")}</div>
+                                        </div>
+                                        <div className="field-with-label">
+                                            <input className="card-input" placeholder={t("mfDefinitionLabel")} value={card.definition} onChange={(e) => handleCardChange(card.id, "definition", e.target.value)} />
+                                            <div className="field-label">{t("mfDefinitionLabel")}</div>
+                                        </div>
+
+                                        <div className="deepl-link">
+                                            <button
+                                                type="button"
+                                                className="deepl-btn"
+                                                style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', padding: 0 }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation(); // Щоб клік на кнопку не збивав стан
+                                                    handleDeeplTranslate(card.id, card.term);
+                                                }}
+                                                disabled={translatingCardId === card.id || !card.term}
+                                                title={t("mfDeeplTranslate")}
+                                            >
+                                                <DeeplIcon className="deepl-icon" style={{ opacity: translatingCardId === card.id ? 0.5 : 1 }}/>
+                                                <span style={{ color: 'var(--text-color)', fontSize: '12px' }}>
+                                                    {translatingCardId === card.id ? t("mfDeeplLoading") : t("mfDeeplTranslate")}
+                                                </span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
+                                <div className="card-actions-col">
+                                    <button
+                                        type="button"
+                                        className="icon-top-btn delete-card-btn"
+                                        onClick={(e) => {
+                                            e.stopPropagation(); // Щоб клік на кнопку не впливав на активний стан
+                                            handleRemoveCard(e, card.id);
+                                        }}
+                                        disabled={cards.length <= 1}
+                                        title={t("mfRemoveCard")}
+                                    >
+                                        <TrashIcon width={16} height={16} />
+                                    </button>
+                                </div>
                             </div>
-                            <div className="card-actions-col">
-                                <button className="icon-top-btn delete-card-btn" onClick={(e) => handleRemoveCard(e, card.id)} disabled={cards.length <= 1} title={t("mfRemoveCard")}>
-                                    <TrashIcon width={16} height={16} />
-                                </button>
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
 
                 <div className="card-actions">
-                    <Button variant="hover" width={140} height={39} onClick={handleAddCard}>
+                    <Button
+                        variant="hover"
+                        width={140}
+                        height={39}
+                        onClick={handleAddCard}
+                        disabled={hasIncompleteCards}
+                    >
                         {t("mfAddCard")}
                     </Button>
                 </div>
