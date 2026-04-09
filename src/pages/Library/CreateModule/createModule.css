@@ -33,10 +33,10 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background: var(--clr-bg);
+    background-color: var(--clr-bg);
     color: var(--clr-text);
     font-family: "Inter", sans-serif;
-    transition: background 0.3s ease, color 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .container {
@@ -60,6 +60,7 @@
     font-size: 36px;
     margin: 0;
     font-weight: 600;
+    transition: color 0.3s ease;
 }
 
 .create-actions {
@@ -71,6 +72,12 @@
 .create-actions button svg {
     fill: var(--clr-primary);
     color: var(--clr-primary);
+    transition: fill 0.3s ease, color 0.3s ease;
+}
+
+.close-icon-global {
+    fill: var(--clr-text);
+    transition: fill 0.3s ease;
 }
 
 /* -------------------- LANGUAGE ROW (Global Swap) -------------------- */
@@ -93,7 +100,7 @@
     cursor: pointer;
     padding: 8px;
     border-radius: 50%;
-    transition: background-color 0.2s;
+    transition: background-color 0.3s ease;
 }
 
 .global-lang-row .swap-btn:hover {
@@ -103,6 +110,12 @@
 .global-lang-row .swap-btn svg {
     fill: var(--clr-primary);
     color: var(--clr-primary);
+    transition: fill 0.3s ease, color 0.3s ease;
+}
+
+@keyframes dropdownFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .lang-dropdown {
@@ -112,7 +125,7 @@
 
 .lang-dropdown .btn {
     border: 2px solid var(--clr-primary);
-    background: var(--clr-bg);
+    background-color: var(--clr-bg);
     color: var(--clr-primary);
     padding: 6px 10px;
     height: 32px;
@@ -122,11 +135,12 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.12s ease;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.12s ease;
 }
 
-.lang-dropdown .btn:hover {
-    background: var(--clr-primary);
+.lang-dropdown .btn:hover,
+.lang-dropdown .btn.active {
+    background-color: var(--clr-primary);
     color: #fff;
 }
 
@@ -135,11 +149,14 @@
     top: 100%;
     left: 0;
     min-width: 120px;
-    background: var(--clr-card-bg);
+    background-color: var(--clr-card-bg);
     border: 1px solid var(--clr-border-light);
     border-radius: 6px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     z-index: 100;
+    animation: dropdownFadeIn 0.2s ease forwards;
+    transform-origin: top;
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .lang-dropdown .dropdown-item {
@@ -147,11 +164,29 @@
     cursor: pointer;
     font-size: 14px;
     color: var(--clr-text);
-    transition: background 0.12s ease;
+    transition: background-color 0.12s ease, color 0.3s ease;
 }
 
 .lang-dropdown .dropdown-item:hover {
-    background: var(--clr-primary-light);
+    background-color: var(--clr-primary-light);
+}
+
+/* --- LANGUAGE DROPDOWN ARROWS HIGHLIGHT --- */
+.lang-dropdown button svg {
+    fill: var(--clr-primary);
+    color: var(--clr-primary);
+    transition: fill 0.3s ease, color 0.3s ease;
+}
+
+.lang-dropdown button:hover svg,
+.lang-dropdown button.active svg {
+    fill: #ffffff;
+    color: #ffffff;
+}
+
+.topic-arrow {
+    fill: currentColor !important;
+    color: currentColor !important;
 }
 
 /* -------------------- MODULE INPUTS -------------------- */
@@ -167,10 +202,10 @@
     padding: 8px 12px;
     border-radius: 6px;
     border: 1px solid var(--clr-border-light);
-    background: var(--clr-card-bg);
+    background-color: var(--clr-card-bg);
     color: var(--clr-text);
     font-size: 14px;
-    transition: border-color 0.2s ease;
+    transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
 }
 
 .module-input:focus {
@@ -182,6 +217,40 @@
     color: var(--clr-primary);
     stroke: var(--clr-primary);
     fill: none;
+    transition: color 0.3s ease, stroke 0.3s ease;
+}
+
+.tag-input-wrapper button:hover svg {
+    color: #ffffff;
+    stroke: #ffffff;
+}
+
+/* --- TAGS --- */
+.tag-item-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background-color: var(--clr-border);
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 14px;
+    border: 1px solid var(--clr-border-light);
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.tag-item-badge button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    display: flex;
+    color: var(--clr-text);
+    transition: color 0.3s ease;
+}
+
+.tag-item-badge button svg {
+    fill: currentColor;
+    transition: fill 0.3s ease;
 }
 
 /* -------------------- CARDS LIST -------------------- */
@@ -199,7 +268,7 @@
     display: flex;
     gap: 12px;
     align-items: flex-start;
-    background: var(--clr-card-bg);
+    background-color: var(--clr-card-bg);
     border: 1px solid var(--clr-border-light);
     border-radius: 8px;
     padding: 16px;
@@ -209,7 +278,14 @@
     position: relative;
     margin: 0 auto;
     padding-right: 64px;
-    transition: border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+
+    /* -------------------- МАГІЯ ДЛЯ ОПТИМІЗАЦІЇ -------------------- */
+    /* Вирішує проблему лагів при зміні теми для великої кількості карток */
+    content-visibility: auto;
+    contain-intrinsic-size: 180px; /* Приблизна висота картки, щоб не стрибав скрол */
+    /* --------------------------------------------------------------- */
+
+    transition: border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
 }
 
 .card-index-col {
@@ -223,6 +299,7 @@
     margin-top: 16px;
     height: 36px;
     color: var(--clr-muted);
+    transition: color 0.3s ease;
 }
 
 .card-center-col {
@@ -241,36 +318,26 @@
     height: 36px;
 }
 
-.card-lang-top .lang-left {
+.card-lang-top span {
     font-size: 13px;
     font-weight: 600;
     color: var(--clr-muted);
-    text-align: left;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-.card-lang-top .lang-right {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--clr-muted);
-    text-align: right;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    transition: color 0.3s ease;
 }
 
 .card-swap-btn {
     display: none !important;
 }
 
-
 .card-separator {
     height: 1px;
-    background: var(--clr-border-light);
+    background-color: var(--clr-border-light);
     width: 100%;
     margin: 12px 0;
+    transition: background-color 0.3s ease;
 }
 
 /* -------------------- FIELD GRID -------------------- */
@@ -295,8 +362,9 @@
     padding: 8px 10px;
     border-radius: 6px;
     border: 1px solid var(--clr-border-light);
-    background: var(--clr-card-bg);
+    background-color: var(--clr-card-bg);
     color: var(--clr-text);
+    transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
 }
 
 .card-input:focus {
@@ -311,6 +379,7 @@
     height: 20px;
     display: flex;
     align-items: center;
+    transition: color 0.3s ease;
 }
 
 /* -------------------- DEEPL LINK -------------------- */
@@ -324,17 +393,15 @@
     color: var(--clr-muted);
 }
 
-.deepl-link a {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--clr-muted);
-    text-decoration: none;
-    font-weight: 600;
+.deepl-link span {
+    transition: color 0.3s ease;
+}
+
+.deepl-btn {
     transition: opacity 0.2s ease;
 }
 
-.deepl-link a:hover {
+.deepl-btn:hover {
     opacity: 0.8;
 }
 
@@ -342,6 +409,7 @@
     width: 20px;
     height: 20px;
     fill: var(--clr-muted);
+    transition: fill 0.3s ease;
 }
 
 /* -------------------- DELETE BUTTON (Trash Icon) -------------------- */
@@ -355,7 +423,7 @@
 }
 
 .icon-top-btn {
-    background: transparent;
+    background-color: transparent;
     border: none;
     cursor: pointer;
     padding: 8px;
@@ -366,7 +434,7 @@
     justify-content: center;
     border-radius: 6px;
     color: var(--clr-muted);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.3s ease;
 }
 
 .icon-top-btn:hover:not(:disabled) {
@@ -382,6 +450,7 @@
 
 .icon-top-btn svg {
     fill: currentColor;
+    transition: fill 0.3s ease;
 }
 
 /* -------------------- ACTIONS ROW -------------------- */
@@ -463,6 +532,7 @@
     }
 }
 
+/* Focus styles */
 button:focus, .btn:focus, .module-input:focus {
     outline: none;
 }
@@ -472,7 +542,60 @@ button:focus, .btn:focus, .module-input:focus {
     background-color: var(--clr-card-bg);
 }
 
+/* -------------------- ACTIVE CARD HIGHLIGHT -------------------- */
 .card-row.active-card {
     border-color: var(--clr-primary) !important;
     box-shadow: 0 0 0 1px var(--clr-primary);
+}
+
+
+/* -------------------- CREATE TOP -------------------- */
+.create-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    gap: 12px;
+}
+
+.create-title {
+    font-size: 36px;
+    margin: 0;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.create-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.create-actions button svg {
+    fill: var(--clr-primary);
+    color: var(--clr-primary);
+    transition: fill 0.3s ease, color 0.3s ease;
+}
+
+/* Новий стиль для хрестика закриття */
+.cm-close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--clr-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    border-radius: 50%;
+    transition: background-color 0.2s ease, color 0.3s ease;
+}
+.cm-close-btn:hover {
+    background-color: var(--clr-border);
+}
+
+.cm-close-btn svg {
+    fill: currentColor;
+    stroke: currentColor;
+    transition: fill 0.3s ease, stroke 0.3s ease;
 }

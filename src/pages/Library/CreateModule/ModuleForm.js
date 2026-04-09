@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../../components/button/button";
 import ClickOutsideWrapper from "../../../components/clickOutsideWrapper";
@@ -20,6 +20,102 @@ import { ReactComponent as AddIcon } from "../../../images/add.svg";
 
 import "../CreateModule/createModule.css";
 
+// ----------------------------------------------------------------------------------
+// МЕМОЇЗОВАНА КАРТКА
+// ----------------------------------------------------------------------------------
+const CardRow = React.memo(({
+                                card,
+                                idx,
+                                langLeftName,
+                                langRightName,
+                                isActive,
+                                isTranslating,
+                                canDelete,
+                                tTermLabel,
+                                tDefinitionLabel,
+                                tDeeplTranslate,
+                                tDeeplLoading,
+                                tRemoveCard,
+                                onFocus,
+                                onBlur,
+                                onChange,
+                                onTranslate,
+                                onRemove
+                            }) => {
+    const isCardIncomplete = !card.term.trim() || !card.definition.trim();
+
+    return (
+        <div
+            className={`card-row ${isCardIncomplete ? "incomplete-card" : ""} ${isActive ? "active-card" : ""}`}
+            onFocus={() => onFocus(card.id)}
+            onBlur={onBlur}
+        >
+            <div className="card-index-col">{idx + 1}</div>
+            <div className="card-center-col">
+                <div className="card-lang-top">
+                    <span className="lang-left">{langLeftName}</span>
+                    <span className="lang-right">{langRightName}</span>
+                </div>
+                <div className="card-separator" />
+                <div className="card-fields">
+                    <div className="field-with-label">
+                        <input
+                            className="card-input"
+                            placeholder={tTermLabel}
+                            value={card.term}
+                            onChange={(e) => onChange(card.id, "term", e.target.value)}
+                        />
+                        <div className="field-label">{tTermLabel}</div>
+                    </div>
+                    <div className="field-with-label">
+                        <input
+                            className="card-input"
+                            placeholder={tDefinitionLabel}
+                            value={card.definition}
+                            onChange={(e) => onChange(card.id, "definition", e.target.value)}
+                        />
+                        <div className="field-label">{tDefinitionLabel}</div>
+                    </div>
+
+                    <div className="deepl-link">
+                        <button
+                            type="button"
+                            className="deepl-btn"
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', padding: 0 }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onTranslate(card.id, card.term);
+                            }}
+                            disabled={isTranslating || !card.term}
+                            title={tDeeplTranslate}
+                        >
+                            <DeeplIcon className="deepl-icon" style={{ opacity: isTranslating ? 0.5 : 1 }}/>
+                            <span style={{ color: 'var(--text-color)', fontSize: '12px' }}>
+                                {isTranslating ? tDeeplLoading : tDeeplTranslate}
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div className="card-actions-col">
+                <button
+                    type="button"
+                    className="icon-top-btn delete-card-btn"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onRemove(e, card.id);
+                    }}
+                    disabled={!canDelete}
+                    title={tRemoveCard}
+                >
+                    <TrashIcon width={16} height={16} />
+                </button>
+            </div>
+        </div>
+    );
+});
+
+
 export default function ModuleForm({
                                        mode = "create",
                                        initialData = {},
@@ -36,53 +132,65 @@ export default function ModuleForm({
     const [topicsList, setTopicsList] = useState([]);
 
     // --- Form State ---
-    const [tags, setTags] = useState([]);
+    const [tags, setTags] = useState(initialData?.tags || []);
     const [newTag, setNewTag] = useState("");
-    const [name, setName] = useState("");
-    const [selectedTopic, setSelectedTopic] = useState(null);
-    const [description, setDescription] = useState("");
+    const [name, setName] = useState(initialData?.name || "");
+    const [selectedTopic, setSelectedTopic] = useState(initialData?.topic || null);
+    const [description, setDescription] = useState(initialData?.description || "");
 
-    const [selectedLangLeft, setSelectedLangLeft] = useState(null);
-    const [selectedLangRight, setSelectedLangRight] = useState(null);
+    const [selectedLangLeft, setSelectedLangLeft] = useState(
+        initialData?.globalLangLeft && typeof initialData.globalLangLeft === 'object' ? initialData.globalLangLeft : null
+    );
+    const [selectedLangRight, setSelectedLangRight] = useState(
+        initialData?.globalLangRight && typeof initialData.globalLangRight === 'object' ? initialData.globalLangRight : null
+    );
 
     // --- UI State ---
     const [openLeft, setOpenLeft] = useState(false);
     const [openRight, setOpenRight] = useState(false);
     const [openTopicDropdown, setOpenTopicDropdown] = useState(false);
-
-    // Modal state
     const [showImportModal, setShowImportModal] = useState(false);
 
-    const [cards, setCards] = useState([{ id: Date.now(), term: "", definition: "" }]);
+    const [cards, setCards] = useState(
+        initialData?.cards?.length > 0 ? initialData.cards : [{ id: Date.now(), term: "", definition: "" }]
+    );
 
-    // Стан для відстеження активної картки (тієї, яку зараз редагують)
+    const CHUNK_SIZE = 40;
+    const [visibleCount, setVisibleCount] = useState(CHUNK_SIZE);
+    const loadMoreRef = useRef(null);
+
     const [activeCardId, setActiveCardId] = useState(null);
-
-    // State for translation loading
     const [translatingCardId, setTranslatingCardId] = useState(null);
-
-    // Запобіжник для форми, щоб не перезаписувати дані
     const isDataPopulated = useRef(false);
+
+    // Переклади витягуємо один раз, щоб не ламати мемоїзацію
+    const tTerm = t("mfTermLabel");
+    const tDef = t("mfDefinitionLabel");
+    const tDeepl = t("mfDeeplTranslate");
+    const tDeeplLoad = t("mfDeeplLoading");
+    const tRemove = t("mfRemoveCard");
+
+    // --- Infinite Scroll ---
+    useEffect(() => {
+        if (visibleCount >= cards.length) return;
+
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                setVisibleCount(prev => Math.min(prev + CHUNK_SIZE, cards.length));
+            }
+        }, { rootMargin: "1500px" });
+
+        if (loadMoreRef.current) observer.observe(loadMoreRef.current);
+        return () => observer.disconnect();
+    }, [visibleCount, cards.length]);
 
     // --- 1. Fetch Data ---
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [langsRes, topicsRes] = await Promise.all([
-                    getLanguages(),
-                    getTopics()
-                ]);
-
-                const langsData = langsRes.data || [];
-                const topicsData = topicsRes.data || [];
-
-                setLanguagesList(langsData);
-                setTopicsList(topicsData);
-
-                if (mode === "create" && langsData.length >= 2 && !selectedLangLeft) {
-                    setSelectedLangLeft(langsData[0]);
-                    setSelectedLangRight(langsData[1]);
-                }
+                const [langsRes, topicsRes] = await Promise.all([getLanguages(), getTopics()]);
+                setLanguagesList(langsRes.data || []);
+                setTopicsList(topicsRes.data || []);
             } catch (e) {
                 console.error("Failed to load form data", e);
             }
@@ -93,68 +201,91 @@ export default function ModuleForm({
 
     // --- 2. Populate State ---
     useEffect(() => {
-        // Заповнюємо форму даними тільки ОДИН раз.
-        // Завдяки цьому при вильоті помилки твій введений текст більше не очиститься.
         if (isDataPopulated.current) return;
 
-        if (initialData && Object.keys(initialData).length > 0 && languagesList.length > 0) {
-            setName(initialData.name || "");
-            setDescription(initialData.description || "");
-            setTags(initialData.tags || []);
-
-            const findLang = (val) => {
-                if (!val) return languagesList[0];
-                if (typeof val === 'object' && val.id) return languagesList.find(l => l.id === val.id) || val;
-                if (typeof val === 'number') return languagesList.find(l => l.id === val) || languagesList[0];
-                return languagesList[0];
+        if (initialData && Object.keys(initialData).length > 0) {
+            const getLang = (val, list) => {
+                if (!val) return null;
+                if (typeof val === 'object' && val.name) return val;
+                if (list.length > 0) {
+                    if (typeof val === 'object' && val.id) return list.find(l => l.id === val.id) || val;
+                    if (typeof val === 'number') return list.find(l => l.id === val) || list[0];
+                }
+                return typeof val === 'object' ? val : null;
             };
 
-            if (initialData.globalLangLeft) setSelectedLangLeft(findLang(initialData.globalLangLeft));
-            if (initialData.globalLangRight) setSelectedLangRight(findLang(initialData.globalLangRight));
+            setSelectedLangLeft(prev => prev || getLang(initialData.globalLangLeft, languagesList));
+            setSelectedLangRight(prev => prev || getLang(initialData.globalLangRight, languagesList));
 
-            if (topicsList.length > 0 && initialData.topic) {
-                if (typeof initialData.topic === 'object') setSelectedTopic(initialData.topic);
-                else if (typeof initialData.topic === 'number') {
-                    const found = topicsList.find(topicItem => topicItem.id === initialData.topic);
-                    if (found) setSelectedTopic(found);
-                }
+            const getTopic = (val, list) => {
+                if (!val) return null;
+                if (typeof val === 'object' && val.name) return val;
+                if (list.length > 0 && typeof val === 'number') return list.find(t => t.id === val) || null;
+                return typeof val === 'object' ? val : null;
+            };
+            setSelectedTopic(prev => prev || getTopic(initialData.topic, topicsList));
+
+            if (languagesList.length > 0 && topicsList.length > 0) {
+                isDataPopulated.current = true;
             }
-
-            if (initialData.cards && initialData.cards.length > 0) {
-                setCards(initialData.cards);
-            }
-
-            isDataPopulated.current = true;
         }
     }, [initialData, languagesList, topicsList]);
 
-    // --- Handlers ---
-    const handleCardChange = (id, field, value) => setCards(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c));
-    const handleAddCard = () => setCards(prev => [...prev, { id: Date.now(), term: "", definition: "" }]);
+    // --- СТАБІЛЬНІ ХЕНДЛЕРИ (ЗАПОБІГАЮТЬ ЛАГАМ) ---
+    const handleCardChange = useCallback((id, field, value) => {
+        setCards(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c));
+    }, []);
 
-    const handleRemoveCard = (e, id) => {
-        e.stopPropagation();
-        if (cards.length > 1) setCards(prev => prev.filter(c => c.id !== id));
-    };
+    const handleAddCard = useCallback(() => {
+        setCards(prev => [...prev, { id: Date.now(), term: "", definition: "" }]);
+        setVisibleCount(prev => prev + 1);
+    }, []);
+
+    const handleRemoveCard = useCallback((e, id) => {
+        setCards(prev => prev.length > 1 ? prev.filter(c => c.id !== id) : prev);
+    }, []);
+
+    const handleBlur = useCallback((e) => {
+        if (!e.currentTarget.contains(e.relatedTarget)) {
+            setActiveCardId(null);
+        }
+    }, []);
+
+    const handleDeeplTranslate = useCallback(async (cardId, term) => {
+        if (!term) return;
+        if (!selectedLangRight) {
+            showError(t("mfTranslateTargetLangFirst", "Спочатку оберіть мову перекладу"));
+            return;
+        }
+
+        setTranslatingCardId(cardId);
+        try {
+            const response = await translateWords([term], selectedLangRight.id);
+            const translatedData = response.data.translations[0];
+            const translatedText = typeof translatedData === 'string' ? translatedData : translatedData?.text;
+
+            if (translatedText) {
+                handleCardChange(cardId, "definition", translatedText);
+            }
+        } catch (err) {
+            console.error("Translation failed", err);
+            showError(err);
+        } finally {
+            setTranslatingCardId(null);
+        }
+    }, [selectedLangRight, showError, t, handleCardChange]);
 
     const handleAddTag = () => {
         const trimmed = newTag.trim();
         if (!trimmed) return;
-
-        if (trimmed.length > 10) {
-            showError(t("mfTagTooLong", "Тег не може бути довшим за 10 символів"));
-            return;
-        }
-
+        if (trimmed.length > 10) return showError(t("mfTagTooLong", "Тег не може бути довшим за 10 символів"));
         if (!tags.includes(trimmed)) {
             setTags([...tags, trimmed]);
             setNewTag("");
         }
     };
 
-    const handleRemoveTag = (tagToRemove) => {
-        setTags(tags.filter(t => t !== tagToRemove));
-    };
+    const handleRemoveTag = (tagToRemove) => setTags(tags.filter(t => t !== tagToRemove));
 
     const handleSwapLanguages = () => {
         const temp = selectedLangLeft;
@@ -183,45 +314,15 @@ export default function ModuleForm({
         onSubmit?.(moduleObj);
     };
 
-    const handleDeeplTranslate = async (cardId, term) => {
-        if (!term) return;
-        if (!selectedLangRight) {
-            showError(t("mfTranslateTargetLangFirst", "Спочатку оберіть мову перекладу"));
-            return;
-        }
-
-        setTranslatingCardId(cardId);
-
-        try {
-            const targetLang = selectedLangRight.id;
-
-            const response = await translateWords([term], targetLang);
-
-            const translatedData = response.data.translations[0];
-            const translatedText = typeof translatedData === 'string' ? translatedData : translatedData?.text;
-
-            if (translatedText) {
-                handleCardChange(cardId, "definition", translatedText);
-            }
-
-        } catch (err) {
-            console.error("Translation failed", err);
-            showError(err);
-        } finally {
-            setTranslatingCardId(null);
-        }
-    };
-
     const handleImportedCards = (importedCards) => {
         if (!importedCards || importedCards.length === 0) return;
-
         setCards(prev => {
             const existingNotEmpty = prev.filter(c => c.term.trim() !== "" || c.definition.trim() !== "");
             return [...existingNotEmpty, ...importedCards];
         });
+        setVisibleCount(CHUNK_SIZE);
     };
 
-    // Перевіряємо, чи є хоча б одна незаповнена картка
     const hasIncompleteCards = cards.some(c => !c.term.trim() || !c.definition.trim());
 
     return (
@@ -237,13 +338,7 @@ export default function ModuleForm({
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div className="create-actions" style={{ display: 'flex', gap: '10px' }}>
-                            <Button
-                                variant="hover"
-                                width={130}
-                                height={39}
-                                onClick={() => setShowImportModal(true)}
-                                title={t("mfImportTitle")}
-                            >
+                            <Button variant="hover" width={130} height={39} onClick={() => setShowImportModal(true)} title={t("mfImportTitle")}>
                                 <ReplaceIcon style={{ marginRight: 6, width: 16, height: 16 }} />
                                 {t("mfImportCards")}
                             </Button>
@@ -253,8 +348,8 @@ export default function ModuleForm({
                             </Button>
                         </div>
 
-                        <button onClick={() => navigate(-1)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }} title={t("mfCloseButton")}>
-                            <CloseIcon width={28} height={28} />
+                        <button className="cm-close-btn" onClick={() => navigate(-1)} title={t("mfCloseButton")}>
+                            <CloseIcon width={24} height={24} className="close-icon-global" />
                         </button>
                     </div>
                 </div>
@@ -262,10 +357,10 @@ export default function ModuleForm({
                 <div className="global-lang-row">
                     <ClickOutsideWrapper onClickOutside={() => setOpenLeft(false)}>
                         <div className="lang-dropdown">
-                            <Button variant="toggle" active={openLeft} onClick={() => setOpenLeft(!openLeft)} width={160} height={32}>
+                            <button className={`btn ${openLeft ? 'active' : ''}`} onClick={() => setOpenLeft(!openLeft)}>
                                 {selectedLangLeft ? selectedLangLeft.name : t("mfSelectLanguage")}
                                 {openLeft ? <ArrowUp width={14} height={14} style={{ marginLeft: 6 }} /> : <ArrowDown width={14} height={14} style={{ marginLeft: 6 }} />}
-                            </Button>
+                            </button>
                             {openLeft && (
                                 <div className="dropdown">
                                     {languagesList.map(opt => (
@@ -282,10 +377,10 @@ export default function ModuleForm({
 
                     <ClickOutsideWrapper onClickOutside={() => setOpenRight(false)}>
                         <div className="lang-dropdown">
-                            <Button variant="toggle" active={openRight} onClick={() => setOpenRight(!openRight)} width={160} height={32}>
+                            <button className={`btn ${openRight ? 'active' : ''}`} onClick={() => setOpenRight(!openRight)}>
                                 {selectedLangRight ? selectedLangRight.name : t("mfSelectLanguage")}
                                 {openRight ? <ArrowUp width={14} height={14} style={{ marginLeft: 6 }} /> : <ArrowDown width={14} height={14} style={{ marginLeft: 6 }} />}
-                            </Button>
+                            </button>
                             {openRight && (
                                 <div className="dropdown">
                                     {languagesList.map(opt => (
@@ -307,7 +402,7 @@ export default function ModuleForm({
                                     <span style={{ color: selectedTopic ? 'inherit' : '#757575' }}>
                                         {selectedTopic ? selectedTopic.name : t("mfSelectTopic")}
                                     </span>
-                                    {openTopicDropdown ? <ArrowUp width={14} height={14} /> : <ArrowDown width={14} height={14} />}
+                                    {openTopicDropdown ? <ArrowUp width={14} height={14} className="topic-arrow" /> : <ArrowDown width={14} height={14} className="topic-arrow" />}
                                 </div>
                                 {openTopicDropdown && (
                                     <div className="dropdown" style={{ width: '100%', top: '100%', maxHeight: '200px', overflowY: 'auto' }}>
@@ -349,22 +444,9 @@ export default function ModuleForm({
                         {tags.length > 0 && (
                             <div className="tags-list-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                                 {tags.map((tag, i) => (
-                                    <div key={i} className="tag-item-badge" style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '6px',
-                                        background: 'var(--bg-secondary)',
-                                        padding: '4px 10px',
-                                        borderRadius: '16px',
-                                        fontSize: '14px',
-                                        border: '1px solid var(--border-color)'
-                                    }}>
+                                    <div key={i} className="tag-item-badge">
                                         <span>{tag}</span>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveTag(tag)}
-                                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, display: 'flex' }}
-                                        >
+                                        <button type="button" onClick={() => handleRemoveTag(tag)}>
                                             <CloseIcon width={12} height={12} />
                                         </button>
                                     </div>
@@ -375,86 +457,37 @@ export default function ModuleForm({
                 </div>
 
                 <div className="cards-list">
-                    {cards.map((card, idx) => {
-                        const isCardIncomplete = !card.term.trim() || !card.definition.trim();
-                        const isActive = activeCardId === card.id;
+                    {cards.slice(0, visibleCount).map((card, idx) => (
+                        <CardRow
+                            key={card.id}
+                            card={card}
+                            idx={idx}
+                            langLeftName={selectedLangLeft?.name}
+                            langRightName={selectedLangRight?.name}
+                            isActive={activeCardId === card.id}
+                            isTranslating={translatingCardId === card.id}
+                            canDelete={cards.length > 1}
+                            tTermLabel={tTerm}
+                            tDefinitionLabel={tDef}
+                            tDeeplTranslate={tDeepl}
+                            tDeeplLoading={tDeeplLoad}
+                            tRemoveCard={tRemove}
+                            onFocus={setActiveCardId}
+                            onBlur={handleBlur}
+                            onChange={handleCardChange}
+                            onTranslate={handleDeeplTranslate}
+                            onRemove={handleRemoveCard}
+                        />
+                    ))}
 
-                        return (
-                            <div
-                                className={`card-row ${isCardIncomplete ? "incomplete-card" : ""} ${isActive ? "active-card" : ""}`}
-                                key={card.id}
-                                onFocus={() => setActiveCardId(card.id)}
-                                onBlur={(e) => {
-                                    // Якщо фокус перейшов на елемент поза цією карткою - знімаємо активний стан
-                                    if (!e.currentTarget.contains(e.relatedTarget)) {
-                                        setActiveCardId(null);
-                                    }
-                                }}
-                            >
-                                <div className="card-index-col">{idx + 1}</div>
-                                <div className="card-center-col">
-                                    <div className="card-lang-top">
-                                        <span className="lang-left">{selectedLangLeft?.name}</span>
-                                        <span className="lang-right">{selectedLangRight?.name}</span>
-                                    </div>
-                                    <div className="card-separator" />
-                                    <div className="card-fields">
-                                        <div className="field-with-label">
-                                            <input className="card-input" placeholder={t("mfTermLabel")} value={card.term} onChange={(e) => handleCardChange(card.id, "term", e.target.value)} />
-                                            <div className="field-label">{t("mfTermLabel")}</div>
-                                        </div>
-                                        <div className="field-with-label">
-                                            <input className="card-input" placeholder={t("mfDefinitionLabel")} value={card.definition} onChange={(e) => handleCardChange(card.id, "definition", e.target.value)} />
-                                            <div className="field-label">{t("mfDefinitionLabel")}</div>
-                                        </div>
-
-                                        <div className="deepl-link">
-                                            <button
-                                                type="button"
-                                                className="deepl-btn"
-                                                style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', padding: 0 }}
-                                                onClick={(e) => {
-                                                    e.stopPropagation(); // Щоб клік на кнопку не збивав стан
-                                                    handleDeeplTranslate(card.id, card.term);
-                                                }}
-                                                disabled={translatingCardId === card.id || !card.term}
-                                                title={t("mfDeeplTranslate")}
-                                            >
-                                                <DeeplIcon className="deepl-icon" style={{ opacity: translatingCardId === card.id ? 0.5 : 1 }}/>
-                                                <span style={{ color: 'var(--text-color)', fontSize: '12px' }}>
-                                                    {translatingCardId === card.id ? t("mfDeeplLoading") : t("mfDeeplTranslate")}
-                                                </span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="card-actions-col">
-                                    <button
-                                        type="button"
-                                        className="icon-top-btn delete-card-btn"
-                                        onClick={(e) => {
-                                            e.stopPropagation(); // Щоб клік на кнопку не впливав на активний стан
-                                            handleRemoveCard(e, card.id);
-                                        }}
-                                        disabled={cards.length <= 1}
-                                        title={t("mfRemoveCard")}
-                                    >
-                                        <TrashIcon width={16} height={16} />
-                                    </button>
-                                </div>
-                            </div>
-                        );
-                    })}
+                    {/* ТРИГЕР ДЛЯ ЗАВАНТАЖЕННЯ НАСТУПНИХ КАРТОК */}
+                    {visibleCount < cards.length && (
+                        <div ref={loadMoreRef} style={{ height: "40px", width: "100%" }}></div>
+                    )}
                 </div>
 
                 <div className="card-actions">
-                    <Button
-                        variant="hover"
-                        width={140}
-                        height={39}
-                        onClick={handleAddCard}
-                        disabled={hasIncompleteCards}
-                    >
+                    <Button variant="hover" width={140} height={39} onClick={handleAddCard} disabled={hasIncompleteCards}>
                         {t("mfAddCard")}
                     </Button>
                 </div>

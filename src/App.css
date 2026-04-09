@@ -38,7 +38,9 @@
 
 }
 
-
+body{
+    background-color: var(--footer-bg);
+}
 
 .page-wrapper {
     display: grid;
