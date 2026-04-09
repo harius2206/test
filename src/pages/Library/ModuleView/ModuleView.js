@@ -107,6 +107,7 @@ export default function ModuleView() {
                         definition: c.translation
                     })) : [],
                     author: data.user?.username || "Unknown",
+                    authorId: data.user?.id,
                     authorAvatar: data.user?.avatar,
                     topicName: typeof data.topic === 'object' ? data.topic?.name : data.topic,
                     flagFrom: getFlagUrl(data.lang_from?.flag),
@@ -130,7 +131,13 @@ export default function ModuleView() {
     const mvCards = mvModule?.cards || [];
     const mvHasPrev = mvCurrentIndex > 0;
     const mvHasNext = mvCurrentIndex < mvCards.length - 1;
-    const mvIsOwnModule = user?.username === mvModule?.author;
+
+    const mvIsOwnModule = Boolean(
+        user && mvModule && (
+            (user.id && mvModule.authorId && user.id === mvModule.authorId) ||
+            (user.username && mvModule.author && user.username.toLowerCase() === mvModule.author.toLowerCase())
+        )
+    );
 
     const mvHandleUpdateCardStatus = async (cardId, type) => {
         if (type === 'learn') {
@@ -196,7 +203,10 @@ export default function ModuleView() {
     };
 
     const mvHandleRatingChange = async (event, newValue) => {
-        if (mvIsOwnModule || newValue === null) return;
+        if (mvIsOwnModule || newValue === null) {
+            event.preventDefault();
+            return;
+        }
         mvSetRating(newValue);
         try { await rateModule(mvModule.id, newValue); } catch (err) { alert(t("mvFailedRate")); }
     };
@@ -277,24 +287,48 @@ export default function ModuleView() {
                                 onChange={mvHandleRatingChange}
                                 icon={<StarSvg className="mv-star-icon mv-active" />}
                                 emptyIcon={<StarSvg className="mv-star-icon" />}
+                                style={{ pointerEvents: mvIsOwnModule ? "none" : "auto" }}
                             />
                         </div>
                     </div>
                     <div className="mv-header-controls">
                         {mvIsOwnModule && (
-                            <DropdownMenu align="right" width={180} items={[
-                                { label: t("mvEditLabel"), onClick: () => navigate("/library/create-module", { state: { mode: "edit", moduleId: mvModule.id, moduleData: mvModule } }), icon: <EditIcon width={16} /> },
-                                { label: t("mvCollaboratorsLabel"), onClick: () => mvSetShowPermissions(true), icon: <ShareIcon width={16} /> },
-                                { label: t("mvDeleteLabel"), onClick: mvHandleDelete, icon: <DeleteIcon width={16} /> }
-                            ]}>
-                                <button className="mv-btn-icon"><DotsIcon width={24} height={24} /></button>
-                            </DropdownMenu>
+                            <div style={{ position: "relative" }}>
+                                <DropdownMenu align="right" width={180} items={[
+                                    { label: t("mvEditLabel"), onClick: () => navigate("/library/create-module", { state: { mode: "edit", moduleId: mvModule.id, moduleData: mvModule } }), icon: <EditIcon width={16} /> },
+                                    { label: t("moduleCardPermissions_label"), onClick: () => mvSetShowPermissions(true), icon: <ShareIcon width={16} /> },
+                                    { label: t("mvDeleteLabel"), onClick: mvHandleDelete, icon: <DeleteIcon width={16} /> }
+                                ]}>
+                                    <button className="mv-btn-icon"><DotsIcon width={24} height={24} /></button>
+                                </DropdownMenu>
+
+                                {/* Випадаюче вікно дозволів під кнопкою замість модалки */}
+                                {mvShowPermissions && (
+                                    <>
+                                        <div
+                                            style={{ position: "fixed", inset: 0, zIndex: 999 }}
+                                            onClick={() => mvSetShowPermissions(false)}
+                                        />
+                                        <div
+                                            style={{ position: "absolute", top: "100%", right: 0, marginTop: "8px", zIndex: 1000 }}
+                                            onClick={e => e.stopPropagation()}
+                                        >
+                                            <PermissionsMenu
+                                                moduleId={mvModule.id}
+                                                users={mvModule.collaborators || []}
+                                                onAddUser={mvHandleAddPermission}
+                                                onRemoveUser={mvHandleRemovePermission}
+                                                onClose={() => mvSetShowPermissions(false)}
+                                            />
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         )}
                         <button onClick={() => navigate(-1)} className="mv-btn-icon" title={t("mvCloseTitle")}><CloseIcon width={28} height={28} /></button>
                     </div>
                 </div>
 
-                {/* ДОДАНО: Виведення опису модуля з примусовим переносом слів */}
                 {mvModule.description && (
                     <div
                         className="mv-module-description"
@@ -303,8 +337,8 @@ export default function ModuleView() {
                             color: 'var(--mc-muted)',
                             fontSize: '15px',
                             lineHeight: '1.4',
-                            wordBreak: 'break-all',    /* Примусовий перенос довгих слів */
-                            overflowWrap: 'anywhere'   /* Сучасний стандарт переносу в будь-якому місці */
+                            wordBreak: 'break-all',
+                            overflowWrap: 'anywhere'
                         }}
                     >
                         {mvModule.description}
@@ -396,14 +430,6 @@ export default function ModuleView() {
                     checkIsLearned={(id) => mvLearned.has(id)}
                     checkIsSaved={(id) => mvSaved.has(id)}
                 />
-            )}
-
-            {mvShowPermissions && (
-                <div className="modal-overlay" onClick={() => mvSetShowPermissions(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", justifyContent: "center", alignItems: "center" }}>
-                    <div onClick={e => e.stopPropagation()}>
-                        <PermissionsMenu moduleId={mvModule.id} users={mvModule.collaborators || []} onAddUser={mvHandleAddPermission} onRemoveUser={mvHandleRemovePermission} onClose={() => mvSetShowPermissions(false)} />
-                    </div>
-                </div>
             )}
         </div>
     );

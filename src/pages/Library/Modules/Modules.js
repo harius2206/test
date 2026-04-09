@@ -57,6 +57,9 @@ export default function Modules({ source = "library", preloadedModules, preloade
     const [mError, mSetError] = useState(null);
 
     const [mExpandedTags, mSetExpandedTags] = useState({});
+
+    // Жорстко фіксуємо кількість видимих тегів до 3-х,
+    // щоб вони не вилазили за межі карток на великих моніторах.
     const [mVisibleCount, mSetVisibleCount] = useState(3);
 
     const [mPermissionsTarget, mSetPermissionsTarget] = useState(null);
@@ -132,23 +135,6 @@ export default function Modules({ source = "library", preloadedModules, preloade
     }, [user, source, preloadedModules, preloadedFolders, mapModulesData, t]);
 
     useEffect(() => { loadData(); }, [loadData]);
-
-    const merge = useMergeModules(onRefresh || loadData);
-
-    useEffect(() => {
-        if (mLoading) return;
-        const element = containerRef.current;
-        if (!element) return;
-        const computeVisible = () => {
-            const width = element.offsetWidth;
-            const count = Math.max(3, Math.floor(width / 80) - 5);
-            mSetVisibleCount(count);
-        };
-        computeVisible();
-        const observer = new ResizeObserver(computeVisible);
-        observer.observe(element);
-        return () => observer.disconnect();
-    }, [mLoading]);
 
     const handleSort = (type) => {
         mSetSortType(type);
@@ -294,6 +280,8 @@ export default function Modules({ source = "library", preloadedModules, preloade
         }
     };
 
+    const merge = useMergeModules(onRefresh || loadData);
+
     const handleFinishMerge = () => {
         merge.executeMerge(
             () => {
@@ -314,6 +302,7 @@ export default function Modules({ source = "library", preloadedModules, preloade
                     position: "sticky", top: 10, zIndex: 100, background: "#6366f1", color: "white",
                     padding: "12px 20px", borderRadius: "12px", marginBottom: "20px",
                     display: "flex", justifyContent: "space-between", alignItems: "center",
+                    flexWrap: "wrap", gap: "10px",
                     boxShadow: "0 4px 15px rgba(99, 102, 241, 0.4)"
                 }}>
                     <div>
@@ -371,13 +360,13 @@ export default function Modules({ source = "library", preloadedModules, preloade
 
             {merge.isMergeModalOpen && (
                 <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
-                    <div style={{ background: "white", padding: "30px", borderRadius: "20px", width: "380px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
+                    <div style={{ background: "white", padding: "30px", borderRadius: "20px", width: "100%", maxWidth: "400px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
                         <h3 style={{ marginBottom: "20px" }}>Finalize Merge</h3>
                         <div style={{ marginBottom: "15px" }}>
-                            <input style={{ width: "100%", padding: "10px", marginTop: "5px", borderRadius: "8px", border: "1px solid #ddd" }} type="text" value={merge.mergeForm.name} onChange={(e) => merge.setMergeForm({...merge.mergeForm, name: e.target.value})} placeholder="New Module Name" />
+                            <input style={{ width: "100%", padding: "10px", marginTop: "5px", borderRadius: "8px", border: "1px solid #ddd", boxSizing: "border-box" }} type="text" value={merge.mergeForm.name} onChange={(e) => merge.setMergeForm({...merge.mergeForm, name: e.target.value})} placeholder="New Module Name" />
                         </div>
                         <div style={{ marginBottom: "25px" }}>
-                            <select style={{ width: "100%", padding: "10px", marginTop: "5px", borderRadius: "8px", border: "1px solid #ddd" }} value={merge.mergeForm.topic} onChange={(e) => merge.setMergeForm({...merge.mergeForm, topic: e.target.value})}>
+                            <select style={{ width: "100%", padding: "10px", marginTop: "5px", borderRadius: "8px", border: "1px solid #ddd", boxSizing: "border-box" }} value={merge.mergeForm.topic} onChange={(e) => merge.setMergeForm({...merge.mergeForm, topic: e.target.value})}>
                                 <option value="">{t("mSelectTopicPlaceholder")}</option>
                                 {mTopics.map(tOption => <option key={tOption.id} value={tOption.id}>{tOption.name}</option>)}
                             </select>
@@ -399,7 +388,7 @@ export default function Modules({ source = "library", preloadedModules, preloade
             {mAddToFolderTarget && (
                 <>
                     <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 301 }} onClick={() => mSetAddToFolderTarget(null)} />
-                    <div className="dropdown-menu" style={{ position: "fixed", left: mAddToFolderTarget.anchor?.left || "50%", top: mAddToFolderTarget.anchor?.top || "50%", zIndex: 302, background: "white", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", padding: "8px 0", minWidth: "200px", maxHeight: "300px", overflowY: "auto" }}>
+                    <div className="dropdown-menu" style={{ position: "fixed", left: mAddToFolderTarget.anchor?.left || "50%", top: mAddToFolderTarget.anchor?.top || "50%", zIndex: 302, background: "white", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", padding: "8px 0", minWidth: "200px", width: "max-content", maxHeight: "300px", overflowY: "auto" }}>
                         <div style={{ padding: "8px 16px", fontWeight: "bold", borderBottom: "1px solid #eee", fontSize: "14px", color: "#666" }}>Add "{mAddToFolderTarget.module.name}" to:</div>
                         {mFolders.length === 0 ? <div style={{ padding: "12px", textAlign: "center", color: "gray", fontSize: "13px" }}>No folders found.</div> : mFolders.map(folder => (
                             <div key={folder.id} onClick={() => handleAddToFolder(folder)} style={{ padding: "10px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px" }}>

@@ -5,8 +5,8 @@
 }
 
 [data-theme="dark"] {
-    --fc-bg: #1a1a1a;
-    --fc-border: #374151;
+    --fc-bg: #000000;
+    --fc-border: #818181;
     --fc-text: #f3f4f6;
 }
 

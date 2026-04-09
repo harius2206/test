@@ -259,8 +259,8 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                                             <span style={{ flex: 1 }}>
                                                 <EditableField value={fRenameValue} onSave={fSetRenameValue} editable={true} autosave={true} />
                                             </span>
-                                            <Button variant="static" width={70} height={30} onClick={() => fSaveRename(folder.id)}>{t("fSaveButton")}</Button>
-                                            <Button variant="hover" width={70} height={30} onClick={() => fSetRenamingId(null)}>{t("fCancelButton")}</Button>
+                                            <Button variant="static" width="auto" height={30} onClick={() => fSaveRename(folder.id)}>{t("fSaveButton")}</Button>
+                                            <Button variant="hover" width="auto" height={30} onClick={() => fSetRenamingId(null)}>{t("fCancelButton")}</Button>
                                         </div>
                                     ) : (
                                         <span className="folder-name-text">{folder.name}</span>
@@ -269,7 +269,7 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                             </div>
 
                             <div className="folder-actions" onClick={e => e.stopPropagation()}>
-                                <DropdownMenu align="left" width={180} items={menuItems}>
+                                <DropdownMenu align="left" width="max-content" items={menuItems}>
                                     <button className="btn-icon">
                                         <ColoredIcon icon={DotsIcon} color="#000" size={16} />
                                     </button>

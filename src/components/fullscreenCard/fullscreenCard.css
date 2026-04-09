@@ -1,3 +1,17 @@
+:root {
+    --main_bg_color: #fff;
+    --text_color: #000000;
+    --block_bg_color: #fff;
+    --accent_color:#6c63ff;
+}
+
+[data-theme="dark"] {
+    --main_bg_color: #000000;
+    --text_color: #ffffff;
+    --block_bg_color: #ff0000;
+    --accent_color:#6c63ff;
+}
+
 .fc-modal-overlay {
     position: fixed;
     top: 0;
@@ -5,7 +19,7 @@
     width: 100vw;
     height: 100vh;
     z-index: 2000;
-    background-color: var(--main_bg_color, #fff);
+    background-color: var(--main_bg_color);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -20,7 +34,7 @@
     border: none;
     cursor: pointer;
     z-index: 10;
-    color: var(--text_color, #000);
+    color: var(--text_color);
 }
 
 .fc-content-wrapper {
@@ -48,7 +62,7 @@
     display: flex;
     align-items: center;
     gap: 15px;
-    background: var(--block_bg_color, #f5f5f5);
+    background: var(--block_bg_color);
     padding: 8px 16px;
     border-radius: 12px;
 }
@@ -136,5 +150,5 @@
 }
 
 .fc-card-btn.active .fc-icon path {
-    fill: var(--accent_color, #6c63ff); /* Fallback color */
+    fill: var(--accent_color);
 }

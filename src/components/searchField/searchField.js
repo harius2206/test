@@ -1,64 +1,102 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { getModules } from "../../api/modulesApi";
 import "./searchField.css";
 import searchIcon from "./searchIcon.svg";
 import { useI18n } from "../../i18n";
 
 export default function SearchField({
                                         placeholder = "search",
-                                        width = "280px",
+                                        width = "320px",
                                         height = "40px",
-                                        className = "",
-                                        value: controlledValue,
-                                        onChange,
-                                        data = [],
-                                        onSearch,
-                                        style = {},
-                                        debounceMs = 200
+                                        debounceMs = 500
                                     }) {
     const { t } = useI18n();
+    const navigate = useNavigate();
 
-    const [query, setQuery] = useState(controlledValue ?? "");
+    const [query, setQuery] = useState("");
+    const [results, setResults] = useState([]);
+    const [isOpen, setIsOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
+
     const debRef = useRef(null);
+    const wrapperRef = useRef(null);
 
     useEffect(() => {
-        if (controlledValue !== undefined && controlledValue !== query) {
-            setQuery(controlledValue);
-        }
-    }, [controlledValue]);
+        const handleClickOutside = (event) => {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     useEffect(() => {
         if (debRef.current) clearTimeout(debRef.current);
-        if (!onSearch || !data) return;
-        debRef.current = setTimeout(() => {
-            const q = (query || "").toLowerCase();
-            const filtered = data.filter((u) =>
-                (u.name || "").toLowerCase().includes(q)
-            );
-            onSearch(filtered);
-        }, debounceMs);
-        return () => clearTimeout(debRef.current);
-    }, [query, data, onSearch, debounceMs]);
+        if (!query.trim()) {
+            setResults([]);
+            setIsOpen(false);
+            return;
+        }
 
-    const handleChange = (e) => {
-        const v = e.target.value;
-        if (controlledValue === undefined) setQuery(v);
-        else setQuery(v);
-        onChange?.(v);
+        debRef.current = setTimeout(async () => {
+            setLoading(true);
+            try {
+                const resp = await getModules({ name: query });
+                setResults(resp.data.results || []);
+                setIsOpen(true);
+            } catch (err) {
+                console.error("Search error:", err);
+            } finally {
+                setLoading(false);
+            }
+        }, debounceMs);
+
+        return () => clearTimeout(debRef.current);
+    }, [query, debounceMs]);
+
+    const handleSelect = (moduleId) => {
+        setIsOpen(false);
+        setQuery("");
+        // Змінено під ваш формат: /library/module-view?id=...
+        navigate(`/library/module-view?id=${moduleId}`);
     };
 
-    const wrapperStyle = { width, height, ...style };
-
     return (
-        <div className={`sf-wrapper ${className}`} style={wrapperStyle}>
-            <img src={searchIcon} alt={t("sfSearch_label")} className="sf-icon" />
-            <input
-                type="text"
-                value={query}
-                onChange={handleChange}
-                className="sf-input"
-                placeholder={t("sfSearch_label")}
-                aria-label={t("sfSearch_label")}
-            />
+        <div className="sf-wrapper-container" ref={wrapperRef} style={{ width }}>
+            <div className="sf-wrapper" style={{ height }}>
+                <img src={searchIcon} alt="search" className="sf-icon" />
+                <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    className="sf-input"
+                    placeholder={placeholder}
+                    onFocus={() => query && setIsOpen(true)}
+                />
+            </div>
+
+            {isOpen && (
+                <div className="sf-results-dropdown">
+                    {loading && <div className="sf-status">Searching...</div>}
+                    {!loading && results.length === 0 && (
+                        <div className="sf-status">No results</div>
+                    )}
+                    {results.map((module) => (
+                        <div
+                            key={module.id}
+                            className="sf-result-item"
+                            onClick={() => handleSelect(module.id)}
+                        >
+                            <div className="sf-item-info">
+                                <span className="sf-item-name">{module.name}</span>
+                                {module.description && <span className="sf-item-desc">{module.description}</span>}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

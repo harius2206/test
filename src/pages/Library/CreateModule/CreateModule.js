@@ -1,18 +1,24 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ModuleForm from "./ModuleForm";
-import { createModule, updateModule, getModuleById, updateModuleTags } from "../../../api/modulesApi";
+import { createModule, updateModule, getModuleById, addModuleTag, removeModuleTag } from "../../../api/modulesApi";
 import { addModuleToFolder } from "../../../api/foldersApi";
 import Loader from "../../../components/loader/loader";
 import { useI18n } from "../../../i18n";
+import { useError } from "../../../context/ErrorContext";
 
 export default function CreateModule() {
     const { t } = useI18n();
     const location = useLocation();
     const navigate = useNavigate();
+    const { showError } = useError();
 
     const [loading, setLoading] = useState(false);
     const [initialData, setInitialData] = useState(null);
+
+    // Цей ref гарантує, що ми ініціалізуємо дані ТІЛЬКИ один раз
+    // і не будемо перетирати введення користувача при рендерах модалки.
+    const dataFetchedRef = useRef(false);
 
     const state = location.state || {};
     const mode = state.mode === "edit" ? "edit" : "create";
@@ -21,14 +27,20 @@ export default function CreateModule() {
     const folderId = state.folderId;
 
     useEffect(() => {
+        // Якщо вже завантажили/ініціалізували, виходимо (не затираємо форму)
+        if (dataFetchedRef.current) return;
+
         if (mode === "create") {
             setInitialData({
+                tags: [],
                 cards: [{ id: Date.now(), term: "", definition: "" }]
             });
+            dataFetchedRef.current = true;
             return;
         }
 
         if (mode === "edit" && moduleId) {
+            dataFetchedRef.current = true;
             const fetchData = async () => {
                 try {
                     setLoading(true);
@@ -55,7 +67,7 @@ export default function CreateModule() {
                     setInitialData(formattedData);
                 } catch (error) {
                     console.error("Failed to load module details:", error);
-                    alert(t("cmErrorLoadingModule"));
+                    showError(t("cmErrorLoadingModule"));
                     navigate("/library");
                 } finally {
                     setLoading(false);
@@ -64,7 +76,7 @@ export default function CreateModule() {
 
             fetchData();
         }
-    }, [mode, moduleId, navigate, t]);
+    }, [mode, moduleId, navigate, t, showError]);
 
     const handleFormSubmit = async (formData) => {
         setLoading(true);
@@ -74,6 +86,7 @@ export default function CreateModule() {
                 original: c.term,
                 translation: c.definition
             };
+            // Якщо id є і воно згенероване бекендом, а не тимчасове (Date.now()), передаємо його
             if (c.id && c.id < 1700000000000) {
                 cardData.id = c.id;
             }
@@ -98,9 +111,24 @@ export default function CreateModule() {
                 currentId = response.data.id;
             }
 
-            // Окремо зберігаємо теги через спеціальний ендпоінт
-            if (currentId && formData.tags) {
-                await updateModuleTags(currentId, formData.tags);
+            // Синхронізація тегів: видалення старих і додавання нових (ТІЛЬКИ різниця)
+            if (currentId && formData.tags !== undefined) {
+                const oldTags = mode === "edit" ? (initialData?.tags || []) : [];
+                const newTags = formData.tags || [];
+
+                // Знаходимо теги, які додали, і ті, які видалили
+                const tagsToAdd = newTags.filter(t => !oldTags.includes(t));
+                const tagsToRemove = oldTags.filter(t => !newTags.includes(t));
+
+                try {
+                    const addPromises = tagsToAdd.map(t => addModuleTag(currentId, t));
+                    const removePromises = tagsToRemove.map(t => removeModuleTag(currentId, t));
+
+                    // Виконуємо всі запити паралельно
+                    await Promise.all([...addPromises, ...removePromises]);
+                } catch (tagErr) {
+                    console.warn("Помилка оновлення тегів, але модуль збережено.", tagErr);
+                }
             }
 
             if (mode === "create" && folderId && currentId) {
@@ -111,10 +139,8 @@ export default function CreateModule() {
             }
         } catch (error) {
             console.error("Operation failed:", error);
-            const msg = error.response?.data
-                ? JSON.stringify(error.response.data)
-                : t("cmOperationFailed");
-            alert(msg);
+            // Глобальний обробник парсить усі помилки бекенда і покаже їх у твоїй модалці
+            showError(error);
         } finally {
             setLoading(false);
         }

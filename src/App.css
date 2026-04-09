@@ -13,6 +13,7 @@
     --status-gray: gray;
     --clr-text-secondary: var(--text-muted);
     --clr-overlay: rgba(0, 0, 0, 0.5);
+    --flag-border: #c8c8c8
 }
 :root {
     --header-height: 96px;
@@ -33,6 +34,8 @@
     --status-red: #f87171;
     --status-orange: #fbbf24;
     --status-gray: #9ca3af;
+    --flag-border: #a8a8a8
+
 }
 
 

@@ -247,9 +247,11 @@ export default function MainPage() {
                                                 <div className="mp-card-header">
                                                     <div className="mp-module-top">
                                                         <h4 className="mp-module-name" title={m.name}>{m.name}</h4>
-                                                        {(flag1 || flag2) && (
-                                                            <DiagonalFlagRect flag1={flag1} flag2={flag2} width={20} height={15} />
-                                                        )}
+                                                        <div className="mp-module-flag">
+                                                            {(flag1 || flag2) && (
+                                                                <DiagonalFlagRect  flag1={flag1} flag2={flag2} width={20} height={15} />
+                                                            )}
+                                                        </div>
                                                     </div>
                                                     <div className="mp-rating">
                                                         {rating}

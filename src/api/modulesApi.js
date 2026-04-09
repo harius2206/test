@@ -20,9 +20,13 @@ export const updateModule = (id, data) => axiosClient.patch(endpoints.modules.de
 export const deleteModule = (id) => axiosClient.delete(endpoints.modules.detail(id));
 export const toggleModuleVisibility = (id, status) => axiosClient.patch(endpoints.modules.visibles(id), { visible: status });
 
-// Теги (Додано згідно з вашим запитом)
-export const updateModuleTags = (id, tags) => axiosClient.post(`${endpoints.modules.detail(id)}tags/`, { tags });
-
+// Теги
+export const addModuleTag = (id, tagName) => {
+    return axiosClient.post(`/api/v1/modules/${id}/tags/`, { name: tagName });
+};
+export const removeModuleTag = (id, tagName) => {
+    return axiosClient.delete(`/api/v1/modules/${id}/tags/${encodeURIComponent(tagName)}/`);
+};
 // Pins
 export const pinModule = (id) => axiosClient.post(endpoints.modules.pins(id), {});
 export const unpinModule = (id) => axiosClient.delete(endpoints.modules.pins(id));

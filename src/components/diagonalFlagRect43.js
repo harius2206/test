@@ -1,5 +1,4 @@
 const DiagonalFlagRect = ({ flag1, flag2, width = 60, height = 40 }) => {
-    // Спільні стилі для обох зображень, щоб уникнути дублювання
     const commonImgStyle = {
         position: 'absolute',
         top: 0,
@@ -21,6 +20,7 @@ const DiagonalFlagRect = ({ flag1, flag2, width = 60, height = 40 }) => {
                 height: height,
                 overflow: 'hidden',
                 backgroundColor: 'transparent',
+                border: '1px solid var(--flag-border)',
             }}
         >
             {/* Верхній лівий трикутник (Прапор 1) */}

@@ -4,7 +4,6 @@
     --text-muted: #6b7280;
     --bg-primary: #ffffff;
     --bg-secondary: #f9fafb;
-    --card-bg: #ffffff;
     --shadow: rgba(0, 0, 0, 0.08);
     --border: #e5e7eb;
     --accent: #6366f1;
@@ -17,7 +16,6 @@
     --text-muted: #9ca3af;
     --bg-primary: #111827;
     --bg-secondary: #000000;
-    --card-bg: #1f2937;
     --shadow: rgba(0, 0, 0, 0.3);
     --border: #374151;
 }

@@ -197,9 +197,9 @@ export default function UserMenu() {
 
                                     {user?.is_staff && (
                                         <>
-                                            <div className="um-link" onClick={() => window.open("http://127.0.0.1:8000/swagger/#/api/api_v1_auth_login_create", "_blank")}>{t("umSwagger_label")}</div>
+                                            <div className="um-link" onClick={() => window.open("http://127.0.0.1:8000/swagger/", "_blank")}>{t("umSwagger_label")}</div>
                                             <div className="um-link" onClick={() => window.open("http://127.0.0.1:8000/admin/users/user/", "_blank")}>{t("umAdmin_label")}</div>
-                                            <div className="um-link" onClick={() => window.open("http://127.0.0.1:8000/silk/request/d069e388-28ca-4f61-94f9-2e54f423690b/", "_blank")}>{t("umSilk_label")}</div>
+                                            <div className="um-link" onClick={() => window.open("http://127.0.0.1:8000/silk/", "_blank")}>{t("umSilk_label")}</div>
                                             <div className="um-link" onClick={() => window.open("http://127.0.0.1:5555/tasks", "_blank")}>{t("umFlower_label")}</div>
                                             <hr />
                                         </>

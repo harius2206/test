@@ -11,8 +11,6 @@ import { ReactComponent as StarIcon } from "../../images/star.svg";
 import { ReactComponent as EditIcon } from "../../images/editImg.svg";
 import { ReactComponent as DeleteIcon } from "../../images/delete.svg";
 import { ReactComponent as ShareIcon } from "../../images/share.svg";
-import { ReactComponent as MoreIcon } from "../../images/dotsHorizontal.svg";
-import { ReactComponent as CloseIcon } from "../../images/close.svg";
 import { ReactComponent as FolderIcon } from "../../images/folder.svg";
 import { ReactComponent as MergeIcon } from "../../images/merge.svg";
 import { ReactComponent as SaveIcon } from "../../images/save.svg";
@@ -23,9 +21,6 @@ import "./moduleCard.css";
 
 export default function ModuleCard({
                                        module,
-                                       visibleCount = 3,
-                                       expanded,
-                                       toggleTags,
                                        onDelete,
                                        onEdit,
                                        onPermissions,
@@ -44,10 +39,6 @@ export default function ModuleCard({
     const { t } = useI18n();
     const navigate = useNavigate();
 
-    const tags = module.tags || [];
-    const showMore = tags.length > visibleCount;
-    const visibleTags = expanded ? tags : tags.slice(0, visibleCount);
-
     const authorName = module.user?.username || module.author || "User";
     const authorAvatar = module.user?.avatar || module.avatar;
     const termsCount = module.cards_count !== undefined ? module.cards_count : (module.terms || 0);
@@ -56,7 +47,6 @@ export default function ModuleCard({
     const isOwnModule = (user?.username === authorName) ||
         (user?.username && authorName && user.username.toLowerCase() === authorName.toLowerCase());
 
-    // Обмеження опису до 50 символів
     const truncateDescription = (text) => {
         if (!text) return t("moduleCardNoDescription_label");
         return text.length > 50 ? text.substring(0, 50) + "..." : text;
@@ -72,7 +62,6 @@ export default function ModuleCard({
 
     const menuItems = [];
 
-    // EDIT
     if (onEdit) {
         menuItems.push({
             label: t("moduleCardEdit_label"),
@@ -87,7 +76,6 @@ export default function ModuleCard({
         });
     }
 
-    // SAVE / UNSAVE
     if (module.is_saved && onUnsave) {
         menuItems.push({
             label: t("moduleCardUnsave_label"),
@@ -102,7 +90,6 @@ export default function ModuleCard({
         });
     }
 
-    // PIN / UNPIN
     if (module.pinned && onUnpin) {
         menuItems.push({
             label: t("moduleCardUnpin_label"),
@@ -117,7 +104,6 @@ export default function ModuleCard({
         });
     }
 
-    // PERMISSIONS
     if (onPermissions) {
         menuItems.push({
             label: t("moduleCardPermissions_label"),
@@ -126,7 +112,6 @@ export default function ModuleCard({
         });
     }
 
-    // ADD TO FOLDER
     if (onAddToFolder) {
         menuItems.push({
             label: t("moduleCardAddToFolder_label"),
@@ -135,7 +120,6 @@ export default function ModuleCard({
         });
     }
 
-    // EXPORT
     if (onExport) {
         menuItems.push({
             label: t("moduleCardExport_label"),
@@ -144,7 +128,6 @@ export default function ModuleCard({
         });
     }
 
-    // MERGE
     if (onMerge) {
         menuItems.push({
             label: isMergeMode ? t("moduleCardCancelMerge_label") : t("moduleCardMerge_label"),
@@ -153,7 +136,6 @@ export default function ModuleCard({
         });
     }
 
-    // DELETE
     if (onDelete) {
         menuItems.push({
             label: t("moduleCardDelete_label"),
@@ -166,17 +148,9 @@ export default function ModuleCard({
         <div
             className={`module-card ${isSelected ? 'selected' : ''}`}
             onClick={handleCardClick}
-            style={{
-                cursor: "pointer",
-                borderColor: isSelected ? "#6366f1" : "#e5e7eb",
-                borderWidth: "1px",
-                borderStyle: "solid",
-                transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-                boxShadow: isSelected ? "0 0 8px rgba(99, 102, 241, 0.2)" : "none"
-            }}
+            style={{ cursor: "pointer" }}
         >
             <div className="module-info">
-                {/* Верхній рядок: кількість термінів, автор, рейтинг */}
                 <div className="top-row">
                     <span className="terms-count">
                         {`${termsCount} ${t("moduleCardTerms_label")}`}
@@ -216,28 +190,11 @@ export default function ModuleCard({
                         {truncateDescription(module.description)}
                     </span>
                 </div>
-
-                {tags.length > 0 && (
-                    <div className="mc-tags-wrapper">
-                        <div className="mc-tags-row">
-                            {visibleTags.map((tag, i) => <span key={i} className="mc-tag">{tag}</span>)}
-                            {showMore && (
-                                <a
-                                    onClick={(e) => { e.stopPropagation(); toggleTags && toggleTags(module.id); }}
-                                    className="tags-dots"
-                                    style={{ cursor: "pointer" }}
-                                >
-                                    {expanded ? <CloseIcon width={12} height={12} /> : <MoreIcon width={12} height={12} />}
-                                </a>
-                            )}
-                        </div>
-                    </div>
-                )}
             </div>
 
             {menuItems.length > 0 && (
                 <div className="folder-actions" onClick={(e) => e.stopPropagation()}>
-                    <DropdownMenu align="left" width={180} items={menuItems}>
+                    <DropdownMenu align="left" width="max-content" items={menuItems}>
                         <button className="btn-icon"><DotsIcon width={16} height={16} /></button>
                     </DropdownMenu>
                 </div>

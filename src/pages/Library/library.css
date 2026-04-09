@@ -36,6 +36,8 @@
     display: flex;
     position: relative;
     margin-bottom: 8px;
+    /* Глобальна нижня лінія */
+    border-bottom: 2px solid var(--lib-border);
 }
 
 .tabs {
@@ -51,33 +53,26 @@
     cursor: pointer;
     font-weight: 500;
     color: var(--lib-muted);
-    transition: color 0.2s;
+    transition: color 0.2s, border-color 0.2s;
+    /* Адаптивний індикатор для багатомовності */
+    position: relative;
+    margin-bottom: -2px;
+    border-bottom: 2px solid transparent;
 }
 
 .tab.active {
     color: var(--lib-accent);
+    border-bottom: 2px solid var(--lib-accent);
 }
 
+/* Приховуємо захардкоджені лінії */
 .tabs-underline {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--lib-border);
+    display: none;
 }
 
 .tabs-indicator {
-    position: absolute;
-    bottom: 0;
-    height: 2px;
-    background: var(--lib-accent);
-    transition: left 0.3s ease, width 0.3s ease;
+    display: none;
 }
-
-/* Розміри індикатора */
-.tabs-indicator.modules { left: 0; width: 100px; }
-.tabs-indicator.folders { left: 100px; width: 95px; }
 
 /* ===== Контент ===== */
 .library-content {
@@ -118,7 +113,8 @@
     color: var(--lib-btn-text-light);
     border: 1px solid var(--lib-border);
     height: 40px;
-    min-width: 140px;
+    min-width: max-content; /* Текст не буде випадати */
+    padding: 0 20px;
     border-radius: 6px;
     font-weight: bold;
     cursor: pointer;
@@ -225,7 +221,8 @@
         padding: 8px 14px;
     }
     .add-btn {
-        min-width: 120px;
+        min-width: max-content;
+        padding: 0 16px;
         height: 38px;
         font-size: 13px;
     }

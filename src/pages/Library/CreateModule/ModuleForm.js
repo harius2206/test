@@ -7,6 +7,7 @@ import { getLanguages, getTopics } from "../../../api/modulesApi";
 import ModuleImportExportModal from "../../../components/ModuleImportExportModal/ModuleImportExportModal";
 import { translateWords } from "../../../api/deeplApi";
 import { useI18n } from "../../../i18n";
+import { useError } from "../../../context/ErrorContext";
 
 import { ReactComponent as CloseIcon } from "../../../images/close.svg";
 import { ReactComponent as TrashIcon } from "../../../images/delete.svg";
@@ -28,6 +29,7 @@ export default function ModuleForm({
                                    }) {
     const { t } = useI18n();
     const navigate = useNavigate();
+    const { showError } = useError();
 
     // --- Data Sources ---
     const [languagesList, setLanguagesList] = useState([]);
@@ -53,8 +55,11 @@ export default function ModuleForm({
 
     const [cards, setCards] = useState([{ id: Date.now(), term: "", definition: "" }]);
 
-    // State for translation loading (track which card is loading)
+    // State for translation loading
     const [translatingCardId, setTranslatingCardId] = useState(null);
+
+    // Запобіжник для форми, щоб не перезаписувати дані
+    const isDataPopulated = useRef(false);
 
     // --- 1. Fetch Data ---
     useEffect(() => {
@@ -85,6 +90,10 @@ export default function ModuleForm({
 
     // --- 2. Populate State ---
     useEffect(() => {
+        // Заповнюємо форму даними тільки ОДИН раз.
+        // Завдяки цьому при вильоті помилки твій введений текст більше не очиститься.
+        if (isDataPopulated.current) return;
+
         if (initialData && Object.keys(initialData).length > 0 && languagesList.length > 0) {
             setName(initialData.name || "");
             setDescription(initialData.description || "");
@@ -111,6 +120,8 @@ export default function ModuleForm({
             if (initialData.cards && initialData.cards.length > 0) {
                 setCards(initialData.cards);
             }
+
+            isDataPopulated.current = true;
         }
     }, [initialData, languagesList, topicsList]);
 
@@ -127,9 +138,8 @@ export default function ModuleForm({
         const trimmed = newTag.trim();
         if (!trimmed) return;
 
-        // Перевірка на 10 символів
         if (trimmed.length > 10) {
-            alert(t("mfTagTooLong", "Тег не може бути довшим за 10 символів"));
+            showError(t("mfTagTooLong", "Тег не може бути довшим за 10 символів"));
             return;
         }
 
@@ -150,11 +160,12 @@ export default function ModuleForm({
     };
 
     const handleSubmit = () => {
-        if (!name.trim()) return alert(t("mfEnterModuleName"));
-        if (!selectedLangLeft || !selectedLangRight) return alert(t("mfSelectLanguages"));
+        if (!name.trim()) return showError(t("mfEnterModuleName", "Введіть назву модуля"));
+        if (!selectedTopic) return showError(t("mfSelectTopicWarning", "Виберіть тему модуля"));
+        if (!selectedLangLeft || !selectedLangRight) return showError(t("mfSelectLanguages", "Виберіть мови"));
 
         const validCards = cards.filter(c => c.term.trim() || c.definition.trim());
-        if (validCards.length === 0) return alert(t("mfAddAtLeastOneCard"));
+        if (validCards.length === 0) return showError(t("mfAddAtLeastOneCard", "Додайте хоча б одну картку"));
 
         const moduleObj = {
             id: initialData.id,
@@ -172,7 +183,7 @@ export default function ModuleForm({
     const handleDeeplTranslate = async (cardId, term) => {
         if (!term) return;
         if (!selectedLangRight) {
-            alert(t("mfTranslateTargetLangFirst"));
+            showError(t("mfTranslateTargetLangFirst", "Спочатку оберіть мову перекладу"));
             return;
         }
 
@@ -192,10 +203,7 @@ export default function ModuleForm({
 
         } catch (err) {
             console.error("Translation failed", err);
-            const errorMsg = err.response?.data?.lang_to
-                ? "Translation error: " + err.response.data.lang_to
-                : "Translation failed. Check if your API key is valid in Safety settings.";
-            alert(errorMsg);
+            showError(err);
         } finally {
             setTranslatingCardId(null);
         }
