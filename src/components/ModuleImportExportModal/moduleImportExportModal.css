@@ -120,6 +120,19 @@
     margin-top: auto;
 }
 
+/* --- СТИЛІ СПЕЦИФІЧНО ДЛЯ ПАНЕЛІ ЕКСПОРТУ --- */
+.mie-export-panel .mie-actions button {
+    color: #ffffff !important;
+}
+
+.mie-export-panel .mie-btn-icon,
+.mie-export-panel .mie-btn-icon * {
+    fill: none !important;
+    stroke: #ffffff !important;
+}
+/* ------------------------------------------- */
+
+/* Стандартний вигляд іконок (для імпорту та інших) */
 .mie-btn-icon {
     margin-right: 8px;
     width: 18px;
@@ -154,13 +167,13 @@
 }
 
 .mie-alert.error {
-    background-color: rgba(254, 226, 226, 0.2); /* Transparent red for dark mode compat */
+    background-color: rgba(254, 226, 226, 0.2);
     color: var(--status-red);
     border: 1px solid var(--status-red);
 }
 
 .mie-alert.success {
-    background-color: rgba(220, 252, 231, 0.2); /* Transparent green for dark mode compat */
+    background-color: rgba(220, 252, 231, 0.2);
     color: var(--status-green);
     border: 1px solid var(--status-green);
 }

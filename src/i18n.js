@@ -350,6 +350,7 @@ const translations = {
         mModulesSelected: "модулів вибрано.",
         mMergeClickInstruction: "Клікніть по картках для вибору/скасування вибору.",
         mErrorLoadingData: "Не вдалося завантажити ваші модулі.",
+        mDeleteModuleTitle: "Видалити модуль",
 
         // --- ModuleView
         mvDeleteModuleConfirm: "Видалити цей модуль? Цю дію не можна скасувати.",
@@ -821,6 +822,7 @@ const translations = {
         mModulesSelected: "modules selected.",
         mMergeClickInstruction: "Click on cards to select/deselect.",
         mErrorLoadingData: "Failed to load your modules.",
+        mDeleteModuleTitle: "Delete Module",
 
         // --- ModuleView
         mvDeleteModuleConfirm: "Delete this module? This action cannot be undone.",
@@ -1292,6 +1294,7 @@ const translations = {
         mModulesSelected: "modułów wybranych.",
         mMergeClickInstruction: "Kliknij na karty, aby wybrać/anulować wybór.",
         mErrorLoadingData: "Nie udało się załadować Twoich modułów.",
+        mDeleteModuleTitle: "Usuń moduł",
 
         // --- ModuleView
         mvDeleteModuleConfirm: "Usunąć ten moduł? Tej operacji nie można cofnąć.",
@@ -1763,6 +1766,7 @@ const translations = {
         mModulesSelected: "Module ausgewählt.",
         mMergeClickInstruction: "Klicken Sie auf Karten, um sie auszuwählen oder die Auswahl aufzuheben.",
         mErrorLoadingData: "Ihre Module konnten nicht geladen werden.",
+        mDeleteModuleTitle: "Modul löschen",
 
         // --- ModuleView
         mvDeleteModuleConfirm: "Dieses Modul löschen? Dies kann nicht rückgängig gemacht werden.",
@@ -2234,6 +2238,7 @@ const translations = {
         mModulesSelected: "modules sélectionnés.",
         mMergeClickInstruction: "Cliquez sur les cartes pour les sélectionner ou les désélectionner.",
         mErrorLoadingData: "Impossible de charger vos modules.",
+        mDeleteModuleTitle: "Supprimer le module",
 
         // --- ModuleView
         mvDeleteModuleConfirm: "Supprimer ce module ? Cette action est irréversible.",
@@ -2705,6 +2710,7 @@ const translations = {
         mModulesSelected: "módulos seleccionados.",
         mMergeClickInstruction: "Haz clic en las tarjetas para seleccionar o deseleccionar.",
         mErrorLoadingData: "No se pudieron cargar tus módulos.",
+        mDeleteModuleTitle: "Eliminar módulo",
 
         // --- ModuleView
         mvDeleteModuleConfirm: "¿Eliminar este módulo? Esta acción es irreversible.",
@@ -3176,6 +3182,7 @@ const translations = {
         mModulesSelected: "moduli selezionati.",
         mMergeClickInstruction: "Clicca sulle carte per selezionare o deselezionare.",
         mErrorLoadingData: "Impossibile caricare i tuoi moduli.",
+        mDeleteModuleTitle: "Elimina modulo",
 
         // --- ModuleView
         mvDeleteModuleConfirm: "Eliminare questo modulo? L'azione è irreversibile.",
@@ -3647,6 +3654,7 @@ const translations = {
         mModulesSelected: "modül seçildi.",
         mMergeClickInstruction: "Seçmek veya seçimi kaldırmak için kartlara tıklayın.",
         mErrorLoadingData: "Modülleriniz yüklenemedi.",
+        mDeleteModuleTitle: "Modülü Sil",
 
         // --- ModuleView
         mvDeleteModuleConfirm: "Bu modülü silmek istiyor musunuz? Bu işlem geri alınamaz.",
@@ -4118,6 +4126,7 @@ const translations = {
         mModulesSelected: "個のモジュールを選択中",
         mMergeClickInstruction: "カードをクリックして選択/解除してください。",
         mErrorLoadingData: "データの読み込みに失敗しました。",
+        mDeleteModuleTitle: "モジュールを削除",
 
         // --- ModuleView
         mvDeleteModuleConfirm: "このモジュールを削除しますか？この操作は取り消せません。",
@@ -4589,6 +4598,7 @@ const translations = {
         mModulesSelected: "个模块已选择。",
         mMergeClickInstruction: "点击卡片进行选择或取消选择。",
         mErrorLoadingData: "加载模块数据失败。",
+        mDeleteModuleTitle: "删除模块",
 
         // --- ModuleView
         mvDeleteModuleConfirm: "确定要删除此模块吗？此操作无法撤销。",
@@ -5060,6 +5070,7 @@ const translations = {
         mModulesSelected: "개의 모듈이 선택됨.",
         mMergeClickInstruction: "카드를 클릭하여 선택하거나 선택을 취소하세요.",
         mErrorLoadingData: "모듈을 불러오지 못했습니다.",
+        mDeleteModuleTitle: "모듈 삭제",
 
         // --- ModuleView
         mvDeleteModuleConfirm: "이 모듈을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
@@ -5531,6 +5542,7 @@ const translations = {
         mModulesSelected: "módulos selecionados.",
         mMergeClickInstruction: "Clique nos cartões para selecionar ou desmarcar.",
         mErrorLoadingData: "Não foi possível carregar seus módulos.",
+        mDeleteModuleTitle: "Excluir módulo",
 
         // --- ModuleView
         mvDeleteModuleConfirm: "Excluir este módulo? Esta ação é irreversível.",

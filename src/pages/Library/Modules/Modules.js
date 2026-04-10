@@ -57,16 +57,15 @@ export default function Modules({ source = "library", preloadedModules, preloade
     const [mError, mSetError] = useState(null);
 
     const [mExpandedTags, mSetExpandedTags] = useState({});
-
-    // Жорстко фіксуємо кількість видимих тегів до 3-х,
-    // щоб вони не вилазили за межі карток на великих моніторах.
     const [mVisibleCount, mSetVisibleCount] = useState(3);
 
     const [mPermissionsTarget, mSetPermissionsTarget] = useState(null);
     const [mImportExportTarget, mSetImportExportTarget] = useState(null);
     const [mSortType, mSetSortType] = useState("date");
     const [mAddToFolderTarget, mSetAddToFolderTarget] = useState(null);
-    const [mModalInfo, mSetModalInfo] = useState({ open: false, type: "info", title: "", message: "" });
+
+    // Додали onConfirm у стейт, щоб передавати його в ModalMessage
+    const [mModalInfo, mSetModalInfo] = useState({ open: false, type: "info", title: "", message: "", onConfirm: null });
 
     const handleCloseModal = () => mSetModalInfo((prev) => ({ ...prev, open: false }));
 
@@ -156,7 +155,7 @@ export default function Modules({ source = "library", preloadedModules, preloade
             await saveModule(id);
             mSetModules(prev => prev.map(m => m.id === id ? { ...m, is_saved: true } : m));
         } catch (err) {
-            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mSaveModuleFailed") });
+            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mSaveModuleFailed"), onConfirm: null });
         }
     };
 
@@ -170,7 +169,7 @@ export default function Modules({ source = "library", preloadedModules, preloade
             }
             if (source !== "saves") refreshParentOrLocal();
         } catch (err) {
-            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mUnsaveModuleFailed") });
+            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mUnsaveModuleFailed"), onConfirm: null });
         }
     };
 
@@ -182,7 +181,7 @@ export default function Modules({ source = "library", preloadedModules, preloade
             refreshParentOrLocal();
         } catch (err) {
             mSetModules(oldModules);
-            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mPinModuleFailed") });
+            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mPinModuleFailed"), onConfirm: null });
         }
     };
 
@@ -194,18 +193,29 @@ export default function Modules({ source = "library", preloadedModules, preloade
             refreshParentOrLocal();
         } catch (err) {
             mSetModules(oldModules);
-            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mUnpinModuleFailed") });
+            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mUnpinModuleFailed"), onConfirm: null });
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm(t("mDeleteModuleConfirm"))) return;
-        try {
-            await deleteModule(id);
-            refreshParentOrLocal();
-        } catch (err) {
-            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mDeleteModuleFailed") });
-        }
+    const handleDelete = (id) => {
+        // Викликаємо наш кастомний компонент ModalMessage замість window.confirm
+        mSetModalInfo({
+            open: true,
+            type: "confirm", // Тип confirm має відобразити кнопку підтвердження
+            title: t("mDeleteModuleTitle") || "Delete Module",
+            message: t("mDeleteModuleConfirm"),
+            onConfirm: async () => {
+                mSetModalInfo(prev => ({ ...prev, open: false })); // Закриваємо модалку підтвердження
+                try {
+                    await deleteModule(id);
+                    refreshParentOrLocal();
+                } catch (err) {
+                    setTimeout(() => {
+                        mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mDeleteModuleFailed"), onConfirm: null });
+                    }, 300);
+                }
+            }
+        });
     };
 
     const handleVisibility = async (module) => {
@@ -216,7 +226,7 @@ export default function Modules({ source = "library", preloadedModules, preloade
         } catch (err) {
             const oldStatus = module.visible;
             mSetModules(prev => prev.map(m => m.id === module.id ? { ...m, visible: oldStatus } : m));
-            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mVisibilityChangeFailed") });
+            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mVisibilityChangeFailed"), onConfirm: null });
         }
     };
 
@@ -238,7 +248,7 @@ export default function Modules({ source = "library", preloadedModules, preloade
             mSetModules(prev => prev.map(m => m.id === mPermissionsTarget.moduleId ? { ...m, collaborators: [...(m.collaborators || []), userObj] } : m));
             mSetPermissionsTarget(prev => ({ ...prev, users: [...prev.users, userObj] }));
         } catch (err) {
-            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mAddUserFailed") });
+            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mAddUserFailed"), onConfirm: null });
         }
     };
 
@@ -249,7 +259,7 @@ export default function Modules({ source = "library", preloadedModules, preloade
             mSetModules(prev => prev.map(m => m.id === mPermissionsTarget.moduleId ? { ...m, collaborators: (m.collaborators || []).filter(u => u.id !== userId) } : m));
             mSetPermissionsTarget(prev => ({ ...prev, users: prev.users.filter(u => u.id !== userId) }));
         } catch (err) {
-            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mRemoveUserFailed") });
+            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mRemoveUserFailed"), onConfirm: null });
         }
     };
 
@@ -271,10 +281,11 @@ export default function Modules({ source = "library", preloadedModules, preloade
                 open: true,
                 type: "success",
                 title: t("mAddedTitle"),
-                message: `${t("mAddedPrefix")} "${module.name}" ${t("mAddedToFolder")} "${folder.name}"`
+                message: `${t("mAddedPrefix")} "${module.name}" ${t("mAddedToFolder")} "${folder.name}"`,
+                onConfirm: null
             });
         } catch (err) {
-            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mAddToFolderFailed") });
+            mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: t("mAddToFolderFailed"), onConfirm: null });
         } finally {
             mSetAddToFolderTarget(null);
         }
@@ -285,10 +296,10 @@ export default function Modules({ source = "library", preloadedModules, preloade
     const handleFinishMerge = () => {
         merge.executeMerge(
             () => {
-                mSetModalInfo({ open: true, type: "success", title: t("mAddedTitle"), message: "Modules merged successfully!" });
+                mSetModalInfo({ open: true, type: "success", title: t("mAddedTitle"), message: "Modules merged successfully!", onConfirm: null });
                 refreshParentOrLocal();
             },
-            () => mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: "Failed to merge modules." })
+            () => mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: "Failed to merge modules.", onConfirm: null })
         );
     };
 
@@ -299,7 +310,7 @@ export default function Modules({ source = "library", preloadedModules, preloade
 
             {merge.isMergeMode && (
                 <div style={{
-                    position: "sticky", top: 10, zIndex: 100, background: "#6366f1", color: "white",
+                    position: "sticky", top: 10, zIndex: 10, background: "#6366f1", color: "white",
                     padding: "12px 20px", borderRadius: "12px", marginBottom: "20px",
                     display: "flex", justifyContent: "space-between", alignItems: "center",
                     flexWrap: "wrap", gap: "10px",
@@ -359,7 +370,7 @@ export default function Modules({ source = "library", preloadedModules, preloade
             )}
 
             {merge.isMergeModalOpen && (
-                <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
+                <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 90 }}>
                     <div style={{ background: "white", padding: "30px", borderRadius: "20px", width: "100%", maxWidth: "400px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
                         <h3 style={{ marginBottom: "20px" }}>Finalize Merge</h3>
                         <div style={{ marginBottom: "15px" }}>
@@ -388,12 +399,12 @@ export default function Modules({ source = "library", preloadedModules, preloade
             {mAddToFolderTarget && (
                 <>
                     <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 301 }} onClick={() => mSetAddToFolderTarget(null)} />
-                    <div className="dropdown-menu" style={{ position: "fixed", left: mAddToFolderTarget.anchor?.left || "50%", top: mAddToFolderTarget.anchor?.top || "50%", zIndex: 302, background: "white", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", padding: "8px 0", minWidth: "200px", width: "max-content", maxHeight: "300px", overflowY: "auto" }}>
-                        <div style={{ padding: "8px 16px", fontWeight: "bold", borderBottom: "1px solid #eee", fontSize: "14px", color: "#666" }}>Add "{mAddToFolderTarget.module.name}" to:</div>
-                        {mFolders.length === 0 ? <div style={{ padding: "12px", textAlign: "center", color: "gray", fontSize: "13px" }}>No folders found.</div> : mFolders.map(folder => (
+                    <div className="dropdown-menu" style={{ position: "fixed", left: mAddToFolderTarget.anchor?.left || "50%", top: mAddToFolderTarget.anchor?.top || "50%", zIndex: 302, background: "var(--mc-bg)", border: "1px solid var(--mc-border)", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", padding: "8px 0", minWidth: "200px", width: "max-content", maxHeight: "300px", overflowY: "auto" }}>
+                        <div style={{ padding: "8px 16px", fontWeight: "bold", borderBottom: "1px solid var(--mc-border)", fontSize: "14px", color: "var(--mc-muted)" }}>Add "{mAddToFolderTarget.module.name}" to:</div>
+                        {mFolders.length === 0 ? <div style={{ padding: "12px", textAlign: "center", color: "var(--mc-muted)", fontSize: "13px" }}>No folders found.</div> : mFolders.map(folder => (
                             <div key={folder.id} onClick={() => handleAddToFolder(folder)} style={{ padding: "10px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px" }}>
                                 <ColoredIcon icon={FolderIcon} color={folder.color || "#6366f1"} size={18} />
-                                <span style={{ fontSize: "14px", color: "#333" }}>{folder.name}</span>
+                                <span style={{ fontSize: "14px", color: "var(--mc-text)" }}>{folder.name}</span>
                             </div>
                         ))}
                     </div>
@@ -413,7 +424,14 @@ export default function Modules({ source = "library", preloadedModules, preloade
                 />
             )}
 
-            <ModalMessage open={mModalInfo.open} type={mModalInfo.type} title={mModalInfo.title} message={mModalInfo.message} onClose={handleCloseModal} />
+            <ModalMessage
+                open={mModalInfo.open}
+                type={mModalInfo.type}
+                title={mModalInfo.title}
+                message={mModalInfo.message}
+                onClose={handleCloseModal}
+                onConfirm={mModalInfo.onConfirm}
+            />
         </div>
     );
 }

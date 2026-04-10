@@ -212,7 +212,7 @@ export default function ModuleImportExportModal({
                             {successMsg && <div className="mie-alert success">{successMsg}</div>}
 
                             {activeTab === "export" && !isLocal && (
-                                <div className="mie-panel">
+                                <div className="mie-panel mie-export-panel">
                                     <p className="mie-desc">{t("mieDescExport_label")}</p>
                                     <div className="mie-actions">
                                         <Button variant="static" onClick={() => handleExport("csv")} width="100%" height="48px">
@@ -226,7 +226,7 @@ export default function ModuleImportExportModal({
                             )}
 
                             {activeTab === "import" && (
-                                <div className="mie-panel">
+                                <div className="mie-panel mie-import-panel">
                                     <p className="mie-desc">
                                         {isLocal
                                             ? t("mieDescImportLocal_label")
