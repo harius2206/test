@@ -5,8 +5,11 @@ import {
     getFolder, updateFolder, deleteFolder, toggleFolderVisibility,
     removeModuleFromFolder, addModuleToFolder, pinFolder, unpinFolder
 } from "../../../api/foldersApi";
-import { getTopics, toggleModuleVisibility } from "../../../api/modulesApi";
-import { addModulePermission, removeModulePermission } from "../../../api/modulesApi";
+import {
+    getTopics, toggleModuleVisibility, addModulePermission,
+    removeModulePermission, saveModule, unsaveModule,
+    pinModule, unpinModule
+} from "../../../api/modulesApi";
 import { useAuth } from "../../../context/AuthContext";
 import { useI18n } from "../../../i18n";
 
@@ -229,9 +232,13 @@ export default function FolderPage() {
 
     const openModulePermissions = (module, evt, trigger) => {
         let anchor = null;
-        if (trigger && trigger.getBoundingClientRect) {
+        if (trigger && trigger.getBoundingClientRect && containerRef.current) {
             const rect = trigger.getBoundingClientRect();
-            anchor = { left: rect.left, top: rect.bottom };
+            const containerRect = containerRef.current.getBoundingClientRect();
+            anchor = {
+                left: rect.left - containerRect.left,
+                top: rect.bottom - containerRect.top
+            };
         }
         setPermissionsTarget({ moduleId: module.id, users: module.collaborators || [], anchor });
     };
@@ -270,9 +277,13 @@ export default function FolderPage() {
 
     const openAddToFolderMenu = (module, evt, trigger) => {
         let anchor = null;
-        if (trigger && trigger.getBoundingClientRect) {
+        if (trigger && trigger.getBoundingClientRect && containerRef.current) {
             const rect = trigger.getBoundingClientRect();
-            anchor = { left: rect.left - 100, top: rect.bottom + 5 };
+            const containerRect = containerRef.current.getBoundingClientRect();
+            anchor = {
+                left: (rect.left - containerRect.left) - 100,
+                top: (rect.bottom - containerRect.top) + 5
+            };
         }
         setAddToFolderTarget({ module, anchor });
     };
@@ -299,6 +310,48 @@ export default function FolderPage() {
             () => setModalInfo({ open: true, type: "success", title: t("fpModalSuccessTitle"), message: t("fpMergeSuccess") }),
             () => setModalInfo({ open: true, type: "error", title: t("fpModalErrorTitle"), message: t("fpMergeError") })
         );
+    };
+
+    const handleSaveModule = async (id) => {
+        try {
+            await saveModule(id);
+            setModules(prev => prev.map(m => m.id === id ? { ...m, is_saved: true } : m));
+        } catch (err) {
+            setModalInfo({ open: true, type: "error", title: t("fpModalErrorTitle"), message: t("mSaveModuleFailed") || "Save failed" });
+        }
+    };
+
+    const handleUnsaveModule = async (id) => {
+        try {
+            await unsaveModule(id);
+            setModules(prev => prev.map(m => m.id === id ? { ...m, is_saved: false } : m));
+        } catch (err) {
+            setModalInfo({ open: true, type: "error", title: t("fpModalErrorTitle"), message: t("mUnsaveModuleFailed") || "Unsave failed" });
+        }
+    };
+
+    const handlePinModule = async (id) => {
+        const oldModules = [...modules];
+        setModules(prev => prev.map(m => m.id === id ? { ...m, pinned: true } : m));
+        try {
+            await pinModule(id);
+            loadData();
+        } catch (err) {
+            setModules(oldModules);
+            setModalInfo({ open: true, type: "error", title: t("fpModalErrorTitle"), message: t("mPinModuleFailed") || "Pin failed" });
+        }
+    };
+
+    const handleUnpinModule = async (id) => {
+        const oldModules = [...modules];
+        setModules(prev => prev.map(m => m.id === id ? { ...m, pinned: false } : m));
+        try {
+            await unpinModule(id);
+            loadData();
+        } catch (err) {
+            setModules(oldModules);
+            setModalInfo({ open: true, type: "error", title: t("fpModalErrorTitle"), message: t("mUnpinModuleFailed") || "Unpin failed" });
+        }
     };
 
     if (loading) return <Loader fullscreen />;
@@ -383,8 +436,8 @@ export default function FolderPage() {
                                 expanded={!!expandedTags[module.id]}
                                 toggleTags={toggleTags}
                                 onEdit={() => handleEditModule(module)}
-                                onPermissions={(e, trigger) => openModulePermissions(module, e, trigger)}
-                                onAddToFolder={(e, trigger) => openAddToFolderMenu(module, e, trigger)}
+                                onPermissions={openModulePermissions}
+                                onAddToFolder={openAddToFolderMenu}
                                 onVisibilityToggle={handleModuleVisibility}
                                 onExport={() => setImportExportTarget(module)}
                                 deleteLabel={t("fpRemoveFromFolderLabel")}
@@ -392,6 +445,11 @@ export default function FolderPage() {
                                 isMergeMode={merge.isMergeMode}
                                 isSelected={merge.selectedForMerge.some(m => m.id === module.id)}
                                 onSelect={merge.toggleModuleSelection}
+                                onSave={handleSaveModule}
+                                onUnsave={handleUnsaveModule}
+                                onPin={handlePinModule}
+                                onUnpin={handleUnpinModule}
+                                onMerge={merge.handleMergeToggle}
                             />
                         ))}
                     </div>
@@ -402,19 +460,19 @@ export default function FolderPage() {
 
             {merge.isMergeModalOpen && (
                 <div className="modal-overlay" style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
-                    <div className="modal-content" style={{ background: "white", padding: "30px", borderRadius: "20px", width: "380px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
+                    <div className="modal-content" style={{ background: "var(--clr-card-bg)", padding: "30px", borderRadius: "20px", width: "380px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)", color: "var(--clr-text)" }}>
                         <h3 style={{ marginBottom: "20px" }}>{t("fpFinalizeMergeTitle")}</h3>
                         <div style={{ marginTop: 15 }}>
-                            <input style={{ width: "100%", padding: "10px", marginTop: "5px", borderRadius: "8px", border: "1px solid #ddd" }} type="text" value={merge.mergeForm.name} onChange={(e) => merge.setMergeForm({...merge.mergeForm, name: e.target.value})} placeholder={t("fpNewNamePlaceholder")} />
+                            <input style={{ width: "100%", padding: "10px", marginTop: "5px", borderRadius: "8px", border: "1px solid var(--clr-border-light)", background: "var(--clr-bg)", color: "var(--clr-text)" }} type="text" value={merge.mergeForm.name} onChange={(e) => merge.setMergeForm({...merge.mergeForm, name: e.target.value})} placeholder={t("fpNewNamePlaceholder")} />
                         </div>
                         <div style={{ marginTop: 15, marginBottom: 20 }}>
-                            <select style={{ width: "100%", padding: "10px", marginTop: "5px", borderRadius: "8px", border: "1px solid #ddd" }} value={merge.mergeForm.topic} onChange={(e) => merge.setMergeForm({...merge.mergeForm, topic: e.target.value})}>
+                            <select style={{ width: "100%", padding: "10px", marginTop: "5px", borderRadius: "8px", border: "1px solid var(--clr-border-light)", background: "var(--clr-bg)", color: "var(--clr-text)" }} value={merge.mergeForm.topic} onChange={(e) => merge.setMergeForm({...merge.mergeForm, topic: e.target.value})}>
                                 <option value="">{t("fpSelectTopicPlaceholder")}</option>
                                 {topics.map(tOption => <option key={tOption.id} value={tOption.id}>{tOption.name}</option>)}
                             </select>
                         </div>
                         <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-                            <button onClick={() => merge.setIsMergeModalOpen(false)} style={{ padding: "10px 15px", borderRadius: "8px", border: "none", cursor: "pointer" }}>{t("fpBackButton")}</button>
+                            <button onClick={() => merge.setIsMergeModalOpen(false)} style={{ padding: "10px 15px", borderRadius: "8px", border: "none", cursor: "pointer", background: "var(--clr-bg-hover)", color: "var(--clr-text)" }}>{t("fpBackButton")}</button>
                             <button onClick={handleFinishMerge} style={{ background: "#6366f1", color: "white", border: "none", padding: "10px 20px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}>{t("fpConfirmMergeButton")}</button>
                         </div>
                     </div>
@@ -422,7 +480,7 @@ export default function FolderPage() {
             )}
 
             {permissionsTarget && (
-                <div style={{ position: "fixed", left: permissionsTarget.anchor?.left, top: permissionsTarget.anchor?.top, zIndex: 300 }}>
+                <div style={{ position: "absolute", left: permissionsTarget.anchor?.left, top: permissionsTarget.anchor?.top, zIndex: 300 }}>
                     <PermissionsMenu moduleId={permissionsTarget.moduleId} users={permissionsTarget.users} onAddUser={handleAddUser} onRemoveUser={handleRemoveUser} onClose={() => setPermissionsTarget(null)} />
                 </div>
             )}
@@ -430,14 +488,14 @@ export default function FolderPage() {
             {addToFolderTarget && (
                 <>
                     <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 301 }} onClick={() => setAddToFolderTarget(null)} />
-                    <div className="dropdown-menu" style={{ position: "fixed", left: addToFolderTarget.anchor?.left || "50%", top: addToFolderTarget.anchor?.top || "50%", zIndex: 302, background: "white", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", padding: "8px 0", minWidth: "200px", maxHeight: "300px", overflowY: "auto" }}>
-                        <div style={{ padding: "8px 16px", fontWeight: "bold", borderBottom: "1px solid #eee", fontSize: "14px", color: "#666" }}>
+                    <div className="dropdown-menu" style={{ position: "absolute", left: addToFolderTarget.anchor?.left || "50%", top: addToFolderTarget.anchor?.top || "50%", zIndex: 302, background: "var(--clr-card-bg)", border: "1px solid var(--clr-border-light)", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", padding: "8px 0", minWidth: "200px", width: "max-content", maxHeight: "300px", overflowY: "auto" }}>
+                        <div style={{ padding: "8px 16px", fontWeight: "bold", borderBottom: "1px solid var(--clr-border-light)", fontSize: "14px", color: "var(--clr-text-secondary)" }}>
                             {t("fpAddToFolderTitle").replace("{moduleName}", addToFolderTarget.module.name)}
                         </div>
-                        {userFolders.length === 0 ? <div style={{ padding: "12px", textAlign: "center", color: "gray", fontSize: "13px" }}>{t("fpNoFoldersFound")}</div> : userFolders.map(folder => (
+                        {userFolders.length === 0 ? <div style={{ padding: "12px", textAlign: "center", color: "var(--clr-text-secondary)", fontSize: "13px" }}>{t("fpNoFoldersFound")}</div> : userFolders.map(folder => (
                             <div key={folder.id} onClick={() => handleAddToFolder(folder)} style={{ padding: "10px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px" }}>
                                 <ColoredIcon icon={FolderIcon} color={folder.color || "#6366f1"} size={18} />
-                                <span style={{ fontSize: "14px", color: "#333" }}>{folder.name}</span>
+                                <span style={{ fontSize: "14px", color: "var(--clr-text)" }}>{folder.name}</span>
                             </div>
                         ))}
                     </div>
