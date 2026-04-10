@@ -64,7 +64,6 @@ export default function Modules({ source = "library", preloadedModules, preloade
     const [mSortType, mSetSortType] = useState("date");
     const [mAddToFolderTarget, mSetAddToFolderTarget] = useState(null);
 
-    // Додали onConfirm у стейт, щоб передавати його в ModalMessage
     const [mModalInfo, mSetModalInfo] = useState({ open: false, type: "info", title: "", message: "", onConfirm: null });
 
     const handleCloseModal = () => mSetModalInfo((prev) => ({ ...prev, open: false }));
@@ -198,14 +197,13 @@ export default function Modules({ source = "library", preloadedModules, preloade
     };
 
     const handleDelete = (id) => {
-        // Викликаємо наш кастомний компонент ModalMessage замість window.confirm
         mSetModalInfo({
             open: true,
-            type: "confirm", // Тип confirm має відобразити кнопку підтвердження
+            type: "confirm",
             title: t("mDeleteModuleTitle") || "Delete Module",
             message: t("mDeleteModuleConfirm"),
             onConfirm: async () => {
-                mSetModalInfo(prev => ({ ...prev, open: false })); // Закриваємо модалку підтвердження
+                mSetModalInfo(prev => ({ ...prev, open: false }));
                 try {
                     await deleteModule(id);
                     refreshParentOrLocal();
@@ -234,9 +232,13 @@ export default function Modules({ source = "library", preloadedModules, preloade
 
     const openModulePermissions = (module, evt, trigger) => {
         let anchor = null;
-        if (trigger && trigger.getBoundingClientRect) {
+        if (trigger && trigger.getBoundingClientRect && containerRef.current) {
             const rect = trigger.getBoundingClientRect();
-            anchor = { left: rect.left, top: rect.bottom };
+            const containerRect = containerRef.current.getBoundingClientRect();
+            anchor = {
+                left: rect.left - containerRect.left,
+                top: rect.bottom - containerRect.top
+            };
         }
         mSetPermissionsTarget({ moduleId: module.id, users: module.collaborators || [], anchor });
     };
@@ -265,9 +267,13 @@ export default function Modules({ source = "library", preloadedModules, preloade
 
     const openAddToFolderMenu = (module, evt, trigger) => {
         let anchor = null;
-        if (trigger && trigger.getBoundingClientRect) {
+        if (trigger && trigger.getBoundingClientRect && containerRef.current) {
             const rect = trigger.getBoundingClientRect();
-            anchor = { left: rect.left - 100, top: rect.bottom + 5 };
+            const containerRect = containerRef.current.getBoundingClientRect();
+            anchor = {
+                left: (rect.left - containerRect.left) - 100,
+                top: (rect.bottom - containerRect.top) + 5
+            };
         }
         mSetAddToFolderTarget({ module, anchor });
     };
@@ -391,7 +397,7 @@ export default function Modules({ source = "library", preloadedModules, preloade
             )}
 
             {mPermissionsTarget && (
-                <div style={{ position: "fixed", left: mPermissionsTarget.anchor?.left, top: mPermissionsTarget.anchor?.top, zIndex: 300 }}>
+                <div style={{ position: "absolute", left: mPermissionsTarget.anchor?.left, top: mPermissionsTarget.anchor?.top, zIndex: 300 }}>
                     <PermissionsMenu moduleId={mPermissionsTarget.moduleId} users={mPermissionsTarget.users} onAddUser={handleAddUser} onRemoveUser={handleRemoveUser} onClose={() => mSetPermissionsTarget(null)} />
                 </div>
             )}
@@ -399,12 +405,12 @@ export default function Modules({ source = "library", preloadedModules, preloade
             {mAddToFolderTarget && (
                 <>
                     <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 301 }} onClick={() => mSetAddToFolderTarget(null)} />
-                    <div className="dropdown-menu" style={{ position: "fixed", left: mAddToFolderTarget.anchor?.left || "50%", top: mAddToFolderTarget.anchor?.top || "50%", zIndex: 302, background: "var(--mc-bg)", border: "1px solid var(--mc-border)", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", padding: "8px 0", minWidth: "200px", width: "max-content", maxHeight: "300px", overflowY: "auto" }}>
-                        <div style={{ padding: "8px 16px", fontWeight: "bold", borderBottom: "1px solid var(--mc-border)", fontSize: "14px", color: "var(--mc-muted)" }}>Add "{mAddToFolderTarget.module.name}" to:</div>
-                        {mFolders.length === 0 ? <div style={{ padding: "12px", textAlign: "center", color: "var(--mc-muted)", fontSize: "13px" }}>No folders found.</div> : mFolders.map(folder => (
+                    <div className="dropdown-menu" style={{ position: "absolute", left: mAddToFolderTarget.anchor?.left || "50%", top: mAddToFolderTarget.anchor?.top || "50%", zIndex: 302, background: "var(--clr-card-bg)", border: "1px solid var(--clr-border-light)", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", padding: "8px 0", minWidth: "200px", width: "max-content", maxHeight: "300px", overflowY: "auto" }}>
+                        <div style={{ padding: "8px 16px", fontWeight: "bold", borderBottom: "1px solid var(--clr-border-light)", fontSize: "14px", color: "var(--clr-text-secondary)" }}>Add "{mAddToFolderTarget.module.name}" to:</div>
+                        {mFolders.length === 0 ? <div style={{ padding: "12px", textAlign: "center", color: "var(--clr-text-secondary)", fontSize: "13px" }}>No folders found.</div> : mFolders.map(folder => (
                             <div key={folder.id} onClick={() => handleAddToFolder(folder)} style={{ padding: "10px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px" }}>
                                 <ColoredIcon icon={FolderIcon} color={folder.color || "#6366f1"} size={18} />
-                                <span style={{ fontSize: "14px", color: "var(--mc-text)" }}>{folder.name}</span>
+                                <span style={{ fontSize: "14px", color: "var(--clr-text)" }}>{folder.name}</span>
                             </div>
                         ))}
                     </div>

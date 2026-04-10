@@ -15,7 +15,6 @@ import {
     unpinFolder
 } from "../../../api/foldersApi";
 
-import EditableField from "../../../components/editableField/editableField";
 import ColoredIcon from "../../../components/coloredIcon";
 import SortMenu from "../../../components/sortMenu/sortMenu";
 import AddUniversalItem from "../../../components/addUniversalItem";
@@ -254,17 +253,47 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                                 </div>
                                 <div className="module-name-row" style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                     <ColoredIcon icon={FolderIcon} color={folder.color} size={20} />
+
+                                    {/* Оновлений блок перейменування */}
                                     {fRenamingId === folder.id ? (
-                                        <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }} onClick={e => e.stopPropagation()}>
-                                            <span style={{ flex: 1 }}>
-                                                <EditableField value={fRenameValue} onSave={fSetRenameValue} editable={true} autosave={true} />
-                                            </span>
-                                            <Button variant="static" width="auto" height={30} onClick={() => fSaveRename(folder.id)}>{t("fSaveButton")}</Button>
-                                            <Button variant="hover" width="auto" height={30} onClick={() => fSetRenamingId(null)}>{t("fCancelButton")}</Button>
+                                        <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, flexWrap: "wrap" }} onClick={e => e.stopPropagation()}>
+                                            <input
+                                                autoFocus
+                                                value={fRenameValue}
+                                                onChange={e => fSetRenameValue(e.target.value)}
+                                                onKeyDown={e => {
+                                                    if (e.key === 'Enter') fSaveRename(folder.id);
+                                                    if (e.key === 'Escape') fSetRenamingId(null);
+                                                }}
+                                                style={{
+                                                    flex: "1 1 120px",
+                                                    width: "100%",
+                                                    padding: "6px 10px",
+                                                    borderRadius: "6px",
+                                                    border: "1px solid #6366f1",
+                                                    background: "var(--clr-card-bg, #fff)",
+                                                    color: "var(--clr-text, #333)",
+                                                    fontSize: "14px",
+                                                    outline: "none",
+                                                    boxSizing: "border-box"
+                                                }}
+                                            />
+                                            <div style={{ display: "flex", gap: "6px" }}>
+                                                <Button variant="static" width="auto" height="30px" onClick={() => fSaveRename(folder.id)}>
+                                                    <span style={{ fontSize: "13px", padding: "0 8px" }}>{t("fSaveButton")}</span>
+                                                </Button>
+                                                <Button variant="hover" width="auto" height="30px" onClick={() => fSetRenamingId(null)}>
+                                                    <span style={{ fontSize: "13px", padding: "0 8px" }}>{t("fCancelButton")}</span>
+                                                </Button>
+                                            </div>
                                         </div>
                                     ) : (
-                                        <span className="folder-name-text">{folder.name}</span>
+                                        <span className="folder-name-text" style={{ flex: 1, wordBreak: "break-word", padding: "4px 0" }}>
+                                            {folder.name}
+                                        </span>
                                     )}
+                                    {/* Кінець оновленого блоку */}
+
                                 </div>
                             </div>
 
