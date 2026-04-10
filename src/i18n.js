@@ -307,6 +307,7 @@ const translations = {
         fpModalErrorTitle: "Помилка",
         fpModalSuccessTitle: "Успіх",
         fpModalAddedTitle: "Додано",
+        fpMakePrivateLabel: "Зробити приватною",
 
         // --- Folders
         fDeleteFolderConfirm: "Видалити цю папку? Цю дію не можна скасувати.",
@@ -326,6 +327,7 @@ const translations = {
         fSaveLabel: "Зберегти",
         fUnsaveLabel: "Видалити з обраного",
         fModulesLabel: "модулів",
+
 
         // --- Modules
         mDeleteModuleConfirm: "Видалити цей модуль? Цю дію не можна скасувати.",
@@ -779,6 +781,7 @@ const translations = {
         fpModalErrorTitle: "Error",
         fpModalSuccessTitle: "Success",
         fpModalAddedTitle: "Added",
+        fpMakePrivateLabel: "Make private",
 
         // --- Folders
         fDeleteFolderConfirm: "Delete this folder? This action cannot be undone.",
@@ -1251,6 +1254,7 @@ const translations = {
         fpModalErrorTitle: "Błąd",
         fpModalSuccessTitle: "Sukces",
         fpModalAddedTitle: "Dodano",
+        fpMakePrivateLabel: "Ustaw jako prywatny",
 
         // --- Folders
         fDeleteFolderConfirm: "Usunąć ten folder? Tej operacji nie można cofnąć.",
@@ -1723,6 +1727,7 @@ const translations = {
         fpModalErrorTitle: "Fehler",
         fpModalSuccessTitle: "Erfolg",
         fpModalAddedTitle: "Hinzugefügt",
+        fpMakePrivateLabel: "Privat machen",
 
         // --- Folders
         fDeleteFolderConfirm: "Diesen Ordner löschen? Dies kann nicht rückgängig gemacht werden.",
@@ -2195,6 +2200,7 @@ const translations = {
         fpModalErrorTitle: "Erreur",
         fpModalSuccessTitle: "Succès",
         fpModalAddedTitle: "Ajouté",
+        fpMakePrivateLabel: "Rendre privé",
 
         // --- Folders
         fDeleteFolderConfirm: "Supprimer ce dossier ? Cette action est irréversible.",
@@ -2667,6 +2673,7 @@ const translations = {
         fpModalErrorTitle: "Error",
         fpModalSuccessTitle: "Éxito",
         fpModalAddedTitle: "Añadido",
+        fpMakePrivateLabel: "Hacer privado",
 
         // --- Folders
         fDeleteFolderConfirm: "¿Eliminar esta carpeta? Esta acción es irreversible.",
@@ -3139,6 +3146,7 @@ const translations = {
         fpModalErrorTitle: "Errore",
         fpModalSuccessTitle: "Successo",
         fpModalAddedTitle: "Aggiunto",
+        fpMakePrivateLabel: "Rendi privato",
 
         // --- Folders
         fDeleteFolderConfirm: "Eliminare questa cartella? L'azione è irreversibile.",
@@ -3611,6 +3619,7 @@ const translations = {
         fpModalErrorTitle: "Hata",
         fpModalSuccessTitle: "Başarılı",
         fpModalAddedTitle: "Eklendi",
+        fpMakePrivateLabel: "Gizli yap",
 
         // --- Folders
         fDeleteFolderConfirm: "Bu klasörü silmek istiyor musunuz? Bu işlem geri alınamaz.",
@@ -4083,6 +4092,7 @@ const translations = {
         fpModalErrorTitle: "エラー",
         fpModalSuccessTitle: "成功",
         fpModalAddedTitle: "追加済み",
+        fpMakePrivateLabel: "非公開にする",
 
         // --- Folders
         fDeleteFolderConfirm: "このフォルダを削除しますか？この操作は取り消せません。",
@@ -4555,6 +4565,7 @@ const translations = {
         fpModalErrorTitle: "错误",
         fpModalSuccessTitle: "成功",
         fpModalAddedTitle: "已添加",
+        fpMakePrivateLabel: "设为私有",
 
         // --- Folders
         fDeleteFolderConfirm: "确定要删除此文件夹吗？此操作无法撤销。",
@@ -5027,6 +5038,7 @@ const translations = {
         fpModalErrorTitle: "오류",
         fpModalSuccessTitle: "성공",
         fpModalAddedTitle: "추가됨",
+        fpMakePrivateLabel: "비공개로 설정",
 
         // --- Folders
         fDeleteFolderConfirm: "이 폴더를 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
@@ -5499,6 +5511,7 @@ const translations = {
         fpModalErrorTitle: "Erro",
         fpModalSuccessTitle: "Sucesso",
         fpModalAddedTitle: "Adicionado",
+        fpMakePrivateLabel: "Tornar privado",
 
         // --- Folders
         fDeleteFolderConfirm: "Excluir esta pasta? Esta ação é irreversível.",

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { getUsersList } from "../../api/usersApi";
 import { getModulePermissionsUsers } from "../../api/modulesApi";
 import UserAvatar from "../avatar/avatar";
+import ClickOutsideWrapper from "../clickOutsideWrapper";
 import { ReactComponent as CloseIcon } from "../../images/close.svg";
 import { ReactComponent as DeleteIcon } from "../../images/delete.svg";
 import { ReactComponent as AddIcon } from "../../images/add.svg";
@@ -84,114 +85,116 @@ export default function PermissionsMenu({ moduleId, users = [], onAddUser, onRem
     };
 
     return (
-        <div className="pm-permissions-menu" onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                <span style={{ fontWeight: 600, fontSize: "14px" }}>{t("pmHeader_label")}</span>
-                <button className="pm-btn-icon" onClick={onClose}>
-                    <CloseIcon />
-                </button>
-            </div>
-
-            <input
-                type="text"
-                placeholder={t("pmSearch_placeholder")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                style={{
-                    width: "100%", padding: "6px 8px", borderRadius: "6px",
-                    border: "1px solid var(--perm-border)", background: "var(--perm-bg)",
-                    color: "var(--perm-text)", fontSize: "14px", marginBottom: "8px",
-                    boxSizing: "border-box", outline: "none"
-                }}
-                autoFocus
-            />
-
-            {/* Результати пошуку */}
-            {search.length > 0 && (
-                <div className="pm-user-list">
-                    {loadingSearch ? (
-                        <div style={{ padding: "8px", fontSize: "13px", color: "var(--perm-muted)", textAlign: "center" }}>
-                            {t("pmSearching_label")}
-                        </div>
-                    ) : searchResults.length > 0 ? (
-                        searchResults.map(user => (
-                            <div
-                                key={user.id}
-                                className="pm-user-item"
-                                onClick={() => handleAddClick(user)}
-                                style={{ cursor: "pointer" }}
-                            >
-                                <div className="pm-user-left">
-                                    <UserAvatar
-                                        name={user.username}
-                                        src={user.avatar}
-                                        className="user-avatar"
-                                        size={22}
-                                        disableStrictFallback={true}
-                                    />
-                                    <span className="pm-user-name">{user.username}</span>
-                                </div>
-                                <div className="pm-user-right">
-                                    <AddIcon width={16} height={16} style={{ fill: "var(--perm-purple)" }} />
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <div style={{ padding: "8px", fontSize: "13px", color: "var(--perm-muted)", textAlign: "center" }}>
-                            {t("pmNoUsers_label")}
-                        </div>
-                    )}
-                    {searchResults.length > 0 && <div style={{ borderBottom: "1px solid var(--perm-border)", margin: "4px 0" }}></div>}
+        <ClickOutsideWrapper onClickOutside={onClose}>
+            <div className="pm-permissions-menu" onClick={(e) => e.stopPropagation()}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                    <span style={{ fontWeight: 600, fontSize: "14px" }}>{t("pmHeader_label")}</span>
+                    <button className="pm-btn-icon" onClick={onClose}>
+                        <CloseIcon />
+                    </button>
                 </div>
-            )}
 
-            {/* Список поточних користувачів */}
-            <div className="pm-user-list">
-                {loadingUsers && !search ? (
-                    <div style={{ padding: "8px", textAlign: "center", fontSize: "13px", color: "gray" }}>
-                        {t("pmLoading_label")}
-                    </div>
-                ) : (
-                    <>
-                        {currentUsers.length === 0 && !search && (
+                <input
+                    type="text"
+                    placeholder={t("pmSearch_placeholder")}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    style={{
+                        width: "100%", padding: "6px 8px", borderRadius: "6px",
+                        border: "1px solid var(--perm-border)", background: "var(--perm-bg)",
+                        color: "var(--perm-text)", fontSize: "14px", marginBottom: "8px",
+                        boxSizing: "border-box", outline: "none"
+                    }}
+                    autoFocus
+                />
+
+                {/* Результати пошуку */}
+                {search.length > 0 && (
+                    <div className="pm-user-list">
+                        {loadingSearch ? (
                             <div style={{ padding: "8px", fontSize: "13px", color: "var(--perm-muted)", textAlign: "center" }}>
-                                {t("pmOnlyYou_label")}
+                                {t("pmSearching_label")}
+                            </div>
+                        ) : searchResults.length > 0 ? (
+                            searchResults.map(user => (
+                                <div
+                                    key={user.id}
+                                    className="pm-user-item"
+                                    onClick={() => handleAddClick(user)}
+                                    style={{ cursor: "pointer" }}
+                                >
+                                    <div className="pm-user-left">
+                                        <UserAvatar
+                                            name={user.username}
+                                            src={user.avatar}
+                                            className="user-avatar"
+                                            size={22}
+                                            disableStrictFallback={true}
+                                        />
+                                        <span className="pm-user-name">{user.username}</span>
+                                    </div>
+                                    <div className="pm-user-right">
+                                        <AddIcon width={16} height={16} style={{ fill: "var(--perm-purple)" }} />
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div style={{ padding: "8px", fontSize: "13px", color: "var(--perm-muted)", textAlign: "center" }}>
+                                {t("pmNoUsers_label")}
                             </div>
                         )}
-
-                        {currentUsers.map(user => (
-                            <div key={user.id} className="pm-user-item">
-                                <div className="pm-user-left">
-                                    <UserAvatar
-                                        name={user.username}
-                                        src={user.avatar}
-                                        className="user-avatar"
-                                        size={22}
-                                        disableStrictFallback={true}
-                                    />
-                                    <span className="pm-user-name">{user.username}</span>
-                                </div>
-                                <div className="pm-user-right">
-                                    <span className="pm-user-role">{t("pmRoleEditor_label")}</span>
-                                    <button
-                                        className="pm-btn-icon"
-                                        onClick={() => handleRemoveClick(user.id)}
-                                        title={t("pmRemoveAccess_label")}
-                                    >
-                                        <DeleteIcon />
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </>
+                        {searchResults.length > 0 && <div style={{ borderBottom: "1px solid var(--perm-border)", margin: "4px 0" }}></div>}
+                    </div>
                 )}
-            </div>
 
-            <div className="pm-permissions-footer">
-                <button className="pm-btn-primary" onClick={onClose}>
-                    {t("pmDone_btn")}
-                </button>
+                {/* Список поточних користувачів */}
+                <div className="pm-user-list">
+                    {loadingUsers && !search ? (
+                        <div style={{ padding: "8px", textAlign: "center", fontSize: "13px", color: "gray" }}>
+                            {t("pmLoading_label")}
+                        </div>
+                    ) : (
+                        <>
+                            {currentUsers.length === 0 && !search && (
+                                <div style={{ padding: "8px", fontSize: "13px", color: "var(--perm-muted)", textAlign: "center" }}>
+                                    {t("pmOnlyYou_label")}
+                                </div>
+                            )}
+
+                            {currentUsers.map(user => (
+                                <div key={user.id} className="pm-user-item">
+                                    <div className="pm-user-left">
+                                        <UserAvatar
+                                            name={user.username}
+                                            src={user.avatar}
+                                            className="user-avatar"
+                                            size={22}
+                                            disableStrictFallback={true}
+                                        />
+                                        <span className="pm-user-name">{user.username}</span>
+                                    </div>
+                                    <div className="pm-user-right">
+                                        <span className="pm-user-role">{t("pmRoleEditor_label")}</span>
+                                        <button
+                                            className="pm-btn-icon"
+                                            onClick={() => handleRemoveClick(user.id)}
+                                            title={t("pmRemoveAccess_label")}
+                                        >
+                                            <DeleteIcon />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </>
+                    )}
+                </div>
+
+                <div className="pm-permissions-footer">
+                    <button className="pm-btn-primary" onClick={onClose}>
+                        {t("pmDone_btn")}
+                    </button>
+                </div>
             </div>
-        </div>
+        </ClickOutsideWrapper>
     );
 }
