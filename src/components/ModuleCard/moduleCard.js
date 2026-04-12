@@ -143,6 +143,9 @@ export default function ModuleCard({
             icon: <DeleteIcon width={16} height={16} />
         });
     }
+    const displayModuleName = module.name && module.name.length > 15
+        ? module.name.substring(0, 15) + "..."
+        : module.name;
 
     return (
         <div
@@ -176,9 +179,9 @@ export default function ModuleCard({
                 </div>
 
                 <div className="module-name-row hover-wrapper">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
-                        <span className="module-name-text" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {topicName ? `${module.name} - ${topicName}` : module.name}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', maxWidth: '100%', minWidth: 0 }}>
+                        <span className="module-name-text" style={{ minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {topicName ? `${displayModuleName} - ${topicName}` : displayModuleName}
                         </span>
                         {(module.flagFrom || module.flagTo) && (
                             <div style={{ flexShrink: 0 }}>

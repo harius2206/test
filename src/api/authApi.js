@@ -41,15 +41,6 @@ export const confirmPasswordReset = (payload) => {
     return axiosNoAuth.post("/api/v1/auth/password/reset/confirm/", payload);
 };
 
-/**
- * updateUser:
- * - If payload is FormData (contains file), send as multipart/form-data.
- * - Otherwise send JSON PATCH (partial update).
- *
- * Example usages:
- * updateUser({ username: 'newname' })
- * updateUser(formData) // formData.append('avatar', file)
- */
 export const updateUser = (payload) => {
     if (payload instanceof FormData) {
         return axiosClient.patch("/api/v1/auth/user/", payload, {
@@ -60,7 +51,6 @@ export const updateUser = (payload) => {
     }
 };
 
-/* Password change endpoint */
 export const changePassword = ({ old_password, new_password1, new_password2 }) => {
     return axiosClient.post("/api/v1/auth/password/change/", {
         old_password,

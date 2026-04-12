@@ -186,7 +186,15 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                         active={addFolder}
                         onClose={() => setAddFolder(false)}
                         onCreate={(val) => {
-                            createFolder(val).then(() => {
+                            const payload = { ...val };
+                            // Обмеження до 50 символів та колір за замовчуванням
+                            if (payload.name && payload.name.length > 50) {
+                                payload.name = payload.name.substring(0, 50);
+                            }
+                            if (!payload.color) {
+                                payload.color = "#6366f1";
+                            }
+                            createFolder(payload).then(() => {
                                 setAddFolder(false);
                                 fRefreshParentOrLocal();
                             }).catch(() => alert(t("fCreateFolderError")));
@@ -231,6 +239,10 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                         icon: <SaveIcon width={16} height={16} />
                     });
 
+                    const displayFolderName = folder.name && folder.name.length > 15
+                        ? folder.name.substring(0, 20) + "..."
+                        : folder.name;
+
                     return (
                         <div
                             className="module-card"
@@ -251,16 +263,17 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                                         </>
                                     )}
                                 </div>
-                                <div className="module-name-row" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <div className="module-name-row" style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
                                     <ColoredIcon icon={FolderIcon} color={folder.color} size={20} />
 
                                     {/* Оновлений блок перейменування */}
                                     {fRenamingId === folder.id ? (
-                                        <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, flexWrap: "wrap" }} onClick={e => e.stopPropagation()}>
+                                        <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, flexWrap: "wrap", minWidth: 0 }} onClick={e => e.stopPropagation()}>
                                             <input
                                                 autoFocus
                                                 value={fRenameValue}
-                                                onChange={e => fSetRenameValue(e.target.value)}
+                                                maxLength={50}
+                                                onChange={e => fSetRenameValue(e.target.value.substring(0, 50))}
                                                 onKeyDown={e => {
                                                     if (e.key === 'Enter') fSaveRename(folder.id);
                                                     if (e.key === 'Escape') fSetRenamingId(null);
@@ -288,8 +301,15 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                                             </div>
                                         </div>
                                     ) : (
-                                        <span className="folder-name-text" style={{ flex: 1, wordBreak: "break-word", padding: "4px 0" }}>
-                                            {folder.name}
+                                        <span className="folder-name-text" style={{
+                                            flex: 1,
+                                            minWidth: 0,
+                                            whiteSpace: "nowrap",
+                                            overflow: "hidden",
+                                            textOverflow: "ellipsis",
+                                            padding: "4px 0"
+                                        }}>
+                                            {displayFolderName}
                                         </span>
                                     )}
                                     {/* Кінець оновленого блоку */}

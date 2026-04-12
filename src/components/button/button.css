@@ -1,5 +1,5 @@
 .btn {
-    display: inline-flex; /* Змінено з flex на inline-flex, щоб кнопка не займала всю ширину */
+    display: inline-flex;
     justify-content: center;
     align-items: center;
     font-size: 16px;
@@ -9,9 +9,9 @@
     transition: all 0.2s ease;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     outline: none;
-    box-sizing: border-box; /* Важливо для правильного розрахунку падінгів */
+    box-sizing: border-box;
     overflow: hidden;
-    text-overflow: ellipsis; /* На випадок екстремально довгих слів */
+    text-overflow: ellipsis;
 }
 
 .btn:hover:not(:disabled) {
@@ -27,7 +27,7 @@
     cursor: not-allowed;
 }
 
-/* Видалено жорсткі кольори фону, щоб вони не перебивали inline-styles з JS */
+
 [data-theme="dark"] .btn {
     box-shadow: none;
 }
