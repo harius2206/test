@@ -40,7 +40,7 @@
 
 .pp-user-info {
     display: flex;
-    align-items: flex-start; /* Вирівнювання по верху, щоб біо не ламало вигляд */
+    align-items: flex-start;
     gap: 24px;
 }
 
@@ -110,7 +110,7 @@
     border-bottom: 2px solid transparent;
     transition: all 0.2s ease;
     position: relative;
-    top: 1px; /* Щоб бордер перекривав лінію */
+    top: 1px;
 }
 
 .pp-tab:hover {
@@ -132,29 +132,15 @@
 
 /* === CONTENT LIST === */
 .pp-content-list {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-/* Сітка для папок (оскільки вони не загорнуті в .module-list у JS, стилізуємо тут) */
-/* Якщо використовується .module-list для модулів, він вже має свої стилі,
-   але для папок, які рендеряться масивом div.module-card, треба задати контейнер */
-.pp-content-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px;
 }
 
-/* Якщо .module-list вже є у структурі (для модулів),
-   то grid буде застосовано до нього як до одного елемента.
-   Тому треба трохи інакше: */
-
-/* Скидаємо грід для контейнера, якщо всередині є .module-list */
 .pp-content-list:has(.module-list) {
     display: block;
 }
-/* Або просто покладаємось на те, що .module-list сам є грідом */
+
 .module-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -162,10 +148,9 @@
     width: 100%;
 }
 
-/* === CARD STYLES (Overrides/Specifics) === */
-/* Ці стилі дублюють або доповнюють moduleCard.css для коректного вигляду папок */
+/* === CARD STYLES === */
 .module-card {
-    background: var(--card-bg);
+    background: var(--bg-primary);
     border: 1px solid var(--border);
     border-radius: 16px;
     padding: 20px;
@@ -174,7 +159,7 @@
     justify-content: space-between;
     transition: all 0.2s ease;
     position: relative;
-    height: 120px; /* Висота для карток папок */
+    height: 120px;
     box-sizing: border-box;
 }
 
@@ -188,6 +173,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    min-width: 0; /* Важливо для обрізання тексту всередині flex */
 }
 
 .top-row {
@@ -201,6 +187,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    min-width: 0;
 }
 
 .folder-name-text {
@@ -215,21 +202,22 @@
 /* Actions button positioning */
 .folder-actions {
     position: absolute;
-    top: 16px;
-    right: 16px;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
 }
 
 .btn-icon {
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 4px;
-    border-radius: 6px;
+    padding: 6px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--text-muted);
-    transition: background 0.2s;
+    transition: all 0.2s;
 }
 
 .btn-icon:hover {
@@ -239,7 +227,7 @@
 
 /* === EMPTY STATE === */
 .pp-empty {
-    grid-column: 1 / -1; /* На всю ширину гріда */
+    grid-column: 1 / -1;
     text-align: center;
     padding: 80px 0;
     color: var(--text-muted);
@@ -275,6 +263,6 @@
     }
 
     .module-list, .pp-content-list {
-        grid-template-columns: 1fr; /* Одна колонка на мобільних */
+        grid-template-columns: 1fr;
     }
 }

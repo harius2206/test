@@ -95,7 +95,7 @@ export default function PublicProfileLibrary() {
                 cards_count: m.cards_count !== undefined ? m.cards_count : (m.cards ? m.cards.length : 0),
                 is_saved: m.saved,
                 pinned: m.pinned,
-                user_perm: m.user_perm // Зберігаємо права з бекенду
+                user_perm: m.user_perm
             }));
             pplSetModulesList(pplMappedModules);
 
@@ -268,7 +268,6 @@ export default function PublicProfileLibrary() {
                     ) : (
                         <div className="module-list">
                             {pplModulesList.map((module) => {
-                                // Перевірка прав через поле user_perm, яке повертає ваш API
                                 const canEdit = module.user_perm === "editor" || module.user_perm === "owner";
 
                                 return (
@@ -300,6 +299,10 @@ export default function PublicProfileLibrary() {
                                 { label: t("pplExport"), onClick: () => {}, icon: <ExportIcon width={16} /> }
                             ];
 
+                            const displayFolderName = folder.name && folder.name.length > 20
+                                ? folder.name.substring(0, 20) + "..."
+                                : folder.name;
+
                             return (
                                 <div
                                     key={folder.id}
@@ -311,15 +314,24 @@ export default function PublicProfileLibrary() {
                                         <div className="top-row">
                                             <span className="terms-count">{folder.modules_count} {t("mpModulesShort")}</span>
                                         </div>
-                                        <div className="module-name-row" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                        <div className="module-name-row" style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
                                             <ColoredIcon icon={FolderIcon} color={folder.color || "#6366f1"} size={20} />
-                                            <span className="folder-name-text">{folder.name}</span>
+                                            <span className="folder-name-text" style={{
+                                                flex: 1,
+                                                minWidth: 0,
+                                                whiteSpace: "nowrap",
+                                                overflow: "hidden",
+                                                textOverflow: "ellipsis",
+                                                padding: "4px 0"
+                                            }}>
+                                                {displayFolderName}
+                                            </span>
                                         </div>
                                     </div>
                                     <div className="folder-actions" onClick={e => e.stopPropagation()}>
-                                        <DropdownMenu align="left" width={160} items={pplMenuItems}>
+                                        <DropdownMenu align="left" width="max-content" items={pplMenuItems}>
                                             <button className="btn-icon">
-                                                <DotsIcon width={16} />
+                                                <ColoredIcon icon={DotsIcon} color="currentColor" size={16} />
                                             </button>
                                         </DropdownMenu>
                                     </div>

@@ -15,7 +15,6 @@ export default function Footer() {
                     <span className="footer-divider"></span>
                     <nav className="footer-nav">
                         <Link to="/about">{t("footerAbout_label")}</Link>
-                        <a href="#">{t("footerHelp_label")}</a>
                     </nav>
                 </div>
 

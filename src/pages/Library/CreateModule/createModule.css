@@ -6,6 +6,7 @@
     --clr-border-light: #d1d5db;
     --clr-text: #111827;
     --clr-muted: #666b9a;
+    --text-color: #666b9a;
     --clr-primary: #6366f1;
     --clr-primary-light: rgba(99,102,241,0.08);
 
@@ -21,6 +22,7 @@
     --clr-border-light: rgba(152, 155, 178, 0.2);
     --clr-text: #e6eef8;
     --clr-muted: #9aa6b2;
+    --text-color: #9aa6b2;
     --clr-primary: #6366f1;
     --clr-primary-light: rgba(99,102,241,0.18);
 
@@ -220,10 +222,7 @@
     transition: color 0.3s ease, stroke 0.3s ease;
 }
 
-.tag-input-wrapper button:hover svg {
-    color: #ffffff;
-    stroke: #ffffff;
-}
+
 
 /* --- TAGS --- */
 .tag-item-badge {
@@ -577,7 +576,6 @@ button:focus, .btn:focus, .module-input:focus {
     transition: fill 0.3s ease, color 0.3s ease;
 }
 
-/* Новий стиль для хрестика закриття */
 .cm-close-btn {
     background: none;
     border: none;

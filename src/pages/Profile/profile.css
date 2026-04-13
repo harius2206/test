@@ -21,8 +21,8 @@
     --text-subtle: #d1d5db;
     --bg-primary: #000000;
     --bg-secondary: #1f1f1f;
-    --border: #ffffff;
-    --border-light: #4b4e57;
+    --border: #374151;
+    --border-light: #374151;
 }
 
 /* make container relative so side panel (absolute) can attach */

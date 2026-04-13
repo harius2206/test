@@ -100,6 +100,7 @@ const translations = {
 
         // --- SearchField
         sfSearch_label: "Пошук",
+        noResults: "Немає результатів",
 
         // --- SidePanel
         spNoPins_label: "Немає закріплених елементів",
@@ -574,6 +575,7 @@ const translations = {
 
         // --- SearchField
         sfSearch_label: "Search",
+        noResults: "No results",
 
         // --- SidePanel
         spNoPins_label: "No pinned items",
@@ -1047,6 +1049,7 @@ const translations = {
 
         // --- SearchField
         sfSearch_label: "Szukaj",
+        noResults: "Brak wyników",
 
         // --- SidePanel
         spNoPins_label: "Brak przypiętych elementów",
@@ -1520,6 +1523,7 @@ const translations = {
 
         // --- SearchField
         sfSearch_label: "Suche",
+        noResults: "Keine Ergebnisse",
 
         // --- SidePanel
         spNoPins_label: "Keine angehefteten Elemente",
@@ -1993,6 +1997,7 @@ const translations = {
 
         // --- SearchField
         sfSearch_label: "Rechercher",
+        noResults: "Aucun résultat",
 
         // --- SidePanel
         spNoPins_label: "Aucun élément épinglé",
@@ -2466,6 +2471,7 @@ const translations = {
 
         // --- SearchField
         sfSearch_label: "Buscar",
+        noResults: "Sin resultados",
 
         // --- SidePanel
         spNoPins_label: "No hay elementos fijados",
@@ -2939,6 +2945,7 @@ const translations = {
 
         // --- SearchField
         sfSearch_label: "Cerca",
+        noResults: "Nessun risultato",
 
         // --- SidePanel
         spNoPins_label: "Nessun elemento fissato",
@@ -3412,6 +3419,7 @@ const translations = {
 
         // --- SearchField
         sfSearch_label: "Ara",
+        noResults: "Sonuç bulunamadı",
 
         // --- SidePanel
         spNoPins_label: "Sabitlenmiş öğe yok",
@@ -3885,6 +3893,7 @@ const translations = {
 
         // --- SearchField
         sfSearch_label: "検索",
+        noResults: "結果なし",
 
         // --- SidePanel
         spNoPins_label: "固定されたアイテムはありません",
@@ -4358,6 +4367,7 @@ const translations = {
 
         // --- SearchField
         sfSearch_label: "搜索",
+        noResults: "无结果",
 
         // --- SidePanel
         spNoPins_label: "无置顶项目",
@@ -4831,6 +4841,7 @@ const translations = {
 
         // --- SearchField
         sfSearch_label: "검색",
+        noResults: "결과 없음",
 
         // --- SidePanel
         spNoPins_label: "고정된 항목이 없습니다",
@@ -5304,6 +5315,7 @@ const translations = {
 
         // --- SearchField
         sfSearch_label: "Buscar",
+        noResults: "Nenhum resultado",
 
         // --- SidePanel
         spNoPins_label: "Nenhum item fixado",

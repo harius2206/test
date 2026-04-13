@@ -59,7 +59,6 @@ export default function SearchField({
     const handleSelect = (moduleId) => {
         setIsOpen(false);
         setQuery("");
-        // Змінено під ваш формат: /library/module-view?id=...
         navigate(`/library/module-view?id=${moduleId}`);
     };
 
@@ -72,16 +71,16 @@ export default function SearchField({
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     className="sf-input"
-                    placeholder={placeholder}
+                    placeholder={t(placeholder)}
                     onFocus={() => query && setIsOpen(true)}
                 />
             </div>
 
             {isOpen && (
                 <div className="sf-results-dropdown">
-                    {loading && <div className="sf-status">Searching...</div>}
+                    {loading && <div className="sf-status">{t("searching")}</div>}
                     {!loading && results.length === 0 && (
-                        <div className="sf-status">No results</div>
+                        <div className="sf-status">{t("noResults")}</div>
                     )}
                     {results.map((module) => (
                         <div
