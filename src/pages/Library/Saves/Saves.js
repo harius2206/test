@@ -14,7 +14,6 @@ export default function Saves() {
 
     const [sActiveTab, sSetActiveTab] = useState(() => localStorage.getItem("savesActiveTab") || "folders");
 
-    // Стейт для завантаження папок користувача (щоб працювало "Add to folder" в модулях)
     const [sUserData, sSetUserData] = useState(null);
     const [sLoading, sSetLoading] = useState(true);
 
@@ -37,6 +36,10 @@ export default function Saves() {
     useEffect(() => {
         sLoadUserData();
     }, [sLoadUserData]);
+
+    if (sLoading && !sUserData) {
+        return <Loader fullscreen />;
+    }
 
     return (
         <div className="app-wrapper" style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
@@ -70,29 +73,23 @@ export default function Saves() {
                 </div>
 
                 <div className="library-content">
-                    {sLoading ? (
-                        <Loader />
-                    ) : (
-                        <>
-                            {sActiveTab === "folders" && (
-                                <Folders
-                                    source="saves"
-                                    onRefresh={sLoadUserData}
-                                />
-                            )}
+                    {sActiveTab === "folders" && (
+                        <Folders
+                            source="saves"
+                            onRefresh={sLoadUserData}
+                        />
+                    )}
 
-                            {sActiveTab === "modules" && (
-                                <Modules
-                                    source="saves"
-                                    preloadedFolders={sUserData?.folders || []}
-                                    onRefresh={sLoadUserData}
-                                />
-                            )}
+                    {sActiveTab === "modules" && (
+                        <Modules
+                            source="saves"
+                            preloadedFolders={sUserData?.folders || []}
+                            onRefresh={sLoadUserData}
+                        />
+                    )}
 
-                            {sActiveTab === "cards" && (
-                                <Cards />
-                            )}
-                        </>
+                    {sActiveTab === "cards" && (
+                        <Cards />
                     )}
                 </div>
             </main>

@@ -22,7 +22,6 @@
     --folder-tag-text: #fff;
 }
 
-/* ------------------------ PAGE ------------------------ */
 .folder-page {
     width: 100%;
     padding: 40px;
@@ -34,7 +33,6 @@
     min-height: 100vh;
 }
 
-/* ------------------------ TITLE & CONTROLS ------------------------ */
 .folder-title {
     font-size: 24px;
     font-weight: 700;
@@ -68,7 +66,6 @@
     color: #fff;
 }
 
-/* ------------------------ MODULES LIST ------------------------ */
 .folder-modules {
     display: flex;
     flex-direction: column;
@@ -87,7 +84,6 @@
     transition: background 0.2s ease, border-color 0.2s ease;
 }
 
-/* ------------------------ MODULE CONTENT ------------------------ */
 .top-row {
     display: flex;
     align-items: center;
@@ -142,7 +138,6 @@
     position: relative;
 }
 
-/* ------------------------ DROPDOWN ------------------------ */
 .dropdown {
     position: absolute;
     right: 0;
@@ -176,7 +171,6 @@
     align-items: center;
 }
 
-/* ------------------------ RESPONSIVE ------------------------ */
 @media (max-width: 720px) {
     .folder-page {
         padding: 20px;
@@ -201,7 +195,6 @@
     }
 }
 
-/* Smooth theme transitions */
 *, *::before, *::after {
     transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
 }

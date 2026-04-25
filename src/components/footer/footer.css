@@ -104,9 +104,6 @@
     filter: brightness(0) invert(1);
 }
 
-/* ====== АДАПТИВ ====== */
-
-/* тримає все в рядку, просто зменшує пропорційно */
 @media (max-width: 900px) {
     .footer {
         padding: 0 2%;

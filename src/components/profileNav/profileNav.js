@@ -30,7 +30,6 @@ export default function ProfileNav() {
         return () => window.removeEventListener("storage", onStorage);
     }, [t]);
 
-    /* === FIT USERNAME TO WIDTH === */
     const fitName = () => {
         const el = nameRef.current;
         if (!el || !profile?.username) return;

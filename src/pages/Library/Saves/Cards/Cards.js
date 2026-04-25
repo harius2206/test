@@ -26,7 +26,6 @@ export default function Cards({ source = "saves" }) {
     const [cLoading, cSetLoading] = useState(true);
     const [cSort, cSetSort] = useState(() => localStorage.getItem(cStorageKey) || "newest");
 
-    // State для fullscreen
     const [cFullscreenStartIndex, cSetFullscreenStartIndex] = useState(null);
 
     const cLoadSavedCards = useCallback(async () => {
@@ -85,7 +84,6 @@ export default function Cards({ source = "saves" }) {
 
         if (type === "learn") {
             const newStatus = !card.is_learned;
-            // Оптимістичне оновлення UI
             cSetCards(prev => prev.map(c => c.id === cardId ? { ...c, is_learned: newStatus } : c));
 
             try {
@@ -95,14 +93,12 @@ export default function Cards({ source = "saves" }) {
                     learned: "learned"
                 });
             } catch (err) {
-                // Відкат при помилці
                 cSetCards(prev => prev.map(c => c.id === cardId ? { ...c, is_learned: !newStatus } : c));
                 console.error(err);
                 alert(t("cErrorLearnUpdate"));
             }
         } else if (type === "save") {
             const wasSaved = card.is_saved;
-            // Оптимістично видаляємо зі списку збережених, якщо натиснули unsave
             if (wasSaved) {
                 cSetCards(prev => prev.filter(c => c.id !== cardId));
             }
@@ -115,7 +111,6 @@ export default function Cards({ source = "saves" }) {
                     cSetCards(prev => prev.map(c => c.id === cardId ? { ...c, is_saved: true } : c));
                 }
             } catch (err) {
-                // Відкат (повертаємо картку в список)
                 if (wasSaved) cLoadSavedCards();
                 alert(t("cErrorActionFailed"));
             }
@@ -132,7 +127,7 @@ export default function Cards({ source = "saves" }) {
 
             <div className="library-content" style={{ marginTop: 12 }}>
                 {cSorted.length === 0 ? (
-                    <div className="mv-row mv-empty-message" style={{ textAlign: "center", padding: "20px" }}>
+                    <div style={{ padding: 40, textAlign: "center", color: "gray", width: "100%" }}>
                         {t("cEmptyCardsMessage")}
                     </div>
                 ) : (

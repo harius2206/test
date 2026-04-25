@@ -8,7 +8,7 @@ import SearchField from "../searchField/searchField";
 import UserAvatar from "../avatar/avatar";
 import { useAuth } from "../../context/AuthContext";
 import { getUserData, clearAllExceptTheme } from "../../utils/storage";
-import { useI18n, availableLanguages } from "../../i18n"; // Імпортуємо availableLanguages
+import { useI18n, availableLanguages } from "../../i18n";
 
 export default function UserMenu() {
     const { t, setIsLangModalOpen, language } = useI18n();
@@ -19,7 +19,6 @@ export default function UserMenu() {
     const location = useLocation();
     const { theme, setLight, setDark } = useContext(ThemeContext);
 
-    // Знаходимо назву поточної мови зі списку доступних
     const currentLanguageLabel = availableLanguages.find(l => l.code === language)?.label || "English";
 
     const handleThemeChange = (mode) =>

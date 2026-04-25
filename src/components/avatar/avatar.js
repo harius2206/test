@@ -10,7 +10,7 @@ export default function UserAvatar({
                                        className = "",
                                        style = {},
                                        alt,
-                                       disableStrictFallback = false, // Новий проп
+                                       disableStrictFallback = false,
                                    }) {
     const currentUserData = disableStrictFallback ? null : (getUserAvatar() || getUserData()?.avatar);
     const imageSrc = src || avatar || currentUserData || undefined;

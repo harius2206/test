@@ -338,9 +338,9 @@ export default function Modules({ source = "library", preloadedModules, preloade
             </div>
 
             {mError ? (
-                <div style={{ padding: 20, color: "red", textAlign: "center" }}>{mError}</div>
+                <div style={{ padding: 40, color: "red", textAlign: "center", width: "100%", gridColumn: "1 / -1" }}>{mError}</div>
             ) : mModules.length === 0 ? (
-                <div style={{ padding: 40, textAlign: "center", color: "gray" }}>{t("mNoModulesYet")}</div>
+                <div style={{ padding: 40, textAlign: "center", color: "gray", width: "100%", gridColumn: "1 / -1" }}>{t("mNoModulesYet")}</div>
             ) : (
                 <div className="module-list">
                     {mModules.map((module) => (

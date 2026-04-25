@@ -13,10 +13,8 @@
     height: calc(100vh - var(--header-height, 60px) - var(--footer-height, 40px));
     display: flex;
     align-items: stretch;
-    z-index: 1000; /* Для панелі */
+    z-index: 1000;
 }
-
-/* ===== Button ===== */
 .side-toggle-btn {
     width: 40px;
     height: 80px;
@@ -40,7 +38,6 @@
     stroke: currentColor;
 }
 
-/* ===== Panel ===== */
 .side-panel {
     width: 80px;
     background: var(--bg-secondary);
@@ -53,21 +50,18 @@
     padding: 12px 8px;
     overflow-y: auto;
     overflow-x: hidden;
-
-    /* Ховаємо скролбар */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE 10+ */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .side-panel::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+    display: none;
 }
 
 .side-panel-wrapper.open .side-panel {
     display: flex;
 }
 
-/* ===== Icons ===== */
 .side-icons {
     display: flex;
     flex-direction: column;
@@ -76,7 +70,6 @@
     align-items: center;
 }
 
-/* ===== Icon ===== */
 .side-icon-wrapper {
     position: relative;
     display: flex;
@@ -105,13 +98,11 @@
     stroke: currentColor;
 }
 
-/* ===== Dark theme ===== */
 [data-theme="dark"] .side-toggle-btn,
 [data-theme="dark"] .side-icon {
     color: #f3f4f6 !important;
 }
 
-/* Позиціонування тултіпу через портал, колір через сам Tooltip */
 .side-panel-wrapper.left-aligned {
     left: 0;
 }

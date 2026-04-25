@@ -15,11 +15,11 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.7); /* Темніший фон для кращого акценту */
+    background: rgba(0, 0, 0, 0.7);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 100000; /* Дуже високий індекс */
+    z-index: 100000;
     backdrop-filter: blur(8px);
 }
 
@@ -62,8 +62,6 @@
     border-color: var(--accent);
     background: var(--accent-alpha, rgba(0,0,0,0.05));
 }
-
-
 
 .lang-modal-header {
     display: flex;

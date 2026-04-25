@@ -20,9 +20,6 @@ import { ReactComponent as AddIcon } from "../../../images/add.svg";
 
 import "../CreateModule/createModule.css";
 
-// ----------------------------------------------------------------------------------
-// МЕМОЇЗОВАНА КАРТКА
-// ----------------------------------------------------------------------------------
 const CardRow = React.memo(({
                                 card,
                                 idx,
@@ -127,11 +124,9 @@ export default function ModuleForm({
     const navigate = useNavigate();
     const { showError } = useError();
 
-    // --- Data Sources ---
     const [languagesList, setLanguagesList] = useState([]);
     const [topicsList, setTopicsList] = useState([]);
 
-    // --- Form State ---
     const [tags, setTags] = useState(initialData?.tags || []);
     const [newTag, setNewTag] = useState("");
     const [name, setName] = useState(initialData?.name || "");
@@ -145,7 +140,6 @@ export default function ModuleForm({
         initialData?.globalLangRight && typeof initialData.globalLangRight === 'object' ? initialData.globalLangRight : null
     );
 
-    // --- UI State ---
     const [openLeft, setOpenLeft] = useState(false);
     const [openRight, setOpenRight] = useState(false);
     const [openTopicDropdown, setOpenTopicDropdown] = useState(false);
@@ -163,14 +157,12 @@ export default function ModuleForm({
     const [translatingCardId, setTranslatingCardId] = useState(null);
     const isDataPopulated = useRef(false);
 
-    // Переклади витягуємо один раз, щоб не ламати мемоїзацію
     const tTerm = t("mfTermLabel");
     const tDef = t("mfDefinitionLabel");
     const tDeepl = t("mfDeeplTranslate");
     const tDeeplLoad = t("mfDeeplLoading");
     const tRemove = t("mfRemoveCard");
 
-    // --- Infinite Scroll ---
     useEffect(() => {
         if (visibleCount >= cards.length) return;
 
@@ -184,7 +176,6 @@ export default function ModuleForm({
         return () => observer.disconnect();
     }, [visibleCount, cards.length]);
 
-    // --- 1. Fetch Data ---
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -196,10 +187,8 @@ export default function ModuleForm({
             }
         };
         fetchData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // --- 2. Populate State ---
     useEffect(() => {
         if (isDataPopulated.current) return;
 
@@ -231,7 +220,6 @@ export default function ModuleForm({
         }
     }, [initialData, languagesList, topicsList]);
 
-    // --- СТАБІЛЬНІ ХЕНДЛЕРИ (ЗАПОБІГАЮТЬ ЛАГАМ) ---
     const handleCardChange = useCallback((id, field, value) => {
         setCards(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c));
     }, []);
@@ -480,7 +468,6 @@ export default function ModuleForm({
                         />
                     ))}
 
-                    {/* ТРИГЕР ДЛЯ ЗАВАНТАЖЕННЯ НАСТУПНИХ КАРТОК */}
                     {visibleCount < cards.length && (
                         <div ref={loadMoreRef} style={{ height: "40px", width: "100%" }}></div>
                     )}

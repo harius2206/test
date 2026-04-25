@@ -25,7 +25,6 @@
     --border-light: #374151;
 }
 
-/* make container relative so side panel (absolute) can attach */
 .profile-nav-wrapper {
     position: relative;
     display: flex;
@@ -34,9 +33,8 @@
 
 .profile-nav {
     flex-shrink: 0;
-    width: 250px; /* Adjust as needed for normal size */
+    width: 250px;
 }
-/* === Батьківський контейнер === */
 .app-wrapper {
     display: flex;
     flex-direction: column;
@@ -96,7 +94,6 @@
     color: #ffffff;
 }
 
-/* === Контент профілю === */
 .profile-content-wrapper {
     flex: 1;
     display: flex;
@@ -169,7 +166,7 @@
     display: flex;
     gap: 12px;
     align-items: center;
-    flex-wrap: nowrap; /* keep buttons in one row */
+    flex-wrap: nowrap;
 }
 .cooldown-text {
     margin-left: 8px;
@@ -244,35 +241,32 @@
 .change-photo-wrapper {
     display: flex;
     flex-direction: column;
-    align-items: center; /* center contents horizontally */
+    align-items: center;
     justify-content: center;
     gap: 16px;
     width: 100%;
 }
 
-/* New class used by ChangePhoto.js */
 .photo-buttons {
     display: flex;
-    flex-direction: row; /* ensure row layout, not column */
+    flex-direction: row;
     gap: 12px;
-    justify-content: center; /* center buttons horizontally */
+    justify-content: center;
     align-items: center;
-    flex-wrap: nowrap; /* keep them in one row; change to wrap if needed on very small screens */
+    flex-wrap: nowrap;
     margin-top: 8px;
 }
 
-/* Allow wrapping on very small screens to avoid overflow */
 @media (max-width: 420px) {
     .photo-buttons {
         flex-wrap: wrap;
         gap: 8px;
     }
     .photo-buttons button {
-        flex: 0 1 auto; /* allow buttons to shrink on tiny screens */
+        flex: 0 1 auto;
     }
 }
 
-/* Responsive layout */
 @media (max-width: 600px) {
     .photo-preview-box {
         max-width: 280px;

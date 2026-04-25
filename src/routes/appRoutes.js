@@ -16,7 +16,7 @@ import AboutPage from "../pages/AboutPage/AboutPage";
 
 const appRoutes = [
     { path: "/", component: MainPage },
-    { path: "/library/*", component: LibraryPage },
+    { path: "/library/*", component: LibraryPage, protected: true },
 
     { path: "/profile/public/:id", component: PublicProfileLibrary },
     { path: "/profile/*", component: Profile, protected: true },

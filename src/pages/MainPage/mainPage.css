@@ -26,7 +26,6 @@
     --bg-secondary: #000000;
 }
 
-/* === WRAPPER === */
 .mp-wrapper {
     font-family: "Inter", sans-serif;
     display: flex;
@@ -41,7 +40,6 @@
     min-height: 80vh;
 }
 
-/* === SECTION === */
 .mp-section {
     display: flex;
     flex-direction: column;
@@ -68,7 +66,6 @@
     background: var(--bg-secondary);
 }
 
-/* === SWIPER COMMON === */
 .mp-slider-wrapper {
     position: relative;
     width: 100%;
@@ -97,7 +94,6 @@
     height: auto;
 }
 
-/* === ARROWS === */
 .mp-arrow-btn {
     position: absolute;
     top: 50%;
@@ -148,7 +144,6 @@
     transform: translateX(var(--arrow-gap)) translateY(-50%) scale(1.1);
 }
 
-/* === FOLDER CARD (Latest Viewed) === */
 .mp-folder-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -156,8 +151,8 @@
     padding: 16px 20px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Повернув space-between для рівномірного розподілу */
-    height: 100px; /* Зменшена висота без опису */
+    justify-content: space-between;
+    height: 100px;
     width: 100%;
     max-width: 240px;
     transition: box-shadow 0.2s ease, transform 0.2s ease;
@@ -209,7 +204,6 @@
     text-overflow: ellipsis;
 }
 
-/* === MODULE CARD === */
 .mp-module-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -314,7 +308,6 @@
     font-weight: 500;
 }
 
-/* === AUTHOR CARD === */
 .mp-author-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -371,7 +364,6 @@
     opacity: 0.8;
 }
 
-/* === ADAPTIVE === */
 @media (max-width: 900px) {
     .mp-wrapper, .mp-section, .mp-slider-wrapper {
         max-width: 720px;
@@ -467,6 +459,6 @@
     }
     .mp-folder-card {
         height: auto;
-        min-height: 100px; /* Мінімальна висота для мобільних */
+        min-height: 100px;
     }
 }

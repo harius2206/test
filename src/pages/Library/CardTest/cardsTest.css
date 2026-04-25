@@ -30,7 +30,6 @@
     transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Sticky замість Fixed, як у твоєму коді */
 .ct-header-fixed {
     position: sticky;
     top: 0;
@@ -52,8 +51,7 @@
 .ct-header-row {
     display: flex;
     align-items: center;
-    /* justify-content: space-between; <-- прибираємо, бо центруємо абсолютно */
-    position: relative; /* Це база для абсолютного центрування */
+    position: relative;
     min-height: 40px;
 }
 
@@ -65,13 +63,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
     transition: color 0.3s ease;
-
-    /* Обмежуємо ширину, щоб не наїхало на центр */
     max-width: 35%;
-    margin-right: auto; /* Притискає все інше (кнопку) вправо, якщо вони в потоці */
+    margin-right: auto;
 }
 
-/* Ідеальне центрування */
 .ct-progress {
     position: absolute;
     left: 50%;
@@ -86,7 +81,7 @@
 }
 
 .ct-close-btn {
-    margin-left: auto; /* Притискаємо кнопку до правого краю */
+    margin-left: auto;
     border: none;
     background: transparent;
     padding: 4px;
@@ -98,7 +93,7 @@
     width: 36px;
     height: 36px;
     transition: opacity 0.15s ease;
-    z-index: 2; /* Щоб лічильник не перекрив клік, якщо екран дуже вузький */
+    z-index: 2;
 }
 
 .ct-close-btn:hover {
@@ -118,7 +113,6 @@
     filter: brightness(0) invert(1);
 }
 
-/* Попередження */
 .ct-warning-text {
     margin-top: 8px;
     background: var(--ct-warning-bg);
@@ -130,7 +124,6 @@
     transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Список карток */
 .ct-questions-list {
     margin-top: 18px;
     display: flex;
@@ -157,13 +150,11 @@
     box-sizing: border-box;
 }
 
-/* --- Адаптив --- */
 @media (max-width: 420px) {
     .ct-header-row {
         flex-direction: column;
         align-items: center;
         gap: 8px;
-        /* На мобільному скидаємо абсолютне позиціонування, щоб елементи йшли стовпчиком */
         position: static;
         height: auto;
     }
@@ -176,7 +167,6 @@
     }
 
     .ct-progress {
-        /* Скидаємо центрування для мобілки, щоб воно стало частиною потоку */
         position: static;
         transform: none;
         font-size: 14px;

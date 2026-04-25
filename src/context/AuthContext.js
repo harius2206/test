@@ -11,15 +11,12 @@ import { useI18n } from "../i18n";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    // 1. Синхронна ініціалізація user
     const [user, setUser] = useState(() => getUserData());
 
-    // 2. Стан "глобального завантаження"
     const [loading, setLoading] = useState(true);
 
     const { t } = useI18n();
 
-    /* ==== LOGIN ==== */
     const login = async (credentials) => {
         try {
             const res = await loginUser(credentials);
@@ -37,7 +34,6 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    /* ==== REGISTER ==== */
     const register = async (data) => {
         try {
             clearAuthData();
@@ -50,14 +46,12 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    /* ==== LOGOUT ==== */
     const logout = () => {
         clearAuthData();
         setUser(null);
         window.dispatchEvent(new Event("storage"));
     };
 
-    /* ==== INITIALIZATION ==== */
     useEffect(() => {
         const init = () => {
             const storedUser = getUserData();
@@ -76,7 +70,6 @@ export const AuthProvider = ({ children }) => {
         return () => window.removeEventListener("storage", onStorage);
     }, []);
 
-    // Екран завантаження
     if (loading) {
         return (
             <div style={{

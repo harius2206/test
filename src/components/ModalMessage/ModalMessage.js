@@ -7,13 +7,13 @@ export default function ModalMessage({
                                          title,
                                          message,
                                          onClose,
-                                         onConfirm // Додаємо новий проп для функції підтвердження
+                                         onConfirm
                                      }) {
     if (!open) return null;
 
     const isError = type === "error";
     const isSuccess = type === "success";
-    const isConfirm = type === "confirm"; // Додаємо перевірку на тип підтвердження
+    const isConfirm = type === "confirm";
 
     const headerText = title || (isError ? "Error" : isSuccess ? "Success" : isConfirm ? "Confirm" : "Message");
 
@@ -23,7 +23,6 @@ export default function ModalMessage({
                 <h3 className={`modal-title ${type}`}>{headerText}</h3>
                 <p className="modal-message">{message}</p>
 
-                {/* Якщо тип "confirm", показуємо дві кнопки */}
                 {isConfirm ? (
                     <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "15px" }}>
                         <button
@@ -42,7 +41,6 @@ export default function ModalMessage({
                         </button>
                     </div>
                 ) : (
-                    /* Для всіх інших типів показуємо стандартну кнопку Close */
                     <button className={`modal-btn ${type}`} onClick={onClose}>
                         Close
                     </button>

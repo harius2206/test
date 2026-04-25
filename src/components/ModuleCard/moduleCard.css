@@ -87,7 +87,7 @@
     justify-content: space-between;
     align-items: flex-start;
     padding: 16px;
-    min-height: 75px; /* Зменшено висоту, бо тегів більше немає */
+    min-height: 75px;
     border: 1px solid var(--mc-border);
     border-radius: 12px;
     background: var(--mc-bg);
@@ -105,7 +105,6 @@
     box-shadow: 0 0 8px rgba(99, 102, 241, 0.2);
 }
 
-/* === ВЕРХНІЙ РЯДОК === */
 .top-row {
     display: flex;
     align-items: center;
@@ -168,7 +167,6 @@
     flex-shrink: 0;
 }
 
-/* === НАЗВА МОДУЛЯ === */
 .module-name-row {
     margin-top: 2px;
     min-width: 0;
@@ -185,7 +183,6 @@
     text-overflow: ellipsis;
 }
 
-/* === КНОПКИ ДІЙ === */
 .folder-actions {
     display: flex;
     align-items: center;
@@ -207,7 +204,6 @@
     color: #ffffff;
 }
 
-/* === АДАПТИВНІСТЬ === */
 @media (max-width: 600px) {
     .module-card {
         flex-direction: column;

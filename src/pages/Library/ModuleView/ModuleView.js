@@ -302,7 +302,6 @@ export default function ModuleView() {
                                     <button className="mv-btn-icon"><DotsIcon width={24} height={24} /></button>
                                 </DropdownMenu>
 
-                                {/* Випадаюче вікно дозволів під кнопкою замість модалки */}
                                 {mvShowPermissions && (
                                     <>
                                         <div

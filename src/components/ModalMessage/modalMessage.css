@@ -9,7 +9,6 @@
     transition: background 0.3s ease;
 }
 
-/* === Box === */
 .modal-box {
     background: var(--bg-primary);
     color: var(--text);
@@ -23,7 +22,6 @@
     transition: all 0.25s ease;
 }
 
-/* === Title === */
 .modal-title {
     font-size: 20px;
     font-weight: 700;
@@ -42,14 +40,12 @@
     color: var(--accent);
 }
 
-/* === Message === */
 .modal-message {
     font-size: 15px;
     margin-bottom: 20px;
     color: var(--text-muted);
 }
 
-/* === Button === */
 .modal-btn {
     padding: 8px 18px;
     border-radius: 8px;
@@ -79,7 +75,6 @@
     opacity: 0.9;
 }
 
-/* === Dark theme adaptation === */
 [data-theme="dark"] .modal-box {
     background: var(--bg-secondary);
     color: var(--text);

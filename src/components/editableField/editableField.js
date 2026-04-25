@@ -4,7 +4,7 @@ import editImg from "../../images/editImg.svg";
 
 export default function EditableField({
                                           label,
-                                          type = "text",        // "text" | "textarea"
+                                          type = "text",
                                           value: initialValue = "",
                                           editable = true,
                                           autosave = false,
@@ -61,7 +61,7 @@ export default function EditableField({
     const handleKeyDown = (e) => {
         if (type !== "textarea" && e.key === "Enter") {
             e.preventDefault();
-            actualRef.current.blur(); // triggers autosave
+            actualRef.current.blur();
         }
     };
 

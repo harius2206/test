@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import FlipCard from "../flipCard/flipCard";
-// Імпорт іконок
 import { ReactComponent as CloseIcon } from "../../images/close.svg";
 import { ReactComponent as PrevIcon } from "../../images/arrowLeft.svg";
 import { ReactComponent as NextIcon } from "../../images/arrowRight.svg";
@@ -11,16 +10,15 @@ import { ReactComponent as FullscreenIcon } from "../../images/expand.svg"; // �
 import { ReactComponent as BookSvg } from "../../images/book.svg";
 import { ReactComponent as SaveIcon } from "../../images/save.svg";
 
-// Використовуємо існуючі стилі
 import "../../pages/Library/ModuleView/moduleView.css";
 
 export default function FullscreenCard({
                                            cards,
                                            initialIndex = 0,
                                            onClose,
-                                           onUpdateCardStatus, // (id, type) => void
-                                           checkIsLearned, // (id) => boolean
-                                           checkIsSaved,   // (id) => boolean
+                                           onUpdateCardStatus,
+                                           checkIsLearned,
+                                           checkIsSaved,
                                        }) {
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
     const [flipped, setFlipped] = useState(false);
@@ -28,7 +26,6 @@ export default function FullscreenCard({
     const autoplayRef = useRef(null);
     const autoplayInterval = 3000;
 
-    // Блокування скролу
     useEffect(() => {
         document.body.style.overflow = "hidden";
         return () => {
@@ -36,7 +33,6 @@ export default function FullscreenCard({
         };
     }, []);
 
-    // Автоплей
     useEffect(() => {
         if (autoplay) {
             autoplayRef.current = setInterval(() => {

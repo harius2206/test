@@ -5,7 +5,7 @@ import { exportModule, importModule } from "../../api/modulesApi";
 import { ReactComponent as CloseIcon } from "../../images/close.svg";
 import { ReactComponent as ExportIcon } from "../../images/export.svg";
 import { ReactComponent as ReplaceIcon } from "../../images/replace.svg";
-import * as XLSX from "xlsx"; // Потрібно: npm install xlsx
+import * as XLSX from "xlsx";
 import "./moduleImportExportModal.css";
 import { useI18n } from "../../i18n";
 
@@ -16,8 +16,8 @@ export default function ModuleImportExportModal({
                                                     open,
                                                     onClose,
                                                     onSuccess,
-                                                    isLocal = false, // true = парсимо на клієнті і повертаємо дані
-                                                    onLocalImport    // callback(cardsArray)
+                                                    isLocal = false,
+                                                    onLocalImport
                                                 }) {
     const [activeTab, setActiveTab] = useState(isLocal ? "import" : "export");
     const [loading, setLoading] = useState(false);
@@ -34,15 +34,11 @@ export default function ModuleImportExportModal({
 
     if (!open) return null;
 
-    // --- Парсинг даних для локального режиму ---
-
-    // 1. CSV (Текстовий парсер)
     const parseCSV = (text) => {
         const rows = [];
         const lines = text.split(/\r?\n/);
         lines.forEach(line => {
             if (!line.trim()) return;
-            // Розділення по комі з урахуванням лапок
             const parts = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
             const cleanParts = parts.map(p => p.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
             if (cleanParts.length >= 2) {
@@ -56,7 +52,6 @@ export default function ModuleImportExportModal({
         return rows;
     };
 
-    // 2. Excel (XLSX парсер через бібліотеку)
     const parseExcel = async (file) => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -72,10 +67,8 @@ export default function ModuleImportExportModal({
 
                     const cards = [];
                     jsonData.forEach((row) => {
-                        // Фільтруємо пусті рядки та заголовки (евристика)
                         if (!row || row.length < 2) return;
 
-                        // Ігноруємо рядок, якщо це схоже на заголовок (Term/Definition)
                         const firstCell = String(row[0]).toLowerCase();
                         if (firstCell === "term" || firstCell === "original") return;
 
@@ -94,8 +87,6 @@ export default function ModuleImportExportModal({
             reader.readAsArrayBuffer(file);
         });
     };
-
-    // --- Handlers ---
 
     const handleExport = async (format) => {
         try {
@@ -141,7 +132,6 @@ export default function ModuleImportExportModal({
 
         try {
             if (isLocal && onLocalImport) {
-                // --- Локальний режим: Парсимо тут ---
                 let parsedCards = [];
 
                 if (isCsv) {
@@ -152,14 +142,13 @@ export default function ModuleImportExportModal({
                 }
 
                 if (parsedCards.length > 0) {
-                    onLocalImport(parsedCards); // Повертаємо масив карток
+                    onLocalImport(parsedCards);
                     setSuccessMsg(t("mieSuccessAddedCards_label").replace("{count}", parsedCards.length));
                     setTimeout(() => onClose(), 1000);
                 } else {
                     setError("mieErrorNoData_label");
                 }
             } else {
-                // --- API режим: Відправляємо на сервер ---
                 await importModule(moduleId, file);
                 setSuccessMsg(t("mieImportSuccess_label"));
                 if (onSuccess) onSuccess();

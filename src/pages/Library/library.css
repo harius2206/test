@@ -31,12 +31,10 @@
     align-items: center;
 }
 
-/* ===== Табулятори ===== */
 .tabs-wrapper {
     display: flex;
     position: relative;
     margin-bottom: 8px;
-    /* Глобальна нижня лінія */
     border-bottom: 2px solid var(--lib-border);
 }
 
@@ -54,7 +52,6 @@
     font-weight: 500;
     color: var(--lib-muted);
     transition: color 0.2s, border-color 0.2s;
-    /* Адаптивний індикатор для багатомовності */
     position: relative;
     margin-bottom: -2px;
     border-bottom: 2px solid transparent;
@@ -65,7 +62,6 @@
     border-bottom: 2px solid var(--lib-accent);
 }
 
-/* Приховуємо захардкоджені лінії */
 .tabs-underline {
     display: none;
 }
@@ -74,19 +70,16 @@
     display: none;
 }
 
-/* ===== Контент ===== */
 .library-content {
     margin-top: 20px;
 }
 
-/* ===== Панель керування ===== */
 .library-controls {
     display: flex;
     justify-content: space-between;
     margin-bottom: 20px;
 }
 
-/* ===== Кнопки ===== */
 .sort-btn,
 .add-btn,
 .create-btn {
@@ -107,13 +100,12 @@
     color: var(--lib-accent);
 }
 
-/* Фіолетова кнопка */
 .add-btn {
     background: var(--lib-accent);
     color: var(--lib-btn-text-light);
     border: 1px solid var(--lib-border);
     height: 40px;
-    min-width: max-content; /* Текст не буде випадати */
+    min-width: max-content;
     padding: 0 20px;
     border-radius: 6px;
     font-weight: bold;
@@ -127,7 +119,6 @@
     opacity: 0.9;
 }
 
-/* ===== Дропдаун ===== */
 .dropdown {
     position: absolute;
     top: 110%;
@@ -155,7 +146,6 @@
     color: #fff;
 }
 
-/* ===== Список папок ===== */
 .folder-list {
     display: flex;
     flex-direction: column;
@@ -208,7 +198,6 @@
     color: var(--lib-accent);
 }
 
-/* ===== Адаптив ===== */
 @media (max-width: 768px) {
     .library-main {
         padding: 30px 6%;

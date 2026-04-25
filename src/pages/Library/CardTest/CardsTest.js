@@ -10,7 +10,6 @@ import { useI18n } from "../../../i18n";
 
 import "./cardsTest.css";
 
-// Допоміжна функція для перемішування масиву
 const shuffle = (array) => {
     const arr = [...array];
     for (let i = arr.length - 1; i > 0; i--) {
@@ -26,11 +25,9 @@ export default function CardsTest() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
-    // Отримуємо ID модуля з URL або зі стейту
     const ctQueryModuleId = searchParams.get("id");
     const ctStateModule = location.state?.module;
 
-    // Визначаємо поточний ID та назву
     const ctModuleId = ctQueryModuleId || ctStateModule?.id;
     const ctModuleName = ctStateModule?.name || t("ctModuleDefault");
 
@@ -42,7 +39,6 @@ export default function CardsTest() {
     const [ctLoading, ctSetLoading] = useState(true);
     const ctTopRef = useRef(null);
 
-    // Основний ефект завантаження та підготовки даних
     useEffect(() => {
         const ctPrepareData = async () => {
             ctSetLoading(true);
@@ -80,7 +76,6 @@ export default function CardsTest() {
         ctPrepareData();
     }, [ctModuleId, ctStateModule, t]);
 
-    // Логіка генерації питань
     const ctGenerateQuestions = (cards) => {
         const validCards = cards.filter(c => c.term && c.definition);
         const shuffledCards = shuffle(validCards);
@@ -103,7 +98,6 @@ export default function CardsTest() {
         });
     };
 
-    // Таймер
     useEffect(() => {
         if (ctFinished || ctLoading || ctQuestions.length === 0) return;
         const timer = setInterval(() => ctSetTime((prev) => prev + 1), 1000);
@@ -150,7 +144,7 @@ export default function CardsTest() {
         }
     };
 
-    // Результати
+
     const ctLearnedCount = Object.entries(ctAnswers).filter(([id, ans]) => {
         const q = ctQuestions.find((x) => x.id === Number(id));
         return q && ans === q.correct;

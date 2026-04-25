@@ -18,11 +18,11 @@ export default function Button({
     const currentActive = !!active;
     let styles = {
         border: `2px solid ${color}`,
-        width: width || "auto", // Змінено на auto за замовчуванням
+        width: width || "auto",
         height: height || undefined,
-        minWidth: "fit-content", // Гарантує, що кнопка не буде меншою за текст
-        padding: "0 20px", // Універсальні падінги для будь-якої довжини тексту
-        whiteSpace: "nowrap", // Текст не переноситься, а розсуває кнопку
+        minWidth: "fit-content",
+        padding: "10px 20px",
+        whiteSpace: "nowrap",
         cursor: disabled ? "not-allowed" : "pointer",
         transition: "all 0.2s ease",
     };
@@ -49,7 +49,7 @@ export default function Button({
                 color: purple,
                 border: "none",
                 textDecoration: "none",
-                padding: "0 8px", // Для посилань падінги зазвичай менші
+                padding: "0 8px",
             },
             hover: {
                 backgroundColor: "var(--clr-card-bg)",

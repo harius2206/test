@@ -13,7 +13,6 @@ export default function PasswordReset() {
     const { showError, showMessage, showApiErrors } = useError();
     const { t } = useI18n();
 
-    // === State
     const [pr_step, pr_setStep] = useState(1);
     const [pr_form, pr_setForm] = useState({
         email: getPendingEmail() || "",
@@ -24,11 +23,9 @@ export default function PasswordReset() {
     const [pr_token, pr_setToken] = useState("");
     const [pr_loading, pr_setLoading] = useState(false);
 
-    // === Handlers
     const pr_handleChange = (e) =>
         pr_setForm({ ...pr_form, [e.target.name]: e.target.value });
 
-    // === Check if opened via email link
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const uidParam = params.get("uid");
@@ -41,7 +38,6 @@ export default function PasswordReset() {
         }
     }, [location.search]);
 
-    // === Send reset email
     const pr_handleSend = async () => {
         if (!pr_form.email.trim()) {
             showError(t("enterRegisteredEmail"));
@@ -64,7 +60,6 @@ export default function PasswordReset() {
         }
     };
 
-    // === Apply new password
     const pr_handleApply = async () => {
         if (!pr_form.password.trim() || !pr_form.confirm.trim()) {
             showError(t("fillBothFields"));

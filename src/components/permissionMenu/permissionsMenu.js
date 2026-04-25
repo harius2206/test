@@ -9,7 +9,6 @@ import { ReactComponent as AddIcon } from "../../images/add.svg";
 import { useI18n } from "../../i18n";
 import "./permissionMenu.css";
 
-// Хук для debounce
 const useDebounce = (value, delay) => {
     const [debouncedValue, setDebouncedValue] = useState(value);
     useEffect(() => {
@@ -24,14 +23,12 @@ export default function PermissionsMenu({ moduleId, users = [], onAddUser, onRem
     const [searchResults, setSearchResults] = useState([]);
     const [loadingSearch, setLoadingSearch] = useState(false);
 
-    // Локальний стейт для списку користувачів з доступом
     const [currentUsers, setCurrentUsers] = useState(users);
     const [loadingUsers, setLoadingUsers] = useState(false);
 
     const { t } = useI18n();
     const debouncedSearch = useDebounce(search, 500);
 
-    // 1. Завантажуємо список користувачів з правами при монтуванні (якщо є moduleId)
     useEffect(() => {
         if (moduleId) {
             setLoadingUsers(true);
@@ -47,7 +44,6 @@ export default function PermissionsMenu({ moduleId, users = [], onAddUser, onRem
         }
     }, [moduleId, users]);
 
-    // 2. Логіка пошуку нових користувачів
     useEffect(() => {
         if (!debouncedSearch || debouncedSearch.length < 2) {
             setSearchResults([]);
@@ -108,7 +104,6 @@ export default function PermissionsMenu({ moduleId, users = [], onAddUser, onRem
                     autoFocus
                 />
 
-                {/* Результати пошуку */}
                 {search.length > 0 && (
                     <div className="pm-user-list">
                         {loadingSearch ? (
@@ -147,7 +142,6 @@ export default function PermissionsMenu({ moduleId, users = [], onAddUser, onRem
                     </div>
                 )}
 
-                {/* Список поточних користувачів */}
                 <div className="pm-user-list">
                     {loadingUsers && !search ? (
                         <div style={{ padding: "8px", textAlign: "center", fontSize: "13px", color: "gray" }}>

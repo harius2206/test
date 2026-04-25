@@ -149,7 +149,7 @@ const translations = {
         // --- AboutPage
         aboutHeader_title: "Про проєкт",
         aboutHeader_subtitle: "Дипломна робота студентів ВТФК",
-        aboutHeader_group: "Група: 4КІ-21",
+        aboutHeader_group: "Група: 4КІ1",
         teamMember1_name: "Войцех Євгеній",
         teamMember1_photo: "Фото розробника",
         teamMember2_name: "Чемін Дмитро",
@@ -624,7 +624,7 @@ const translations = {
         // --- AboutPage
         aboutHeader_title: "About the project",
         aboutHeader_subtitle: "VTFC Student Diploma Work",
-        aboutHeader_group: "Group: 4KI-21",
+        aboutHeader_group: "Group: 4KI1",
         teamMember1_name: "Eugene Voitsekh",
         teamMember1_photo: "Developer photo",
         teamMember2_name: "Dmytro Chemin",
@@ -1098,7 +1098,7 @@ const translations = {
         // --- AboutPage
         aboutHeader_title: "O projekcie",
         aboutHeader_subtitle: "Praca dyplomowa studentów WTFK",
-        aboutHeader_group: "Grupa: 4KI-21",
+        aboutHeader_group: "Grupa: 4KI1",
         teamMember1_name: "Eugieniusz Wojciech",
         teamMember1_photo: "Zdjęcie programisty",
         teamMember2_name: "Dymitr Chemin",
@@ -1572,7 +1572,7 @@ const translations = {
         // --- AboutPage
         aboutHeader_title: "Über das Projekt",
         aboutHeader_subtitle: "Diplomarbeit der VTFC-Studenten",
-        aboutHeader_group: "Gruppe: 4KI-21",
+        aboutHeader_group: "Gruppe: 4KI1",
         teamMember1_name: "Eugene Voitsekh",
         teamMember1_photo: "Entwicklerfoto",
         teamMember2_name: "Dmytro Chemin",
@@ -2046,7 +2046,7 @@ const translations = {
         // --- AboutPage
         aboutHeader_title: "À propos du projet",
         aboutHeader_subtitle: "Travail de diplôme des étudiants du VTFC",
-        aboutHeader_group: "Groupe : 4KI-21",
+        aboutHeader_group: "Groupe : 4KI1",
         teamMember1_name: "Eugene Voitsekh",
         teamMember1_photo: "Photo du développeur",
         teamMember2_name: "Dmytro Chemin",
@@ -2520,7 +2520,7 @@ const translations = {
         // --- AboutPage
         aboutHeader_title: "Sobre el proyecto",
         aboutHeader_subtitle: "Trabajo de diploma de estudiantes del VTFC",
-        aboutHeader_group: "Grupo: 4KI-21",
+        aboutHeader_group: "Grupo: 4KI1",
         teamMember1_name: "Eugene Voitsekh",
         teamMember1_photo: "Foto del desarrollador",
         teamMember2_name: "Dmytro Chemin",
@@ -2994,7 +2994,7 @@ const translations = {
         // --- AboutPage
         aboutHeader_title: "Informazioni sul progetto",
         aboutHeader_subtitle: "Tesi di laurea degli studenti VTFC",
-        aboutHeader_group: "Gruppo: 4KI-21",
+        aboutHeader_group: "Gruppo: 4KI1",
         teamMember1_name: "Eugene Voitsekh",
         teamMember1_photo: "Foto sviluppatore",
         teamMember2_name: "Dmytro Chemin",
@@ -3468,7 +3468,7 @@ const translations = {
         // --- AboutPage
         aboutHeader_title: "Proje Hakkında",
         aboutHeader_subtitle: "VTFC Öğrencilerinin Diploma Çalışması",
-        aboutHeader_group: "Grup: 4KI-21",
+        aboutHeader_group: "Grup: 4KI1",
         teamMember1_name: "Eugene Voitsekh",
         teamMember1_photo: "Geliştirici fotoğrafı",
         teamMember2_name: "Dmytro Chemin",
@@ -3942,7 +3942,7 @@ const translations = {
         // --- AboutPage
         aboutHeader_title: "プロジェクトについて",
         aboutHeader_subtitle: "VTFC学生による卒業制作",
-        aboutHeader_group: "グループ: 4KI-21",
+        aboutHeader_group: "グループ: 4KI1",
         teamMember1_name: "Eugene Voitsekh",
         teamMember1_photo: "開発者の写真",
         teamMember2_name: "Dmytro Chemin",
@@ -4416,7 +4416,7 @@ const translations = {
         // --- AboutPage
         aboutHeader_title: "关于项目",
         aboutHeader_subtitle: "VTFC学生毕业作品",
-        aboutHeader_group: "小组：4KI-21",
+        aboutHeader_group: "小组：4KI1",
         teamMember1_name: "Eugene Voitsekh",
         teamMember1_photo: "开发者照片",
         teamMember2_name: "Dmytro Chemin",
@@ -4890,7 +4890,7 @@ const translations = {
         // --- AboutPage
         aboutHeader_title: "프로젝트 소개",
         aboutHeader_subtitle: "VTFC 학생 졸업 작품",
-        aboutHeader_group: "그룹: 4KI-21",
+        aboutHeader_group: "그룹: 4KI1",
         teamMember1_name: "Eugene Voitsekh",
         teamMember1_photo: "개발자 사진",
         teamMember2_name: "Dmytro Chemin",
@@ -5364,7 +5364,7 @@ const translations = {
         // --- AboutPage
         aboutHeader_title: "Sobre o projeto",
         aboutHeader_subtitle: "Trabalho de conclusão de curso dos alunos do VTFC",
-        aboutHeader_group: "Grupo: 4KI-21",
+        aboutHeader_group: "Grupo: 4KI1",
         teamMember1_name: "Eugene Voitsekh",
         teamMember1_photo: "Foto do desenvolvedor",
         teamMember2_name: "Dmytro Chemin",
@@ -5723,7 +5723,7 @@ export const I18nProvider = ({ children }) => {
     const changeLanguage = (lang) => {
         setLanguage(lang);
         localStorage.setItem("app_lang", lang);
-        setIsLangModalOpen(false); // Тепер закривається завжди
+        setIsLangModalOpen(false);
     };
 
     return (

@@ -16,8 +16,6 @@ export default function CreateModule() {
     const [loading, setLoading] = useState(false);
     const [initialData, setInitialData] = useState(null);
 
-    // Цей ref гарантує, що ми ініціалізуємо дані ТІЛЬКИ один раз
-    // і не будемо перетирати введення користувача при рендерах модалки.
     const dataFetchedRef = useRef(false);
 
     const state = location.state || {};
@@ -27,7 +25,6 @@ export default function CreateModule() {
     const folderId = state.folderId;
 
     useEffect(() => {
-        // Якщо вже завантажили/ініціалізували, виходимо (не затираємо форму)
         if (dataFetchedRef.current) return;
 
         if (mode === "create") {
@@ -86,7 +83,6 @@ export default function CreateModule() {
                 original: c.term,
                 translation: c.definition
             };
-            // Якщо id є і воно згенероване бекендом, а не тимчасове (Date.now()), передаємо його
             if (c.id && c.id < 1700000000000) {
                 cardData.id = c.id;
             }
@@ -111,12 +107,10 @@ export default function CreateModule() {
                 currentId = response.data.id;
             }
 
-            // Синхронізація тегів: видалення старих і додавання нових (ТІЛЬКИ різниця)
             if (currentId && formData.tags !== undefined) {
                 const oldTags = mode === "edit" ? (initialData?.tags || []) : [];
                 const newTags = formData.tags || [];
 
-                // Знаходимо теги, які додали, і ті, які видалили
                 const tagsToAdd = newTags.filter(t => !oldTags.includes(t));
                 const tagsToRemove = oldTags.filter(t => !newTags.includes(t));
 
@@ -124,7 +118,6 @@ export default function CreateModule() {
                     const addPromises = tagsToAdd.map(t => addModuleTag(currentId, t));
                     const removePromises = tagsToRemove.map(t => removeModuleTag(currentId, t));
 
-                    // Виконуємо всі запити паралельно
                     await Promise.all([...addPromises, ...removePromises]);
                 } catch (tagErr) {
                     console.warn("Помилка оновлення тегів, але модуль збережено.", tagErr);
@@ -139,7 +132,6 @@ export default function CreateModule() {
             }
         } catch (error) {
             console.error("Operation failed:", error);
-            // Глобальний обробник парсить усі помилки бекенда і покаже їх у твоїй модалці
             showError(error);
         } finally {
             setLoading(false);

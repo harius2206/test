@@ -20,19 +20,16 @@ export default function Safety() {
     const { showMessage, showError } = useError();
     const { t } = useI18n();
 
-    // Email & Password states
     const [sfEmail, sfSetEmail] = useState(sfStoredInitial?.email || "");
     const [sfPassword, sfSetPassword] = useState("");
     const [sfNewPassword, sfSetNewPassword] = useState("");
     const [sfConfirmPassword, sfSetConfirmPassword] = useState("");
     const [sfCooldown, sfSetCooldown] = useState(0);
 
-    // DeepL states
     const [sfDeeplKey, sfSetDeeplKey] = useState("");
     const [sfExistingKeyObj, sfSetExistingKeyObj] = useState(null);
     const [sfLoadingKey, sfSetLoadingKey] = useState(false);
 
-    // Timer for email cooldown
     useEffect(() => {
         if (sfCooldown > 0) {
             const timer = setInterval(() => sfSetCooldown((prev) => prev - 1), 1000);
@@ -40,7 +37,6 @@ export default function Safety() {
         }
     }, [sfCooldown]);
 
-    // Sync email with localStorage changes
     useEffect(() => {
         const onStorage = () => {
             const stored = getUserData();
@@ -50,7 +46,6 @@ export default function Safety() {
         return () => window.removeEventListener("storage", onStorage);
     }, []);
 
-    // Load DeepL Key on mount
     useEffect(() => {
         sfLoadDeepLKey();
     }, []);
@@ -125,7 +120,6 @@ export default function Safety() {
         }
     };
 
-    // Формуємо статус для відображення
     let sfApiKeyStatusText = t("sfNoKeyLabel") || "No key";
     if (sfExistingKeyObj) {
         if (sfExistingKeyObj.status) {

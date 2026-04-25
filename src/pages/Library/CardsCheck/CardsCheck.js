@@ -55,7 +55,6 @@ export default function CardsCheck() {
         }
     }, [ccModuleId]);
 
-    // Таймер
     useEffect(() => {
         if (!ccLoading && ccCards.length > 0 && !ccFinished) {
             ccIntervalRef.current = setInterval(() => {
@@ -65,25 +64,23 @@ export default function CardsCheck() {
         return () => clearInterval(ccIntervalRef.current);
     }, [ccLoading, ccCards.length, ccFinished]);
 
-    const ccHandleAnswer = async (isLearned) => {
+    const ccHandleAnswer = (isLearned) => {
         if (isLearned) ccSetLearned((prev) => prev + 1);
         else ccSetNotLearned((prev) => prev + 1);
 
         const currentCard = ccCards[ccCurrent];
         if (currentCard && currentCard.id) {
-            try {
-                await updateCardLearnStatus(currentCard.id, isLearned, {
-                    original: currentCard.term,
-                    translation: currentCard.definition,
-                    learned: "learned"
-                });
-            } catch (error) {
+            updateCardLearnStatus(currentCard.id, isLearned, {
+                original: currentCard.term,
+                translation: currentCard.definition,
+                learned: "learned"
+            }).catch((error) => {
                 console.error("Failed to update card status:", error);
-            }
+            });
         }
 
         if (ccCurrent + 1 < ccCards.length) {
-            ccSetCurrent((prev) => prev + 1);
+            ccSetCurrent(ccCurrent + 1);
         } else {
             ccSetFinished(true);
             clearInterval(ccIntervalRef.current);
@@ -142,6 +139,8 @@ export default function CardsCheck() {
         );
     }
 
+    const currentCardData = ccCards[ccCurrent];
+
     return (
         <div className="cc-page">
             <div className="cc-header">
@@ -156,15 +155,15 @@ export default function CardsCheck() {
                 </button>
             </div>
 
-            {!ccFinished ? (
+            {!ccFinished && currentCardData ? (
                 <CardsCheckCard
-                    term={ccCards[ccCurrent].term}
-                    definition={ccCards[ccCurrent].definition}
+                    term={currentCardData.term}
+                    definition={currentCardData.definition}
                     learnedCount={ccLearned}
                     notLearnedCount={ccNotLearned}
                     onAnswer={ccHandleAnswer}
                 />
-            ) : (
+            ) : ccFinished ? (
                 <CardsCheckResult
                     learned={ccLearned}
                     notLearned={ccNotLearned}
@@ -173,7 +172,7 @@ export default function CardsCheck() {
                     avg={ccAvg}
                     onRetry={ccHandleRetry}
                 />
-            )}
+            ) : null}
         </div>
     );
 }

@@ -6,18 +6,15 @@ import "swiper/css/navigation";
 import "swiper/css/autoplay";
 import { useNavigate } from "react-router-dom";
 
-// API
 import { verifyNewEmail } from "../../api/authApi";
 import { getModules } from "../../api/modulesApi";
 import { getUserDetails, getUsersRatings } from "../../api/usersApi";
 
-// Utils & Context
 import { useError } from "../../context/ErrorContext";
 import { useAuth } from "../../context/AuthContext";
 import { getUserData, savePendingEmail, saveUserData } from "../../utils/storage";
 import { useI18n } from "../../i18n";
 
-// Components & Icons
 import { ReactComponent as ArrowLeft } from "../../images/arrowLeft.svg";
 import { ReactComponent as ArrowRight } from "../../images/arrowRight.svg";
 import { ReactComponent as StarIcon } from "../../images/star.svg";
@@ -49,7 +46,6 @@ export default function MainPage() {
     const [mpBestAuthors, mpSetBestAuthors] = useState([]);
     const [mpLoading, mpSetLoading] = useState(true);
 
-    // Email Verification Logic
     useEffect(() => {
         if (window.__emailVerifyDone) return;
         const params = new URLSearchParams(window.location.search);
@@ -79,13 +75,11 @@ export default function MainPage() {
         })();
     }, [navigate, showMessage, showError, t]);
 
-    // Data Fetching Logic
     useEffect(() => {
         const fetchData = async () => {
             try {
                 mpSetLoading(true);
 
-                // A. Latest Viewed
                 let myRecent = [];
                 if (user?.id) {
                     const userDetails = await getUserDetails(user.id);
@@ -97,7 +91,6 @@ export default function MainPage() {
                 }
                 mpSetLatestViewed(myRecent);
 
-                // B. Popular Modules
                 const modulesResp = await getModules();
                 const allModules = modulesResp.data.results || modulesResp.data || [];
                 const popular = allModules
@@ -110,7 +103,6 @@ export default function MainPage() {
                     .slice(0, 10);
                 mpSetPopularModules(popular);
 
-                // C. Best Authors
                 const authorsResp = await getUsersRatings();
                 const authors = authorsResp.data.results || authorsResp.data || [];
                 const filteredAuthors = authors.filter(a => String(a.id) !== String(user?.id));
@@ -141,7 +133,6 @@ export default function MainPage() {
     return (
         <div className="mp-wrapper">
 
-            {/* --- LATEST VIEWED --- */}
             <section className="mp-section">
                 <h2 className="mp-title">{t("mpLatestViewed")}</h2>
                 {mpLatestViewed.length === 0 ? (
@@ -210,7 +201,6 @@ export default function MainPage() {
                 )}
             </section>
 
-            {/* --- POPULAR MODULES --- */}
             <section className="mp-section">
                 <h2 className="mp-title">{t("mpPopularModules")}</h2>
                 {mpPopularModules.length === 0 ? (
@@ -278,7 +268,6 @@ export default function MainPage() {
                 )}
             </section>
 
-            {/* --- BEST AUTHORS --- */}
             <section className="mp-section">
                 <h2 className="mp-title">{t("mpBestAuthors")}</h2>
                 {mpBestAuthors.length === 0 ? (

@@ -3,10 +3,10 @@ import DropdownMenu from "../dropDownMenu/dropDownMenu";
 import Button from "../button/button";
 import { ReactComponent as IconArrowUp } from "../../images/arrowUp.svg";
 import { ReactComponent as IconArrowDown } from "../../images/arrowDown.svg";
-import { useI18n } from "../../i18n"; // <-- i18n
+import { useI18n } from "../../i18n";
 
 export default function SortMenu({ onSort }) {
-    const { t } = useI18n(); // <-- використання i18n
+    const { t } = useI18n();
     const [open, setOpen] = useState(false);
 
     const items = [

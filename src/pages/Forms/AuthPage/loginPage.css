@@ -43,7 +43,6 @@
     --shadow-strong: rgba(0, 0, 0, 0.2);
 }
 
-/* Container and typography */
 .login-container {
     display: flex;
     flex-direction: column;
@@ -65,7 +64,6 @@
     text-align: center;
 }
 
-/* Inputs */
 .login-input {
     width: 100%;
     max-width: 340px;
@@ -84,7 +82,6 @@
 .login-input::placeholder {
     color: var(--text-muted) !important;
 }
-/* Neutralize browser autofill / native tint on inputs */
 .login-input:-webkit-autofill,
 .login-input:-webkit-autofill:hover,
 .login-input:-webkit-autofill:focus,
@@ -95,17 +92,14 @@
     transition: background-color 5000s ease-in-out 0s !important;
 }
 
-/* Prevent browser-level valid/invalid or focus rings from adding a strong blue outline */
 .login-input:focus,
 .login-input:focus-visible {
     outline: none;
     border-color: var(--accent);
     background: var(--bg-hover);
-    /* subtler shadow to avoid strong blue glow */
     box-shadow: 0 6px 18px rgba(99, 102, 241, 0.04);
 }
 
-/* Ensure no browser-level green/red glow from :valid/:invalid */
 .login-input:valid,
 .login-input:invalid {
     box-shadow: none;
@@ -122,7 +116,6 @@
     color: var(--text);
 }
 
-/* Buttons */
 .login-main-btn {
     width: 100%;
     max-width: 340px;
@@ -143,14 +136,12 @@
     box-shadow: 0 1px 0 rgba(0,0,0,0.06);
 }
 
-/* Subtler hover for register button to reduce contrast */
 .login-main-btn:hover {
     transform: translateY(-0.6px);
     opacity: 0.985;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
-/* Divider and social buttons */
 .login-divider {
     display: flex;
     align-items: center;
@@ -214,7 +205,6 @@
     filter: none !important;
 }
 
-/* Footer text and links */
 .login-footer {
     margin-top: 26px;
     font-size: 15px;
@@ -222,7 +212,6 @@
     text-align: center;
 }
 
-/* Link styles used across forms */
 .login-link {
     color: var(--accent);
     cursor: pointer;
@@ -237,7 +226,6 @@
     text-decoration: none;
 }
 
-/* Reset-specific styles (aligned to login layout) */
 .reset-description {
     max-width: 340px;
     width: 100%;
@@ -248,7 +236,6 @@
     text-align: left;
 }
 
-/* Ensure reset footer sits directly under inputs and left-aligned link */
 .reset-footer {
     width: 100%;
     max-width: 340px;
@@ -257,7 +244,6 @@
     font-size: 14px;
 }
 
-/* Small utility and responsive tweaks */
 @media (max-width: 420px) {
     .login-input,
     .login-main-btn,
@@ -274,7 +260,6 @@
     }
 }
 
-/* Added: tighter adjustments for smaller devices */
 @media (max-width: 360px) {
     .login-container {
         min-height: 70vh;
@@ -325,7 +310,6 @@
     }
 }
 
-/* Added: smallest phones */
 @media (max-width: 320px) {
     .login-container {
         min-height: 66vh;

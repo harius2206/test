@@ -58,10 +58,6 @@ export default function LoginPage() {
         })();
     }, [searchParams, navigate, setUser, setSearchParams, t]);
 
-
-    /* ===========================
-       Email verification
-    ============================ */
     useEffect(() => {
         const key = searchParams.get("key");
         if (!key) return;
@@ -91,9 +87,6 @@ export default function LoginPage() {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
-    /* ===========================
-       Regular Login
-    ============================ */
     const handleLogin = async () => {
         if (!form.username.trim() || !form.password.trim()) {
             setModal({
@@ -130,9 +123,6 @@ export default function LoginPage() {
         }
     };
 
-    /* ===========================
-       OAuth Buttons
-    ============================ */
     const handleGitHubLogin = () => {
         const clientId = "Ov23lih0hmDrxiIyvXiN";
         const redirectUri = "http://localhost:3000/github/callback";

@@ -120,7 +120,6 @@
     margin-top: auto;
 }
 
-/* --- СТИЛІ СПЕЦИФІЧНО ДЛЯ ПАНЕЛІ ЕКСПОРТУ --- */
 .mie-export-panel .mie-actions button {
     color: #ffffff !important;
 }
@@ -130,9 +129,7 @@
     fill: none !important;
     stroke: #ffffff !important;
 }
-/* ------------------------------------------- */
 
-/* Стандартний вигляд іконок (для імпорту та інших) */
 .mie-btn-icon {
     margin-right: 8px;
     width: 18px;

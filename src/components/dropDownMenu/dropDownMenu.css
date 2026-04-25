@@ -22,7 +22,6 @@
     align-items: center;
     justify-content: center;
     vertical-align: middle;
-    /* Жорстко обмежуємо висоту wrapper-а, щоб він не розтягував рядок */
     height: fit-content !important;
     align-self: center;
 }
@@ -46,8 +45,6 @@
     padding: 6px 0;
     z-index: 99999;
     transition: background-color 0.2s ease, border-color 0.2s ease;
-
-    /* ВИДАЛЕНО СКРОЛ: Прибираємо обмеження висоти та авто-скрол */
     height: auto !important;
     max-height: none !important;
     overflow: visible !important;

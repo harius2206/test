@@ -187,7 +187,6 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                         onClose={() => setAddFolder(false)}
                         onCreate={(val) => {
                             const payload = { ...val };
-                            // Обмеження до 50 символів та колір за замовчуванням
                             if (payload.name && payload.name.length > 50) {
                                 payload.name = payload.name.substring(0, 50);
                             }
@@ -203,7 +202,7 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                 )}
 
                 {fFolders.length === 0 && (
-                    <div style={{ padding: 20, color: "gray", textAlign: "center", width: "100%" }}>
+                    <div style={{ padding: 40, color: "gray", textAlign: "center", width: "100%", gridColumn: "1 / -1" }}>
                         {t("fNoFoldersFound")}
                     </div>
                 )}
@@ -266,7 +265,6 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                                 <div className="module-name-row" style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
                                     <ColoredIcon icon={FolderIcon} color={folder.color} size={20} />
 
-                                    {/* Оновлений блок перейменування */}
                                     {fRenamingId === folder.id ? (
                                         <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, flexWrap: "wrap", minWidth: 0 }} onClick={e => e.stopPropagation()}>
                                             <input
@@ -312,7 +310,6 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                                             {displayFolderName}
                                         </span>
                                     )}
-                                    {/* Кінець оновленого блоку */}
 
                                 </div>
                             </div>

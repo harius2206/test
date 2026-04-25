@@ -67,7 +67,6 @@
     padding: 5px 0;
 }
 
-/* Підтримка темної теми */
 [data-theme='dark'] .about-container {
     color: #fff;
 }

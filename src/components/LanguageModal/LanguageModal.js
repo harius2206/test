@@ -4,11 +4,7 @@ import { useI18n, availableLanguages } from '../../i18n';
 
 export default function LanguageModal() {
     const { t, setIsLangModalOpen, changeLanguage, language } = useI18n();
-
-    // Закриваємо модалку при кліку на оверлей
     const handleOverlayClick = () => setIsLangModalOpen(false);
-
-    // Зупиняємо розповсюдження кліку всередині контенту, щоб він не закривався
     const handleContentClick = (e) => e.stopPropagation();
 
     return (

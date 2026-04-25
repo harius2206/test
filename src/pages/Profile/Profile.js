@@ -1,5 +1,3 @@
-// javascript
-// File: `src/pages/Profile/Profile.js`
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import ProfileNav from "../../components/profileNav/profileNav";

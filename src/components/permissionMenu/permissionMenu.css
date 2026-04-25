@@ -56,7 +56,6 @@
     flex: 1;
 }
 
-/* keep child avatar class name but scope it to the new root so UserAvatar component still matches */
 .pm-permissions-menu .user-avatar {
     width: 22px;
     height: 22px;
@@ -89,7 +88,6 @@
     color: var(--perm-purple);
 }
 
-/* кнопки */
 .pm-btn-primary {
     background: var(--perm-purple);
     color: #fff;
@@ -106,7 +104,6 @@
     justify-content: flex-end;
 }
 
-/* dropdown items: scope to new root but keep dropdown-item class (rendered by dropdown component) */
 .pm-permissions-menu .dropdown-item {
     display: flex;
     align-items: center;
@@ -123,7 +120,6 @@
     color: var(--perm-purple);
 }
 
-/* іконки: scope to new root */
 .pm-permissions-menu svg,
 .pm-permissions-menu svg * {
     fill: var(--perm-text);
@@ -137,7 +133,6 @@
     stroke: var(--perm-purple);
 }
 
-/* local icon button */
 .pm-btn-icon {
     background: none;
     border: none;
@@ -157,13 +152,11 @@
     stroke: var(--perm-text);
 }
 
-/* dark theme override for icons under the new root */
 [data-theme="dark"] .pm-permissions-menu svg {
     fill: #fff;
     stroke: #fff;
 }
 
-/* адаптивність */
 @media (max-width: 480px) {
     .pm-permissions-menu {
         width: 90vw;

@@ -35,7 +35,6 @@
     opacity: 0.9;
 }
 
-/* === меню === */
 .um-menu {
     position: absolute;
     top: 60px;
@@ -49,12 +48,10 @@
     min-width: 260px;
     z-index: 1000;
     animation: fadeIn 0.2s ease;
-    transform: none; /* ensure no unexpected transforms */
+    transform: none;
 }
 
-/* mobile-full: previously centered modal — make it anchored/fluid to avoid layout flipping */
 .um-menu.mobile-full {
-    /* keep fixed so it lays above content, but anchor to screen edges with gutters */
     position: fixed;
     top: auto;
     bottom: 14px;
@@ -71,16 +68,13 @@
     align-items: stretch;
     max-height: calc(100vh - 40px);
     overflow-y: auto;
-    transform: none; /* remove translate that caused centering/rotation artifacts */
+    transform: none;
 }
-
-/* keep animation but avoid translate-based movement that may reflow oddly */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-4px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* === інформація користувача === */
 .um-info {
     display: flex;
     align-items: center;
@@ -113,7 +107,6 @@ hr {
     margin: 10px 0;
 }
 
-/* === посилання === */
 .um-links {
     display: flex;
     flex-direction: column;
@@ -157,7 +150,6 @@ hr {
     stroke: var(--um-accent);
 }
 
-/* === кнопки теми === */
 .um-theme-selector {
     display: flex;
     align-items: center;
@@ -203,7 +195,6 @@ hr {
     transform: scale(1.1);
 }
 
-/* === вихід === */
 .um-logout {
     font-weight: 600;
     color: #d32f2f;
@@ -248,7 +239,6 @@ hr {
     margin-bottom: 14px;
 }
 
-/* === адаптивність === */
 @media (max-width: 768px) {
     .um-menu {
         right: -20px;

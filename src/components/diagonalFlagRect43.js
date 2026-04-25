@@ -23,7 +23,6 @@ const DiagonalFlagRect = ({ flag1, flag2, width = 60, height = 40 }) => {
                 border: '1px solid var(--flag-border)',
             }}
         >
-            {/* Верхній лівий трикутник (Прапор 1) */}
             {flag1 && (
                 <img
                     src={flag1}
@@ -36,7 +35,6 @@ const DiagonalFlagRect = ({ flag1, flag2, width = 60, height = 40 }) => {
                 />
             )}
 
-            {/* Нижній правий трикутник (Прапор 2) */}
             {flag2 && (
                 <img
                     src={flag2}
