@@ -328,6 +328,7 @@ const translations = {
         fSaveLabel: "Зберегти",
         fUnsaveLabel: "Видалити з обраного",
         fModulesLabel: "модулів",
+        fDeleteFolderTitle: "Видалити папку",
 
 
         // --- Modules
@@ -803,6 +804,7 @@ const translations = {
         fSaveLabel: "Save",
         fUnsaveLabel: "Remove from saved",
         fModulesLabel: "modules",
+        fDeleteFolderTitle: "Delete Folder",
 
         // --- Modules
         mDeleteModuleConfirm: "Delete this module? This action cannot be undone.",
@@ -1277,6 +1279,7 @@ const translations = {
         fSaveLabel: "Zapisz",
         fUnsaveLabel: "Usuń z ulubionych",
         fModulesLabel: "modułów",
+        fDeleteFolderTitle: "Usuń folder",
 
         // --- Modules
         mDeleteModuleConfirm: "Usunąć ten moduł? Tej operacji nie można cofnąć.",
@@ -1751,6 +1754,8 @@ const translations = {
         fSaveLabel: "Speichern",
         fUnsaveLabel: "Aus Favoriten entfernen",
         fModulesLabel: "Module",
+        fDeleteFolderTitle: "Ordner löschen",
+
 
         // --- Modules
         mDeleteModuleConfirm: "Dieses Modul löschen? Dies kann nicht rückgängig gemacht werden.",
@@ -2225,6 +2230,7 @@ const translations = {
         fSaveLabel: "Enregistrer",
         fUnsaveLabel: "Retirer des favoris",
         fModulesLabel: "modules",
+        fDeleteFolderTitle: "Supprimer le dossier",
 
         // --- Modules
         mDeleteModuleConfirm: "Supprimer ce module ? Cette action est irréversible.",
@@ -2699,6 +2705,7 @@ const translations = {
         fSaveLabel: "Guardar",
         fUnsaveLabel: "Quitar de favoritos",
         fModulesLabel: "módulos",
+        fDeleteFolderTitle: "Eliminar carpeta",
 
         // --- Modules
         mDeleteModuleConfirm: "¿Eliminar este módulo? Esta acción es irreversible.",
@@ -3173,6 +3180,7 @@ const translations = {
         fSaveLabel: "Salva",
         fUnsaveLabel: "Rimuovi dai preferiti",
         fModulesLabel: "moduli",
+        fDeleteFolderTitle: "Elimina cartella",
 
         // --- Modules
         mDeleteModuleConfirm: "Eliminare questo modulo? L'azione è irreversibile.",
@@ -3647,6 +3655,7 @@ const translations = {
         fSaveLabel: "Kaydet",
         fUnsaveLabel: "Favorilerden çıkar",
         fModulesLabel: "modül",
+        fDeleteFolderTitle: "Klasörü Sil",
 
         // --- Modules
         mDeleteModuleConfirm: "Bu modülü silmek istiyor musunuz? Bu işlem geri alınamaz.",
@@ -4121,6 +4130,7 @@ const translations = {
         fSaveLabel: "保存",
         fUnsaveLabel: "保存済みから削除",
         fModulesLabel: "モジュール",
+        fDeleteFolderTitle: "フォルダを削除",
 
         // --- Modules
         mDeleteModuleConfirm: "このモジュールを削除しますか？この操作は取り消せません。",
@@ -4595,6 +4605,7 @@ const translations = {
         fSaveLabel: "保存",
         fUnsaveLabel: "取消收藏",
         fModulesLabel: "个模块",
+        fDeleteFolderTitle: "删除文件夹",
 
         // --- Modules
         mDeleteModuleConfirm: "确定要删除此模块吗？此操作无法撤销。",
@@ -5069,6 +5080,7 @@ const translations = {
         fSaveLabel: "저장",
         fUnsaveLabel: "저장된 항목에서 삭제",
         fModulesLabel: "모듈",
+        fDeleteFolderTitle: "폴더 삭제",
 
         // --- Modules
         mDeleteModuleConfirm: "이 모듈을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
@@ -5543,6 +5555,7 @@ const translations = {
         fSaveLabel: "Salvar",
         fUnsaveLabel: "Remover dos favoritos",
         fModulesLabel: "módulos",
+        fDeleteFolderTitle: "Excluir pasta",
 
         // --- Modules
         mDeleteModuleConfirm: "Excluir este módulo? Esta ação é irreversível.",

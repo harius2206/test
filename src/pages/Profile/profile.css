@@ -13,6 +13,7 @@
     --status-red: #DF4C4C;
     --status-orange: #F59E0B;
     --status-gray: #9CA3AF;
+    --profile-links-active: #b0b2bd;
 }
 
 [data-theme="dark"] {
@@ -23,6 +24,7 @@
     --bg-secondary: #1f1f1f;
     --border: #374151;
     --border-light: #374151;
+    --profile-links-active: #232323;
 }
 
 .profile-nav-wrapper {
@@ -90,7 +92,7 @@
 }
 
 .profile-links a.active {
-    background: #b0b2bd;
+    background: var(--profile-links-active);
     color: #ffffff;
 }
 

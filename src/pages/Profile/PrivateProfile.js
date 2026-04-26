@@ -12,25 +12,40 @@ export default function PrivateProfile() {
     const { showMessage, showApiErrors } = useError();
     const { t } = useI18n();
 
-    const [ppProfile, ppSetProfile] = useState(() => getUserData() || ppCtxUser || {
-        username: "",
-        first_name: "",
-        last_name: "",
-        description: "",
+    const normalizeData = (data) => {
+        if (!data) return {};
+        const normalized = { ...data };
+        if (normalized.bio !== undefined) {
+            normalized.description = normalized.bio || "";
+        }
+        return normalized;
+    };
+
+    const [ppProfile, ppSetProfile] = useState(() => {
+        const data = getUserData() || ppCtxUser || {};
+        return {
+            username: "",
+            first_name: "",
+            last_name: "",
+            description: "",
+            ...normalizeData(data)
+        };
     });
 
     useEffect(() => {
-        if (ppCtxUser) ppSetProfile((prev) => ({ ...prev, ...ppCtxUser }));
+        if (ppCtxUser) ppSetProfile((prev) => ({ ...prev, ...normalizeData(ppCtxUser) }));
     }, [ppCtxUser]);
 
     useEffect(() => {
         const ppOnStorage = () => {
             const ppStored = getUserData();
-            ppSetProfile(ppStored || ppCtxUser || {
+            const data = ppStored || ppCtxUser || {};
+            ppSetProfile({
                 username: "",
                 first_name: "",
                 last_name: "",
                 description: "",
+                ...normalizeData(data)
             });
         };
         window.addEventListener("storage", ppOnStorage);
@@ -67,11 +82,13 @@ export default function PrivateProfile() {
         } catch (err) {
             // revert local optimistic update
             const ppStored = getUserData();
-            ppSetProfile(ppStored || ppCtxUser || {
+            const data = ppStored || ppCtxUser || {};
+            ppSetProfile({
                 username: "",
                 first_name: "",
                 last_name: "",
                 description: "",
+                ...normalizeData(data)
             });
 
             console.error("Failed to update user:", err);
@@ -80,6 +97,10 @@ export default function PrivateProfile() {
     };
 
     const ppHandleTrySave = (key, value) => {
+        if (ppProfile[key] === value) {
+            return;
+        }
+
         if (key === "username" && value.length > 20) {
             showMessage(t("ppUsernameLengthError"), "error");
             return;

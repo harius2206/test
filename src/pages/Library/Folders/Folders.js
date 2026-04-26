@@ -22,6 +22,7 @@ import DropdownMenu from "../../../components/dropDownMenu/dropDownMenu";
 import Button from "../../../components/button/button";
 import UserAvatar from "../../../components/avatar/avatar";
 import Loader from "../../../components/loader/loader";
+import ModalMessage from "../../../components/ModalMessage/ModalMessage";
 
 import { ReactComponent as FolderIcon } from "../../../images/folder.svg";
 import { ReactComponent as DotsIcon } from "../../../images/dots.svg";
@@ -41,6 +42,11 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
     const [fLoading, fSetLoading] = useState(true);
     const [fRenamingId, fSetRenamingId] = useState(null);
     const [fRenameValue, fSetRenameValue] = useState("");
+
+    // Стейт для керування модальним вікном
+    const [fModalInfo, fSetModalInfo] = useState({ open: false, type: "info", title: "", message: "", onConfirm: null });
+
+    const fHandleCloseModal = () => fSetModalInfo((prev) => ({ ...prev, open: false }));
 
     const fColors = [
         "#ef4444", "#f97316", "#facc15", "#22c55e",
@@ -113,7 +119,7 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
             else await saveFolder(folder.id);
         } catch (err) {
             fLoadFolders();
-            alert(t("fActionFailed"));
+            fSetModalInfo({ open: true, type: "error", title: t("mErrorTitle") || "Error", message: t("fActionFailed") || "Action failed", onConfirm: null });
         }
     };
 
@@ -125,18 +131,34 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
             else await pinFolder(folder.id);
         } catch (err) {
             fSetFolders(prev => prev.map(f => f.id === folder.id ? { ...f, pinned: isPinned } : f));
-            alert(t("fPinActionFailed"));
+            fSetModalInfo({ open: true, type: "error", title: t("mErrorTitle") || "Error", message: t("fPinActionFailed") || "Pin action failed", onConfirm: null });
         }
     };
 
-    const fHandleDeleteFolder = async (id) => {
-        if (!window.confirm(t("fDeleteFolderConfirm"))) return;
-        try {
-            await deleteFolder(id);
-            fSetFolders(prev => prev.filter(f => f.id !== id));
-        } catch (error) {
-            alert(t("fDeleteFolderError"));
-        }
+    const fHandleDeleteFolder = (id) => {
+        fSetModalInfo({
+            open: true,
+            type: "confirm",
+            title: t("fDeleteFolderTitle") || "Delete Folder",
+            message: t("fDeleteFolderConfirm"),
+            onConfirm: async () => {
+                fSetModalInfo(prev => ({ ...prev, open: false }));
+                try {
+                    await deleteFolder(id);
+                    fSetFolders(prev => prev.filter(f => f.id !== id));
+                } catch (error) {
+                    setTimeout(() => {
+                        fSetModalInfo({
+                            open: true,
+                            type: "error",
+                            title: t("mErrorTitle") || "Error",
+                            message: t("fDeleteFolderError"),
+                            onConfirm: null
+                        });
+                    }, 300);
+                }
+            }
+        });
     };
 
     const fHandleUpdate = async (id, data, uiUpdate) => {
@@ -150,6 +172,7 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
             }
         } catch (error) {
             fSetFolders(oldFolders);
+            fSetModalInfo({ open: true, type: "error", title: t("mErrorTitle") || "Error", message: t("fActionFailed") || "Update failed", onConfirm: null });
         }
     };
 
@@ -196,7 +219,9 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                             createFolder(payload).then(() => {
                                 setAddFolder(false);
                                 fRefreshParentOrLocal();
-                            }).catch(() => alert(t("fCreateFolderError")));
+                            }).catch(() => {
+                                fSetModalInfo({ open: true, type: "error", title: t("mErrorTitle") || "Error", message: t("fCreateFolderError"), onConfirm: null });
+                            });
                         }}
                     />
                 )}
@@ -325,6 +350,15 @@ export default function Folders({ addFolder, setAddFolder, source = "library", p
                     );
                 })}
             </div>
+
+            <ModalMessage
+                open={fModalInfo.open}
+                type={fModalInfo.type}
+                title={fModalInfo.title}
+                message={fModalInfo.message}
+                onClose={fHandleCloseModal}
+                onConfirm={fModalInfo.onConfirm}
+            />
         </div>
     );
 }

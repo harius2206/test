@@ -16,6 +16,8 @@ import { ReactComponent as MergeIcon } from "../../images/merge.svg";
 import { ReactComponent as SaveIcon } from "../../images/save.svg";
 import { ReactComponent as PinIcon } from "../../images/pin.svg";
 import { ReactComponent as ExportIcon } from "../../images/export.svg";
+import { ReactComponent as EyeOpenedIcon } from "../../images/eyeOpened.svg";
+import { ReactComponent as EyeClosedIcon } from "../../images/eyeClosed.svg";
 
 import "./moduleCard.css";
 
@@ -25,6 +27,7 @@ export default function ModuleCard({
                                        onEdit,
                                        onPermissions,
                                        onAddToFolder,
+                                       onVisibilityToggle,
                                        onMerge,
                                        isMergeMode,
                                        isSelected,
@@ -73,6 +76,15 @@ export default function ModuleCard({
             label: t("moduleCardEdit_label"),
             onClick: () => navigate("/library/create-module", { state: { mode: "edit", moduleId: module.id, moduleData: module } }),
             icon: <EditIcon width={16} height={16} />
+        });
+    }
+
+    // Додаємо пункт Public/Private використовуючи логіку та ключі папок
+    if (isOwnModule && onVisibilityToggle) {
+        menuItems.push({
+            label: module.private ? t("fMakePublicLabel") : t("fMakePrivateLabel"),
+            onClick: () => onVisibilityToggle(module),
+            icon: module.private ? <EyeClosedIcon width={16} height={16} /> : <EyeOpenedIcon width={16} height={16} />
         });
     }
 

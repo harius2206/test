@@ -76,7 +76,7 @@ export default function Safety() {
             showMessage(t("sfVerificationEmailMsg"), "success");
             sfSetCooldown(30);
         } catch (err) {
-            showError(err?.response?.data || t("sfEmailActionFailed"));
+            showError(err, t("sfEmailActionFailed"));
         }
     };
 
@@ -98,7 +98,7 @@ export default function Safety() {
             sfSetDeeplKey("");
             await sfLoadDeepLKey();
         } catch (err) {
-            showError(err?.response?.data?.detail || t("sfApiKeySaveFailed") || "Failed to save DeepL key.");
+            showError(err, t("sfApiKeySaveFailed") || "Failed to save DeepL key.");
         } finally {
             sfSetLoadingKey(false);
         }

@@ -10,6 +10,20 @@ const axiosClient = axios.create({
     headers: { "Content-Type": "application/json" },
 });
 
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+    failedQueue.forEach(prom => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(token);
+        }
+    });
+    failedQueue = [];
+};
+
 axiosClient.interceptors.request.use((config) => {
     const token = getAccessToken();
     if (token) config.headers.Authorization = `Bearer ${token}`;
@@ -22,7 +36,21 @@ axiosClient.interceptors.response.use(
         const originalRequest = error.config;
 
         if (error.response && error.response.status === 401 && !originalRequest._retry) {
+            if (isRefreshing) {
+                return new Promise(function(resolve, reject) {
+                    failedQueue.push({ resolve, reject });
+                })
+                    .then(token => {
+                        originalRequest.headers.Authorization = `Bearer ${token}`;
+                        return axiosClient(originalRequest);
+                    })
+                    .catch(err => {
+                        return Promise.reject(err);
+                    });
+            }
+
             originalRequest._retry = true;
+            isRefreshing = true;
 
             const refreshToken = getRefreshToken();
 
@@ -45,16 +73,21 @@ axiosClient.interceptors.response.use(
                 axiosClient.defaults.headers.common["Authorization"] = `Bearer ${access}`;
                 originalRequest.headers.Authorization = `Bearer ${access}`;
 
+                processQueue(null, access);
+
                 return axiosClient(originalRequest);
 
             } catch (refreshError) {
                 console.error("Refresh token failed:", refreshError);
+                processQueue(refreshError, null);
                 handleLogout();
                 return Promise.reject(refreshError);
+            } finally {
+                isRefreshing = false;
             }
         }
 
-        throw error.response || error;
+        return Promise.reject(error.response || error);
     }
 );
 
