@@ -47,7 +47,10 @@ export default function AddUniversalItem({
     if (!active) return null;
 
     return (
-        <div className="module-card create">
+        <div
+            className="module-card create"
+            style={{ position: "relative", zIndex: colorMenuOpen ? 99999 : 1 }}
+        >
             <div className="module-info">
                 <div className="top-row">
                     <span className="terms-count">
@@ -72,15 +75,16 @@ export default function AddUniversalItem({
                                         position: "absolute",
                                         top: 28,
                                         left: 0,
-                                        zIndex: 10,
+                                        zIndex: 99999,
                                         display: "flex",
                                         flexWrap: "wrap",
                                         gap: 4,
-                                        background: "#fff",
-                                        border: "1px solid #ccc",
+                                        background: "var(--dm-bg, var(--lib-bg, #fff))",
+                                        border: "1px solid var(--dm-border, var(--lib-border, #ccc))",
                                         padding: 6,
-                                        borderRadius: 4,
-                                        width: 120
+                                        borderRadius: 6,
+                                        width: 120,
+                                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)"
                                     }}
                                 >
                                     {colorOptions.map(c => (
@@ -91,7 +95,7 @@ export default function AddUniversalItem({
                                                 width: 22,
                                                 height: 22,
                                                 cursor: "pointer",
-                                                border: values.color === c ? "2px solid #000" : "1px solid #ddd",
+                                                border: values.color === c ? "2px solid var(--dm-text, var(--lib-text, #000))" : "1px solid var(--dm-border, var(--lib-border, #ddd))",
                                                 borderRadius: 2
                                             }}
                                             onClick={() => {

@@ -12,6 +12,7 @@ import {
 } from "../../../api/modulesApi";
 import { useAuth } from "../../../context/AuthContext";
 import { useI18n } from "../../../i18n";
+import { parseApiErrors } from "../../../utils/parseApiErrors";
 
 import ModuleCard from "../../../components/ModuleCard/moduleCard";
 import SortMenu from "../../../components/sortMenu/sortMenu";
@@ -307,8 +308,14 @@ export default function FolderPage() {
 
     const handleFinishMerge = () => {
         merge.executeMerge(
-            () => setModalInfo({ open: true, type: "success", title: t("fpModalSuccessTitle"), message: t("fpMergeSuccess") }),
-            () => setModalInfo({ open: true, type: "error", title: t("fpModalErrorTitle"), message: t("fpMergeError") })
+            () => setModalInfo({ open: true, type: "success", title: t("fpModalSuccessTitle") || "Success", message: t("fpMergeSuccess") || "Merge success" }),
+            (err) => {
+                const parsedErrors = parseApiErrors(err?.response?.data);
+                const errorMsg = parsedErrors.length > 0
+                    ? parsedErrors.join("\n")
+                    : (err?.message || t("fpMergeError") || "Merge error");
+                setModalInfo({ open: true, type: "error", title: t("fpModalErrorTitle") || "Error", message: errorMsg });
+            }
         );
     };
 
@@ -459,20 +466,30 @@ export default function FolderPage() {
             </div>
 
             {merge.isMergeModalOpen && (
-                <div className="modal-overlay" style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
-                    <div className="modal-content" style={{ background: "var(--clr-card-bg)", padding: "30px", borderRadius: "20px", width: "380px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)", color: "var(--clr-text)" }}>
-                        <h3 style={{ marginBottom: "20px" }}>{t("fpFinalizeMergeTitle")}</h3>
+                <div className="modal-overlay" style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
+                    <div className="modal-content" style={{ background: "var(--dm-bg, var(--clr-card-bg, #fff))", padding: "30px", borderRadius: "20px", width: "100%", maxWidth: "380px", boxShadow: "0 10px 30px rgba(0,0,0,0.3)", color: "var(--dm-text, var(--clr-text, #000))" }}>
+                        <h3 style={{ marginBottom: "20px", marginTop: 0 }}>{t("fpFinalizeMergeTitle")}</h3>
                         <div style={{ marginTop: 15 }}>
-                            <input style={{ width: "100%", padding: "10px", marginTop: "5px", borderRadius: "8px", border: "1px solid var(--clr-border-light)", background: "var(--clr-bg)", color: "var(--clr-text)" }} type="text" value={merge.mergeForm.name} onChange={(e) => merge.setMergeForm({...merge.mergeForm, name: e.target.value})} placeholder={t("fpNewNamePlaceholder")} />
+                            <input
+                                style={{ width: "100%", padding: "12px", marginTop: "5px", borderRadius: "8px", border: "1px solid var(--dm-border, var(--clr-border-light, #ddd))", background: "var(--dm-bg, var(--clr-bg, #fff))", color: "var(--dm-text, var(--clr-text, #000))", boxSizing: "border-box", outline: "none" }}
+                                type="text"
+                                value={merge.mergeForm.name}
+                                onChange={(e) => merge.setMergeForm({...merge.mergeForm, name: e.target.value})}
+                                placeholder={t("fpNewNamePlaceholder")}
+                            />
                         </div>
                         <div style={{ marginTop: 15, marginBottom: 20 }}>
-                            <select style={{ width: "100%", padding: "10px", marginTop: "5px", borderRadius: "8px", border: "1px solid var(--clr-border-light)", background: "var(--clr-bg)", color: "var(--clr-text)" }} value={merge.mergeForm.topic} onChange={(e) => merge.setMergeForm({...merge.mergeForm, topic: e.target.value})}>
+                            <select
+                                style={{ width: "100%", padding: "12px", marginTop: "5px", borderRadius: "8px", border: "1px solid var(--dm-border, var(--clr-border-light, #ddd))", background: "var(--dm-bg, var(--clr-bg, #fff))", color: "var(--dm-text, var(--clr-text, #000))", boxSizing: "border-box", outline: "none", cursor: "pointer" }}
+                                value={merge.mergeForm.topic}
+                                onChange={(e) => merge.setMergeForm({...merge.mergeForm, topic: e.target.value})}
+                            >
                                 <option value="">{t("fpSelectTopicPlaceholder")}</option>
                                 {topics.map(tOption => <option key={tOption.id} value={tOption.id}>{tOption.name}</option>)}
                             </select>
                         </div>
                         <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-                            <button onClick={() => merge.setIsMergeModalOpen(false)} style={{ padding: "10px 15px", borderRadius: "8px", border: "none", cursor: "pointer", background: "var(--clr-bg-hover)", color: "var(--clr-text)" }}>{t("fpBackButton")}</button>
+                            <button onClick={(e) => { e.preventDefault(); merge.setIsMergeModalOpen(false); }} style={{ padding: "10px 20px", borderRadius: "8px", border: "none", cursor: "pointer", background: "var(--dm-border, var(--clr-bg-hover, #eee))", color: "var(--dm-text, var(--clr-text, #000))", fontWeight: "500" }}>{t("fpBackButton")}</button>
                             <button onClick={handleFinishMerge} style={{ background: "#6366f1", color: "white", border: "none", padding: "10px 20px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}>{t("fpConfirmMergeButton")}</button>
                         </div>
                     </div>

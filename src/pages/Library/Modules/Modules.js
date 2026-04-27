@@ -16,6 +16,7 @@ import {
 import { addModuleToFolder, getFolders } from "../../../api/foldersApi";
 import { useAuth } from "../../../context/AuthContext";
 import { useI18n } from "../../../i18n";
+import { parseApiErrors } from "../../../utils/parseApiErrors";
 
 import ModuleCard from "../../../components/ModuleCard/moduleCard";
 import SortMenu from "../../../components/sortMenu/sortMenu";
@@ -302,10 +303,16 @@ export default function Modules({ source = "library", preloadedModules, preloade
     const handleFinishMerge = () => {
         merge.executeMerge(
             () => {
-                mSetModalInfo({ open: true, type: "success", title: t("mAddedTitle"), message: "Modules merged successfully!", onConfirm: null });
+                mSetModalInfo({ open: true, type: "success", title: t("mAddedTitle") || "Success", message: "Modules merged successfully!", onConfirm: null });
                 refreshParentOrLocal();
             },
-            () => mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle"), message: "Failed to merge modules.", onConfirm: null })
+            (err) => {
+                const parsedErrors = parseApiErrors(err?.response?.data);
+                const errorMsg = parsedErrors.length > 0
+                    ? parsedErrors.join("\n")
+                    : (err?.message || "Failed to merge modules.");
+                mSetModalInfo({ open: true, type: "error", title: t("mErrorTitle") || "Error", message: errorMsg, onConfirm: null });
+            }
         );
     };
 
@@ -376,21 +383,31 @@ export default function Modules({ source = "library", preloadedModules, preloade
             )}
 
             {merge.isMergeModalOpen && (
-                <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 90 }}>
-                    <div style={{ background: "white", padding: "30px", borderRadius: "20px", width: "100%", maxWidth: "400px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
-                        <h3 style={{ marginBottom: "20px" }}>Finalize Merge</h3>
+                <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
+                    <div style={{ background: "var(--dm-bg, var(--lib-bg, #fff))", color: "var(--dm-text, var(--lib-text, #000))", padding: "30px", borderRadius: "20px", width: "100%", maxWidth: "400px", boxShadow: "0 10px 30px rgba(0,0,0,0.3)" }}>
+                        <h3 style={{ marginBottom: "20px", marginTop: 0 }}>Finalize Merge</h3>
                         <div style={{ marginBottom: "15px" }}>
-                            <input style={{ width: "100%", padding: "10px", marginTop: "5px", borderRadius: "8px", border: "1px solid #ddd", boxSizing: "border-box" }} type="text" value={merge.mergeForm.name} onChange={(e) => merge.setMergeForm({...merge.mergeForm, name: e.target.value})} placeholder="New Module Name" />
+                            <input
+                                style={{ width: "100%", padding: "12px", marginTop: "5px", borderRadius: "8px", border: "1px solid var(--dm-border, var(--lib-border, #ddd))", background: "var(--dm-bg, var(--lib-bg, #fff))", color: "var(--dm-text, var(--lib-text, #000))", boxSizing: "border-box", outline: "none" }}
+                                type="text"
+                                value={merge.mergeForm.name}
+                                onChange={(e) => merge.setMergeForm({...merge.mergeForm, name: e.target.value})}
+                                placeholder="New Module Name"
+                            />
                         </div>
                         <div style={{ marginBottom: "25px" }}>
-                            <select style={{ width: "100%", padding: "10px", marginTop: "5px", borderRadius: "8px", border: "1px solid #ddd", boxSizing: "border-box" }} value={merge.mergeForm.topic} onChange={(e) => merge.setMergeForm({...merge.mergeForm, topic: e.target.value})}>
-                                <option value="">{t("mSelectTopicPlaceholder")}</option>
+                            <select
+                                style={{ width: "100%", padding: "12px", marginTop: "5px", borderRadius: "8px", border: "1px solid var(--dm-border, var(--lib-border, #ddd))", background: "var(--dm-bg, var(--lib-bg, #fff))", color: "var(--dm-text, var(--lib-text, #000))", boxSizing: "border-box", outline: "none", cursor: "pointer" }}
+                                value={merge.mergeForm.topic}
+                                onChange={(e) => merge.setMergeForm({...merge.mergeForm, topic: e.target.value})}
+                            >
+                                <option value="">{t("mSelectTopicPlaceholder") || "Select a topic"}</option>
                                 {mTopics.map(tOption => <option key={tOption.id} value={tOption.id}>{tOption.name}</option>)}
                             </select>
                         </div>
                         <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
-                            <button onClick={() => merge.setIsMergeModalOpen(false)} style={{ padding: "10px 20px", background: "#f0f0f0", border: "none", borderRadius: "8px", cursor: "pointer" }}>{t("mBackButton")}</button>
-                            <button onClick={handleFinishMerge} style={{ padding: "10px 20px", background: "#6366f1", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}>{t("mConfirmMergeButton")}</button>
+                            <button onClick={(e) => { e.preventDefault(); merge.setIsMergeModalOpen(false); }} style={{ padding: "10px 20px", background: "var(--dm-border, var(--lib-border, #f0f0f0))", color: "var(--dm-text, var(--lib-text, #000))", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "500" }}>{t("mBackButton") || "Cancel"}</button>
+                            <button onClick={handleFinishMerge} style={{ padding: "10px 20px", background: "#6366f1", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}>{t("mConfirmMergeButton") || "Merge"}</button>
                         </div>
                     </div>
                 </div>
